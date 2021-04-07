@@ -23,6 +23,16 @@
     content: $icon-heart;
   }
 }
+.icon-minus-circle {
+  &:before {
+    content: $icon-minus-circle;
+  }
+}
+.icon-minus-square {
+  &:before {
+    content: $icon-minus-square;
+  }
+}
 .icon-plus {
   &:before {
     content: $icon-plus;
@@ -40,7 +50,7 @@
 }
 .icon-trash {
   &:before {
-    content: $icon-trash-2;
+    content: $icon-trash;
   }
 }
 .icon-user {

@@ -11,9 +11,17 @@
   > div {
     background-color: $white;
     color: $dark;
+    border: $input-border-width solid $input-border-color;
     @include border-radius($input-border-radius, 0);
     padding: .4rem .6rem;
     max-height: 8rem;
     overflow: auto;
+    @include box-shadow($input-box-shadow);
+    @include transition($input-transition);
+
+    &:hover {
+      border-color: $input-focus-border-color;
+      box-shadow: $input-focus-box-shadow;
+    }
   }
 }
