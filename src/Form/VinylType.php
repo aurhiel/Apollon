@@ -6,6 +6,9 @@ namespace App\Form;
 use App\Entity\Vinyl;
 use App\Entity\Artist;
 
+// Repositories
+use App\Repository\ArtistRepository;
+
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -65,6 +68,11 @@ class VinylType extends AbstractType
                 'class'         => Artist::class,
                 'label'         => 'form_vinyl.artists.label',
                 // 'label_attr'    => [ 'class' => 'visually-hidden'],
+                'query_builder' => function (ArtistRepository $repo) {
+                    // Re-order artists by their name
+                    return $repo->createQueryBuilder('a')
+                        ->addOrderBy('a.name', 'ASC');
+                },
                 'choice_label'  => function ($artist) {
                     return $artist->getName();
                 },
