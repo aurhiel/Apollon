@@ -1,0 +1,53 @@
+###############################################################################
+#                          Generated on phpdocker.io                          #
+###############################################################################
+version: "3.1"
+services:
+
+    mysql:
+      image: mysql:5.7
+      container_name: apollon-mysql
+      working_dir: /application
+      volumes:
+        - .:/application
+      environment:
+        - MYSQL_ROOT_PASSWORD=dbrootpw
+        - MYSQL_DATABASE=sf_apollon
+        - MYSQL_USER=dbuser
+        - MYSQL_PASSWORD=dbuserpw
+      ports:
+        - "8004:3306"
+      # Opens port 3306 on the container
+      ## (useful for softwares like MySQL Workbench)
+      expose:
+        - '3306'
+
+    webserver:
+      image: nginx:alpine
+      container_name: apollon-webserver
+      working_dir: /application
+      volumes:
+          - .:/application
+          - ./phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      ports:
+       - "8003:80"
+
+    php-fpm:
+      build: phpdocker/php-fpm
+      container_name: apollon-php-fpm
+      working_dir: /application
+      volumes:
+        - .:/application
+        - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
+
+    # phpmyadmin:
+    #   image: phpmyadmin/phpmyadmin
+    #   links:
+    #     - mysql
+    #   ports:
+    #     - 81:80
+    #   environment:
+    #     - PMA_HOST=mysql
+    #     - PMA_USER=root
+    #     - PMA_PASSWORD=dbrootpw
+    #     - UPLOAD_LIMIT=3000000000

@@ -1,0 +1,63 @@
+
+// NOTE Variables & Mixins are located before bootstrap to override his default variables
+//
+
+@import 'app/variables';
+// @import 'app/mixins';
+
+
+// Libraries
+
+@import 'bootstrap/bootstrap';
+@import 'icomoon/icomoon';
+
+
+// App itself
+
+@import 'app/type';
+@import 'app/form';
+@import 'app/tables';
+@import 'app/lists';
+
+
+// App helpers (position, ...)
+
+@import 'app/helpers';
+
+
+
+.app-logo {
+  font-family: "Space Mono";
+  font-weight: 700;
+}
+
+
+.app-body {
+  min-height: 80vh;
+}
+
+
+
+.bg-pattern {
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  &:after {
+    content: '';
+    position: absolute;
+    background: url('../../public#{$theme-root-images}/bg/webb-dark.png');
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .1;
+  }
+
+  &.-fixed {
+    &:after {
+      position: fixed;
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{% set is_home = (app.request.attributes.get('_route') == 'home') %}
+<header class="app-header sticky-top">
+  <nav class="navbar navbar-expand navbar-dark bg-dark -bg-pattern pb-0">
+    <div class="container pb-2 -border-bottom -border-secondary">
+      {% block nav_brand %}
+        {# NOTE Remove link (<a>) arround logo (brand) if current route (~path) is "home" #}
+        {% if is_home %}
+        <div class="navbar-brand">
+          {% include 'components/logo.html.twig' with { display_identity: true, set_titles : is_home } %}
+        </div>
+        {% else %}
+        <a class="navbar-brand" href="{{ path('home') }}">
+          {% include 'components/logo.html.twig' with { display_identity: true, set_titles : is_home } %}
+        </a>
+        {% endif %}
+      {% endblock %}
+
+      {# Main navigation #}
+      {% block nav %}
+        <button class="navbar-toggler" type="button" data-toggle="" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link{% if (app.request.attributes.get('_route') == 'artists') %} active{% endif %}" href="{{ path('artists') }}">
+                Artistes
+              </a>
+            </li>
+            {#<li class="nav-item">
+              <a class="nav-link" href="#">Logs.</a>
+            </li>#}
+          </ul>
+        </div>
+      {% endblock %}
+
+      {# Navbar actions #}
+      {% block actions %}
+        <div class="navbar-actions">
+        {% if form_artist is defined %}
+          <button class="btn btn-sm btn-outline-primary text-white" type="button"
+            name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-artist">
+            <span class="icon-user-plus me-1"></span> artiste
+          </button>
+        {% endif %}
+        {% if form_vinyl is defined %}
+          <button class="btn btn-sm btn-outline-primary text-white ms-2" type="button"
+            name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-vinyl">
+            <span class="icon-plus-circle me-1"></span> vinyle
+          </button>
+        {% endif %}
+        </div>
+      {% endblock %}
+    </div>
+  </nav>
+</header>

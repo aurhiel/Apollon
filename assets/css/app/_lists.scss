@@ -1,0 +1,66 @@
+// Lists
+
+.list-users {
+  .-item {
+    text-align: center;
+
+    &:hover {
+      .-item-name {
+        opacity: 1;
+      }
+    }
+  }
+
+  .-item-picture {
+    background-color: $white;
+    color: $dark;
+    font-size: 2rem;
+    text-align: center;
+    border-radius: 50%;
+    display: inline-block;
+    margin-bottom: .4rem;
+    height: 4rem;
+    width: 4rem;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      .-picture-delete-user {
+        opacity: 1;
+      }
+    }
+
+    img {
+      height: 1em;
+      max-width: 100%;
+    }
+
+    .-picture-icon {
+      color: darken($white, 25%);
+      font-size: 2em;
+      position: relative;
+      bottom: -.125em;
+    }
+
+    .-picture-delete-user {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -.8em;
+      margin-left: -.5em;
+      opacity: 0;
+      transition: opacity 400ms ease;
+    }
+  }
+
+  .-item-name {
+    font-size: .8rem;
+    line-height: 1;
+    font-weight: bold;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 0;
+    opacity: .6;
+    transition: opacity 400ms ease;
+  }
+}

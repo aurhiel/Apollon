@@ -1,0 +1,21 @@
+// Tables
+//
+
+
+.table {
+  .col-id {
+    text-align: center;
+    width: 2.4rem;
+    display: none;
+  }
+
+  .col-quantity {
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .col-actions {
+    text-align: right;
+    vertical-align: middle;
+  }
+}

@@ -1,0 +1,70 @@
+{# default twig values #}
+{% set bg_animated = ((bg_animated is not defined) ? false : bg_animated) %}
+{% set domain = app.request.getSchemeAndHttpHost() %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    {# meta.title #}
+    <title>
+    {%- block meta_title -%}
+      {%- if meta.title is defined and meta.title is not empty -%}
+        {{ meta.title }} - Apollon
+      {% else %}
+        Apollon
+      {%- endif -%}
+    {%- endblock -%}
+    </title>
+
+    {# Base stylesheets #}
+    {{ encore_entry_link_tags('app') }}
+    <link rel="stylesheet" href="{{ asset('build/google-fonts.css') }}">
+    {# Custom stylesheets from twig templates #}
+    {% block stylesheets %}{% endblock %}
+
+    {# Custom javascripts from twig templates #}
+    {% block javascripts_defines %}{% endblock %}
+
+    {# Base javascripts #}
+    {{ encore_entry_script_tags('app') }}
+    {# Custom javascripts from twig templates #}
+    {% block javascripts %}{% endblock %}
+  </head>
+
+  <body class="app-core{% if core_class is defined %} {{ core_class }}{% endif %}{% if bg_animated == true %} app-core--bg-animated{% endif %} app-core--no-script">
+    {# Header #}
+    {% block header %}
+      {% include 'components/header.html.twig' %}
+    {% endblock %}
+
+    <div class="app-body bg-pattern -fixed py-4{% if body_class is defined %} {{ body_class }}{% endif %}">
+      {% include 'components/no-script.html.twig' %}
+
+      {# Notices/Errors messages from "flashbag" #}
+      {% block flashes %}
+        {% include 'components/flashes.html.twig' %}
+      {% endblock %}
+
+      {# Body #}
+      {% block body %}{% endblock %}
+    </div>
+
+    {# Footer #}
+    {% block footer %}
+      {% include 'components/footer.html.twig' %}
+    {% endblock %}
+
+    {# Modals #}
+    {% include 'modals/manage-artist.html.twig' %}
+    {% include 'modals/manage-vinyl.html.twig' %}
+
+    {#
+    {% if bg_animated == true %}
+      <div class="app-bg"></div>
+    {% endif %}
+    #}
+    <div class="app-bg"></div>
+  </body>
+</html>

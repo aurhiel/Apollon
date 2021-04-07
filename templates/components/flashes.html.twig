@@ -1,0 +1,29 @@
+{% set type_flashes = {
+  'error' : {
+    'label'     : 'erreur',
+    'css_class' : 'danger'
+  },
+  'notice' : {
+    'label'     : 'notice',
+    'css_class' : 'warning'
+  },
+  'success' : {
+    'label'     : 'réussi',
+    'css_class' : 'success'
+  }
+} %}
+
+{% if type_flashes is not empty %}
+<div class="container">
+  {% for slug_flash, type_flash in type_flashes %}
+    {% set flash_messages = app.session.flashbag.get(slug_flash) %}
+    {% if flash_messages is not empty %}
+    <div class="alert alert-{{ type_flash.css_class }} fw-bold">
+      {% for message in flash_messages %}
+        <div>{{ message|raw }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}

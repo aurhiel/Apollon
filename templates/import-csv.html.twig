@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+  <div class="container">
+    <h1 class="mb-3"><span class="icon-coffee"></span> Import du CSV</h1>
+    <form class="row g-3 align-items-center" method="post">
+      <div class="col-auto">
+        <button class="btn btn-primary" type="submit" name="import-launch" value="1">Lancer l'import.</button>
+      </div>
+      <div class="col-auto">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="import-clear-db" name="import-clear-db">
+          <label class="form-check-label fw-bold" for="import-clear-db">
+            Vider la base de données
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+{% endblock %}

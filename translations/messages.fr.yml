@@ -1,0 +1,31 @@
+## GENERIC / BASIC FORMS ##
+form_basic:
+  save:
+    label: Sauvegarder
+
+## ARTIST FORM ##
+form_artist :
+  name :
+    label       : "Nom / Pseudo"
+    placeholder : "Nom / Pseudo"
+
+## ARTIST FORM ##
+form_vinyl :
+  rpm :
+    label       : "Tour"
+    placeholder : "Tour"
+  qty :
+    label       : "Quantité"
+    placeholder : "Quantité"
+  qty_sold :
+    label       : "Quantité vendue"
+    placeholder : "Quantité vendue"
+  track_face_a :
+    label       : "Face A"
+    placeholder : "Face A"
+  track_face_b :
+    label       : "Face B"
+    placeholder : "Face B"
+  artists :
+    label       : "Artistes"
+    placeholder : "Artistes"

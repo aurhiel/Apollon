@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+  <div class="container">
+    <h1 class="mb-3"><span class="icon-users"></span> Liste des artistes{% if artists is not empty %} <small class="fw-normal text-muted">({{ artists|length }})</small>{% endif %}</h1>
+    {% if artists is not empty %}
+      <div class="list-users row g-5">
+      {% for artist in artists %}
+        <div class="col-sm-6 col-md-3 col-lg-2">
+          <div class="-item" data-artist-id="{{ artist.id }}" data-artist-name="{{ artist.name }}">
+            <div class="-item-picture">
+              <span class="-picture-icon icon-user"></span>
+              <span class="-picture-delete-user">
+                <a href="{{ path('artist_delete', { id: artist.id }) }}" class="btn btn-sm btn-danger px-2 py-1">
+                  <span class="icon-trash"></span>
+                </a>
+              </span>
+            </div>
+            <h3 class="-item-name">{{ artist.name }}</h3>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-secondary">
+        Aucun artiste à afficher.
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

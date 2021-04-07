@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+  <div class="container">
+    <h1 class="mb-3"><span class="icon-disc"></span> Liste des vinyles{% if vinyls is not empty %} <small class="fw-normal text-muted">({{ vinyls|length }})</small>{% endif %}</h1>
+    {% if vinyls is not empty %}
+      <table class="table table-bordered table-striped table-dark mb-0">
+        <tr>
+          <th scope="col" class="col-id">#</th>
+          <th scope="col" class="col-rpm">T.</th>
+          <th scope="col" class="col-track">Face A</th>
+          <th scope="col" class="col-track">Face B</th>
+          <th scope="col" class="col-artist">Artiste(s)</th>
+          <th scope="col" class="col-quantity">Qté</th>
+          <th scope="col" class="col-actions"></th>
+        </tr>
+      {% for vinyl in vinyls %}
+        <tr>
+          <th scope="row" class="col-id">{{ vinyl.id }}</th>
+          <td class="col-rpm">{{ vinyl.rpm }}</td>
+          <td class="col-track">{{ vinyl.trackFaceA }}</td>
+          <td class="col-track">{{ vinyl.trackFaceB }}</td>
+          <td class="col-artist">
+            {% if vinyl.artists is not empty %}
+              {% for artist in vinyl.artists %}
+                {{ artist.name }}{% if loop.last == false %}, {% endif %}
+              {% endfor %}
+            {% endif %}
+          </td>
+          <td class="col-quantity">{{ vinyl.quantity }}</td>
+          <td class="col-actions">
+            <a href="{{ path('vinyl_delete', { id: vinyl.id }) }}" class="btn btn-sm btn-outline-danger px-2 py-1">
+              <span class="icon-trash"></span>
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+      </table>
+    {% else %}
+      <div class="alert alert-secondary fw-bold">
+        Aucun vinyle à afficher.
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

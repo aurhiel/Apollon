@@ -1,0 +1,57 @@
+{% if form_vinyl is defined %}
+  <div class="modal fade" id="modal-manage-vinyl" tabindex="-1" aria-labelledby="modal-manage-vinyl-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-manage-vinyl-label">Vinyle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        {{ form_start(form_vinyl, { 'attr' : { 'class': 'form form-vinyl' } }) }}
+          <div class="modal-body">
+            {# Form inputs #}
+            <div class="form--inputs">
+              <div class="row g-3">
+                <div class="col-md-6 form-group">
+                  {{ form_label(form_vinyl.rpm) }}
+                  {{ form_widget(form_vinyl.rpm) }}
+                  {{ form_errors(form_vinyl.rpm) }}
+                </div>
+                <div class="col-md-3 form-group">
+                  {{ form_label(form_vinyl.quantity) }}
+                  {{ form_widget(form_vinyl.quantity) }}
+                  {{ form_errors(form_vinyl.quantity) }}
+                </div>
+                <div class="col-md-3 form-group">
+                  {{ form_label(form_vinyl.quantity_sold) }}
+                  {{ form_widget(form_vinyl.quantity_sold) }}
+                  {{ form_errors(form_vinyl.quantity_sold) }}
+                </div>
+
+                <div class="col-md-6 form-group">
+                  {{ form_label(form_vinyl.track_face_A) }}
+                  {{ form_widget(form_vinyl.track_face_A) }}
+                  {{ form_errors(form_vinyl.track_face_A) }}
+                </div>
+                <div class="col-md-6 form-group">
+                  {{ form_label(form_vinyl.track_face_B) }}
+                  {{ form_widget(form_vinyl.track_face_B) }}
+                  {{ form_errors(form_vinyl.track_face_B) }}
+                </div>
+
+                <div class="col-12 form-group form-multi-select">
+                  {{ form_label(form_vinyl.artists) }}
+                  {{ form_widget(form_vinyl.artists) }}
+                  {{ form_errors(form_vinyl.artists) }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            {{ form_widget(form_vinyl.send) }}
+          </div>
+        {{ form_end(form_vinyl) }}
+      </div>
+    </div>
+  </div>
+{% endif %}

@@ -1,0 +1,30 @@
+{% if form_artist is defined %}
+  <div class="modal fade" id="modal-manage-artist" tabindex="-1" aria-labelledby="modal-manage-artist-label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-manage-artist-label">Artiste</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        {{ form_start(form_artist, { 'attr' : { 'class': 'form form-artist' } }) }}
+          <div class="modal-body">
+            {# Form inputs #}
+            <div class="form--inputs">
+              <div class="form-row">
+                <div class="col-md-12 form-group">
+                  {{ form_label(form_artist.name) }}
+                  {{ form_widget(form_artist.name) }}
+                  {{ form_errors(form_artist.name) }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            {{ form_widget(form_artist.send) }}
+          </div>
+        {{ form_end(form_artist) }}
+      </div>
+    </div>
+  </div>
+{% endif %}

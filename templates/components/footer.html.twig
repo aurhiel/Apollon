@@ -1,0 +1,22 @@
+{# Footer #}
+<footer class="app-footer bg-dark -bg-pattern text-muted lh-sm small sticky-bottom">
+  <div class="container py-3 -border-top -border-secondary">
+    <div class="row align-items-center">
+      <div class="col-md-6 my-1">
+        © {{ 'now' | date('Y') }} - Site web conçu avec un peu de
+        <abbr title="code" class="icon icon-code" data-toggle="tooltip"></abbr>
+        et beaucoup de
+        <abbr title="passion" class="icon icon-heart" data-toggle="tooltip"></abbr>
+      </div>
+      <div class="col-md-6 my-1 text-md-end">
+        <ul class="list-inline mb-0">
+          <li class="list-inline-item">
+            <a href="{{ path('import_csv') }}">
+              Import CSV
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
