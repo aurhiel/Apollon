@@ -12,6 +12,35 @@
   .col-quantity {
     text-align: center;
     vertical-align: middle;
+    min-width: 4rem;
+    white-space: nowrap;
+
+    &:hover {
+      .btn-qty {
+        opacity: .6;
+      }
+    }
+
+    > * {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .btn-qty {
+      font-size: .8em;
+      opacity: .4;
+      transition: opacity 400ms ease;
+
+      &:hover {
+        cursor: pointer;
+        opacity: 1;
+      }
+
+      &.disabled {
+        pointer-events: none;
+        opacity: .1;
+      }
+    }
   }
 
   .col-actions {

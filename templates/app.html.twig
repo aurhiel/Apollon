@@ -2,9 +2,9 @@
 
 {% block body %}
   <div class="container">
-    <h1 class="mb-3"><span class="icon-disc"></span> Liste des vinyles{% if vinyls is not empty %} <small class="fw-normal text-muted">({{ vinyls|length }})</small>{% endif %}</h1>
+    <h1 class="mb-3"><span class="icon-disc"></span> Liste des vinyles{% if vinyls is not empty %} <small class="fw-normal text-muted">(<span class="-vinyls-total-quantity">{{ total_vinyls }}</span>)</small>{% endif %}</h1>
     {% if vinyls is not empty %}
-      <table class="table table-bordered table-striped table-dark mb-0">
+      <table id="vinyls-entities" class="table table-bordered table-striped table-dark mb-0">
         <tr>
           <th scope="col" class="col-id">#</th>
           <th scope="col" class="col-rpm">T.</th>
@@ -27,7 +27,11 @@
               {% endfor %}
             {% endif %}
           </td>
-          <td class="col-quantity">{{ vinyl.quantity }}</td>
+          <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}">
+            <span class="btn-qty icon-minus-square{% if vinyl.quantity < 2 %} disabled{% endif %}" data-qty-type="-1"></span>
+            <span class="qty-amount">{{ vinyl.quantity }}</span>
+            <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+          </td>
           <td class="col-actions">
             <a href="{{ path('vinyl_delete', { id: vinyl.id }) }}" class="btn btn-sm btn-outline-danger px-2 py-1">
               <span class="icon-trash"></span>

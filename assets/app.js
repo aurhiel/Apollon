@@ -61,8 +61,13 @@ var app = {
     (function() {
       console.log('🌱 Radis ! ~');
 
-      self.$modal_artist  = $('#modal-manage-artist');
-      self.$modal_vinyl   = $('#modal-manage-vinyl');
+      // Vinyl & artist modals
+      self.$modal_artist  = self.$body.find('#modal-manage-artist');
+      self.$modal_vinyl   = self.$body.find('#modal-manage-vinyl');
+
+      // Vinyls list container
+      self.$vinyls = self.$body.find('#vinyls-entities');
+      self.$vinyls_total_qty = self.$body.find('.-vinyls-total-quantity');
 
       // Remove loading (not used yet...)
       self.unload();
@@ -73,11 +78,30 @@ var app = {
       // Trigger scroll event after ready to display elements already on screen
       // self.$window.trigger('scroll');
 
-      if (self.$modal_artist.length > 0) {
-        self.$modal_artist.get(0).addEventListener('show.bs.modal', function () {
-          console.log('Yay ! ~');
+      // if (self.$modal_artist.length > 0) {
+      //   self.$modal_artist.get(0).addEventListener('show.bs.modal', function () {
+      //     console.log('Yay ! ~');
+      //   });
+      // }
+
+      self.$vinyls.on('click', '.btn-qty', function() {
+        var $btn      = $(this);
+        var $col_qty  = $btn.parents('.col-quantity').first();
+
+        $.ajax({
+          method: 'POST',
+          url: '/vinyles/' + $col_qty.data('vinyl-id') + '/quantite/' + $btn.data('qty-type'),
+          success: function(r) {
+            if (r.query_status != 1) {
+              alert(r.message_status);
+            } else {
+              $col_qty.find('.qty-amount').html(r.new_quantity);
+              $col_qty.find('.btn-qty[data-qty-type="-1"]').toggleClass('disabled', (r.new_quantity < 2))
+              self.$vinyls_total_qty.html(r.total_vinyls);
+            }
+          }
         });
-      }
+      });
     })();
   }
 };
