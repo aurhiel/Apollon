@@ -39,15 +39,15 @@
       {% block actions %}
         <div class="navbar-actions">
         {% if form_artist is defined %}
-          <button class="btn btn-sm btn-outline-primary text-white" type="button"
+          <button class="btn btn-sm btn-outline-primary text-white px-2 px-md-4" type="button"
             name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-artist">
-            <span class="icon-user-plus me-1"></span> artiste
+            <span class="icon-user-plus me-md-1"></span><span class="d-none d-md-inline"> artiste</span>
           </button>
         {% endif %}
         {% if form_vinyl is defined %}
-          <button class="btn btn-sm btn-outline-primary text-white ms-2" type="button"
+          <button class="btn btn-sm btn-outline-primary text-white px-2 px-md-4 ms-2" type="button"
             name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-vinyl">
-            <span class="icon-plus-circle me-1"></span> vinyle
+            <span class="icon-plus-circle me-md-1"></span><span class="d-none d-md-inline"> vinyle</span>
           </button>
         {% endif %}
         </div>
