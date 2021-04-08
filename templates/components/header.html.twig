@@ -1,4 +1,6 @@
 {% set is_home = (app.request.attributes.get('_route') == 'home') %}
+{% set has_form_artist = (form_artist is defined and form_artist is not empty) %}
+{% set has_form_vinyl = (form_vinyl is defined and form_vinyl is not empty) %}
 <header class="app-header sticky-top">
   <nav class="navbar navbar-expand navbar-dark bg-dark -bg-pattern pb-0">
     <div class="container pb-2 -border-bottom -border-secondary">
@@ -38,13 +40,13 @@
       {# Navbar actions #}
       {% block actions %}
         <div class="navbar-actions">
-        {% if form_artist is defined %}
+        {% if has_form_artist == true %}
           <button class="btn btn-sm btn-outline-primary text-white px-2 px-md-4" type="button"
             name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-artist">
             <span class="icon-user-plus me-md-1"></span><span class="d-none d-md-inline"> artiste</span>
           </button>
         {% endif %}
-        {% if form_vinyl is defined %}
+        {% if has_form_vinyl == true %}
           <button class="btn btn-sm btn-outline-primary text-white px-2 px-md-4 ms-2" type="button"
             name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-vinyl">
             <span class="icon-plus-circle me-md-1"></span><span class="d-none d-md-inline"> vinyle</span>
@@ -52,6 +54,11 @@
         {% endif %}
         </div>
       {% endblock %}
+
+      <div class="navbar-user small{% if has_form_artist == true or has_form_vinyl == true %} border-start border-secondary ps-1 ms-2 ps-md-3 ms-md-4{% endif %}">
+        <span class="-hello text-muted">Hi, </span>
+        <span class="-name text-capitalize">{{ user.username }}{% if user_emoji is not empty %} {{ user_emoji }}{% endif %}</span>
+      </div>
     </div>
   </nav>
 </header>

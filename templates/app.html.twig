@@ -13,7 +13,9 @@
             <th scope="col" class="col-track">Face B</th>
             <th scope="col" class="col-artist">Artiste(s)</th>
             <th scope="col" class="col-quantity">Qté</th>
+          {% if is_granted('ROLE_ADMIN') %}
             <th scope="col" class="col-actions"></th>
+          {% endif %}
           </tr>
         {% for vinyl in vinyls %}
           <tr>
@@ -29,15 +31,21 @@
               {% endif %}
             </td>
             <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}">
-              <span class="btn-qty icon-minus-square{% if vinyl.quantity < 2 %} disabled{% endif %}" data-qty-type="-1"></span>
-              <span class="qty-amount">{{ vinyl.quantity }}</span>
-              <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+              {% if is_granted('ROLE_ADMIN') %}
+                <span class="btn-qty icon-minus-square{% if vinyl.quantity < 2 %} disabled{% endif %}" data-qty-type="-1"></span>
+                <span class="qty-amount">{{ vinyl.quantity }}</span>
+                <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+              {% else %}
+                {{ vinyl.quantity }}
+              {% endif %}
             </td>
+          {% if is_granted('ROLE_ADMIN') %}
             <td class="col-actions">
               <a href="{{ path('vinyl_delete', { id: vinyl.id }) }}" class="btn btn-sm btn-outline-danger px-2 py-1">
                 <span class="icon-trash"></span>
               </a>
             </td>
+          {% endif %}
           </tr>
         {% endfor %}
         </table>
