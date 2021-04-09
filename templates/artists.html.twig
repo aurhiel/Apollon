@@ -2,7 +2,7 @@
 
 {% block body %}
   <div class="container">
-    <h1 class="mb-3"><span class="icon-users"></span> Liste des artistes{% if artists is not empty %} <small class="fw-normal text-muted">({{ artists|length }})</small>{% endif %}</h1>
+    <h1 class="mb-3"><span class="icon-users text-primary"></span> Liste des artistes{% if artists is not empty %} <small class="fw-normal text-muted">({{ artists|length }})</small>{% endif %}</h1>
     {% if artists is not empty %}
       <div class="list-users row g-5">
       {% for artist in artists %}
