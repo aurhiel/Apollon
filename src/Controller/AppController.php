@@ -49,65 +49,116 @@ class AppController extends AbstractController
 
             // 3) Save artist or vinyl
             if ($form_artist->isSubmitted() && $form_artist->isValid()) {
-                $em->persist($artist);
+                $r_artist = $em->getRepository(Artist::class);
 
-                // 4) Try to save (flush) or clear
-                try {
-                    // Flush OK !
-                    $em->flush();
+                // Check if artist is already in database
+                if (is_null($r_artist->findOneByName($artist->getName()))) {
+                    $em->persist($artist);
 
+                    // 4) Try to save (flush) or clear
+                    try {
+                        // Flush OK !
+                        $em->flush();
+
+                        $return = array(
+                            'query_status'    => 'success',
+                            'message_status'  => 'Sauvegarde de l\'artiste effectuée avec succès.',
+                            'id_entity'       => $artist->getId()
+                        );
+
+                        // Clear/reset form
+                        $artist       = new Artist();
+                        $form_artist  = $this->createForm(ArtistType::class, $artist);
+                    } catch (\Exception $e) {
+                        // Something goes wrong
+                        $em->clear();
+
+                        $return = array(
+                            'query_status'    => 'error',
+                            'exception'       => $e->getMessage(),
+                            'message_status'  => 'Un problème est survenu lors de la sauvegarde de l\'artiste.'
+                        );
+                    }
+                } else {
+                    // If artist already exist > add message status & clear/reset form
                     $return = array(
-                        'query_status'    => 1,
-                        'message_status'  => 'Sauvegarde de l\'artiste effectuée avec succès.',
+                        'query_status'    => 'notice',
+                        'message_status'  => 'L\'artiste "' . $artist->getName() . '" est déjà présent dans la base de données et n\'a donc pas été ajouté.',
                         'id_entity'       => $artist->getId()
                     );
-
-                    // Clear/reset form
                     $artist       = new Artist();
                     $form_artist  = $this->createForm(ArtistType::class, $artist);
-                } catch (\Exception $e) {
-                    // Something goes wrong
-                    $em->clear();
-
-                    $return = array(
-                        'query_status'    => 0,
-                        'exception'       => $e->getMessage(),
-                        'message_status'  => 'Un problème est survenu lors de la sauvegarde de l\'artiste.'
-                    );
                 }
             } elseif ($form_vinyl->isSubmitted() && $form_vinyl->isValid()) {
-                $em->persist($vinyl);
+                $r_vinyl = $em->getRepository(Vinyl::class);
+                $vinyl_existing = $r_vinyl->findOneByTrackFaceA($vinyl->getTrackFaceA());
+                $already_exist = (!is_null($vinyl_existing) ? ($vinyl_existing->getTrackFaceB() == $vinyl->getTrackFaceB()) : false);
 
-                // 4) Try to save (flush) or clear
-                try {
-                    // Flush OK !
-                    $em->flush();
+                // Check if vinyl already exist, update his quantity instead
+                //  of duplicating the vinyl
+                if ($already_exist === true) {
+                    // Increment vinyl quantity
+                    $vinyl_existing->setQuantity($vinyl_existing->getQuantity() + 1);
 
-                    $return = array(
-                        'query_status'    => 1,
-                        'message_status'  => 'Sauvegarde du vinyle effectuée avec succès.',
-                        'id_entity'       => $vinyl->getId()
-                    );
+                    // 4) Try to update quantity (flush) or clear
+                    try {
+                        // Flush OK !
+                        $em->flush();
 
-                    // Clear/reset form
-                    $vinyl      = new Vinyl();
-                    $form_vinyl = $this->createForm(VinylType::class, $vinyl);
-                } catch (\Exception $e) {
-                    // Something goes wrong
-                    $em->clear();
+                        $return = array(
+                            'query_status'    => 'notice',
+                            'message_status'  => 'Le vinyle existe déjà en base de donnée,
+                              sa quantité a donc été augmentée (quantité: ' . $vinyl_existing->getQuantity() . ').',
+                            'id_entity'       => $vinyl_existing->getId()
+                        );
 
-                    $return = array(
-                        'query_status'    => 0,
-                        'exception'       => $e->getMessage(),
-                        'message_status'  => 'Un problème est survenu lors de la sauvegarde du vinyle.'
-                    );
+                        // Clear/reset form
+                        $vinyl      = new Vinyl();
+                        $form_vinyl = $this->createForm(VinylType::class, $vinyl);
+                    } catch (\Exception $e) {
+                        // Something goes wrong
+                        $em->clear();
+
+                        $return = array(
+                            'query_status'    => 'error',
+                            'exception'       => $e->getMessage(),
+                            'message_status'  => 'Un problème est survenu lors de la modification de la quantité du vinyle.'
+                        );
+                    }
+                } else {
+                    $em->persist($vinyl);
+
+                    // 4) Try to save (flush) or clear
+                    try {
+                        // Flush OK !
+                        $em->flush();
+
+                        $return = array(
+                            'query_status'    => 'success',
+                            'message_status'  => 'Sauvegarde du vinyle effectuée avec succès.',
+                            'id_entity'       => $vinyl->getId()
+                        );
+
+                        // Clear/reset form
+                        $vinyl      = new Vinyl();
+                        $form_vinyl = $this->createForm(VinylType::class, $vinyl);
+                    } catch (\Exception $e) {
+                        // Something goes wrong
+                        $em->clear();
+
+                        $return = array(
+                            'query_status'    => 'error',
+                            'exception'       => $e->getMessage(),
+                            'message_status'  => 'Un problème est survenu lors de la sauvegarde du vinyle.'
+                        );
+                    }
                 }
             }
 
             // Set flash message if $return has message_status
             if (isset($return['message_status']) && !empty($return['message_status'])) {
                 $request->getSession()->getFlashBag()->add(
-                    (isset($return['query_status']) ? (($return['query_status'] == 1) ? 'success' : 'error') : 'warning'),
+                    (isset($return['query_status']) ? $return['query_status'] : 'notice'),
                     $return['message_status']
                 );
             }
