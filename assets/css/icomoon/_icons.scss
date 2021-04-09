@@ -1,3 +1,13 @@
+.icon-chevron-down {
+  &:before {
+    content: $icon-chevron-down;
+  }
+}
+.icon-chevron-up {
+  &:before {
+    content: $icon-chevron-up;
+  }
+}
 .icon-code {
   &:before {
     content: $icon-code;
