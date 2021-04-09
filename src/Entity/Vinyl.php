@@ -27,12 +27,12 @@ class Vinyl
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $track_face_A;
+    private $trackFaceA;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $track_face_B;
+    private $trackFaceB;
 
     /**
      * @ORM\ManyToMany(targetEntity=Artist::class, inversedBy="vinyls")
@@ -47,7 +47,7 @@ class Vinyl
     /**
      * @ORM\Column(type="smallint")
      */
-    private $quantity_sold = 0;
+    private $quantitySold = 0;
 
     public function __construct()
     {
@@ -73,24 +73,24 @@ class Vinyl
 
     public function getTrackFaceA(): ?string
     {
-        return $this->track_face_A;
+        return $this->trackFaceA;
     }
 
-    public function setTrackFaceA(string $track_face_A): self
+    public function setTrackFaceA(string $trackFaceA): self
     {
-        $this->track_face_A = $track_face_A;
+        $this->trackFaceA = $trackFaceA;
 
         return $this;
     }
 
     public function getTrackFaceB(): ?string
     {
-        return $this->track_face_B;
+        return $this->trackFaceB;
     }
 
-    public function setTrackFaceB(string $track_face_B): self
+    public function setTrackFaceB(string $trackFaceB): self
     {
-        $this->track_face_B = $track_face_B;
+        $this->trackFaceB = $trackFaceB;
 
         return $this;
     }
@@ -133,12 +133,12 @@ class Vinyl
 
     public function getQuantitySold(): ?int
     {
-        return $this->quantity_sold;
+        return $this->quantitySold;
     }
 
-    public function setQuantitySold(int $quantity_sold): self
+    public function setQuantitySold(int $quantitySold): self
     {
-        $this->quantity_sold = $quantity_sold;
+        $this->quantitySold = $quantitySold;
 
         return $this;
     }
