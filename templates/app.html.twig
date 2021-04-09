@@ -9,9 +9,29 @@
           <tr>
             <th scope="col" class="col-id">#</th>
             <th scope="col" class="col-rpm">T.</th>
-            <th scope="col" class="col-track">Face A</th>
+            <th scope="col" class="col-track">
+              <span class="me-2">Face A</span>
+              <a href="{{ path('home', { order_by: 'track-face-a', direction: 'asc' }) }}"
+                class="text-decoration-none{% if vinyls_order_by == 'track-face-a' and vinyls_direction == 'asc' %} text-muted pe-none{% endif %}">
+                <span class="icon-chevron-up"></span>
+              </a>
+              <a href="{{ path('home', { order_by: 'track-face-a', direction: 'desc' }) }}"
+                class="text-decoration-none{% if vinyls_order_by == 'track-face-a' and vinyls_direction == 'desc' %} text-muted pe-none{% endif %}">
+                <span class="icon-chevron-down"></span>
+              </a>
+            </th>
             <th scope="col" class="col-track">Face B</th>
-            <th scope="col" class="col-artist">Artiste(s)</th>
+            <th scope="col" class="col-artist">
+              <span class="me-2">Artiste(s)</span>
+              <a href="{{ path('home', { order_by: 'artist', direction: 'asc' }) }}"
+                class="text-decoration-none{% if vinyls_order_by == 'artist' and vinyls_direction == 'asc' %} text-muted pe-none{% endif %}">
+                <span class="icon-chevron-up"></span>
+              </a>
+              <a href="{{ path('home', { order_by: 'artist', direction: 'desc' }) }}"
+                class="text-decoration-none{% if vinyls_order_by == 'artist' and vinyls_direction == 'desc' %} text-muted pe-none{% endif %}">
+                <span class="icon-chevron-down"></span>
+              </a>
+            </th>
             <th scope="col" class="col-quantity">Qté</th>
             <th scope="col" class="col-quantity">Vendu(s)</th>
           {% if is_granted('ROLE_ADMIN') %}

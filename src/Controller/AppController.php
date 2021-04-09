@@ -27,9 +27,9 @@ use Symfony\Component\Finder\Finder;
 class AppController extends AbstractController
 {
     /**
-     * @Route("/", name="home")
+     * @Route("/{order_by}/{direction}", name="home", defaults={"order_by"=null,"direction"=null})
      */
-    public function index(Request $request, Security $security, AuthorizationCheckerInterface $authChecker): Response
+    public function index($order_by, $direction, Request $request, Security $security, AuthorizationCheckerInterface $authChecker): Response
     {
         $em     = $this->getDoctrine()->getManager();
         $vinyl  = new Vinyl();
@@ -166,7 +166,26 @@ class AppController extends AbstractController
 
         // Retrieve vinyls
         $r_vinyl = $em->getRepository(Vinyl::class);
-        $vinyls = $r_vinyl->findAll();
+        $vinyls = $r_vinyl->findAll($order_by, $direction);
+
+        // Re-order vinyls if asked
+        if(!is_null($order_by) && !is_null($direction)) {
+            usort($vinyls, function($a, $b) use($order_by, $direction) {
+                $a_str = null;
+                $b_str = null;
+                if ($order_by == 'track-face-a') {
+                    $a_str = strtolower($a->getTrackFaceA());
+                    $b_str = strtolower($b->getTrackFaceA());
+                } elseif ($order_by == 'artist') {
+                    $a_str = strtolower($a->getArtists()->first()->getName());
+                    $b_str = strtolower($b->getArtists()->first()->getName());
+                }
+
+                // Re-order only if "a" and "b" string are defined
+                if (!is_null($a_str) && !is_null($b_str))
+                    return ($direction == 'asc') ? strcmp($a_str, $b_str) : strcmp($b_str, $a_str);
+            });
+        }
 
         return $this->render('app.html.twig', [
             'user'          => $user,
@@ -175,6 +194,8 @@ class AppController extends AbstractController
             'form_vinyl'    => isset($form_vinyl) ? $form_vinyl->createView() : null,
             'vinyls'        => $vinyls,
             'total_vinyls'  => $r_vinyl->countAll(),
+            'vinyls_order_by'   => $order_by,
+            'vinyls_direction'  => $direction,
         ]);
     }
 

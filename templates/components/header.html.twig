@@ -5,16 +5,9 @@
   <nav class="navbar navbar-expand navbar-dark bg-dark -bg-pattern pb-0">
     <div class="container pb-2 -border-bottom -border-secondary">
       {% block nav_brand %}
-        {# NOTE Remove link (<a>) arround logo (brand) if current route (~path) is "home" #}
-        {% if is_home %}
-        <div class="navbar-brand">
-          {% include 'components/logo.html.twig' with { display_identity: true, set_titles : is_home } %}
-        </div>
-        {% else %}
         <a class="navbar-brand" href="{{ path('home') }}">
           {% include 'components/logo.html.twig' with { display_identity: true, set_titles : is_home } %}
         </a>
-        {% endif %}
       {% endblock %}
 
       {# Main navigation #}
