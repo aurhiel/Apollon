@@ -48,10 +48,12 @@
         </div>
       {% endblock %}
 
+    {% if user is defined and user.username is defined %}
       <div class="navbar-user small{% if has_form_artist == true or has_form_vinyl == true %} border-start border-secondary ps-1 ms-2 ps-md-3 ms-md-4{% endif %}">
         <span class="-hello text-muted">Hi, </span>
-        <span class="-name text-capitalize">{{ user.username }}{% if user_emoji is not empty %} {{ user_emoji }}{% endif %}</span>
+        <span class="-name text-capitalize">{{ user.username }}{% if user.username == 'losovia' %} 💕{% elseif user.username == 'anderson' %} 🌱{% endif %}</span>
       </div>
+    {% endif %}
     </div>
   </nav>
 </header>
