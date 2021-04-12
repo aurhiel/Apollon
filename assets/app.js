@@ -61,6 +61,8 @@ var app = {
     (function() {
       console.log('🌱 Radis ! ~');
 
+      self.$player = self.$body.find('.app-player');
+
       // Vinyl & artist modals
       self.$modal_artist  = self.$body.find('#modal-manage-artist');
       self.$modal_vinyl   = self.$body.find('#modal-manage-vinyl');
@@ -107,6 +109,61 @@ var app = {
             }
           }
         });
+      });
+
+      // Create YouTube player (iframe & co) using JS
+      // var tag = document.createElement('script');
+      // tag.src = "https://www.youtube.com/player_api";
+      // var firstScriptTag = document.getElementsByTagName('script')[0];
+      // firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      //
+      var auth_key = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
+      self.$vinyls.on('click', 'td.col-track', function() {
+        var $col    = $(this);
+        var track   = $col.html().trim();
+        var artist  = $col.parents('tr').first().find('.col-artist').html().trim();
+
+        // Get youtube videos
+        $.ajax({
+          method: 'GET',
+          url: 'https://youtube.googleapis.com/youtube/v3/search?maxResults=1&q=' + track + ' - ' + artist + '&key=' + auth_key,
+          success: function(r) {
+            if (typeof r.items != 'undefined') {
+              // Update artist & track title
+              self.$player.find('.-title').html(track);
+              self.$player.find('.-artist').html(artist);
+
+              // Update <iframe> source
+              self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/' + r.items[0].id.videoId + '?autoplay=1&fs=0&rel=0&showinfo=0');
+
+              // Display player
+              self.$player.removeClass('invisible');
+            }
+          },
+          error: function(r) {
+            if (typeof r.responseJSON != 'undefined')
+              alert(r.responseJSON.error.message);
+          }
+        });
+      });
+
+      // Click on player close button
+      self.$player.on('click', '.-close', function() {
+        // Hide player
+        self.$player.addClass('invisible');
+
+        // Reset artist & track title & iframe source
+        self.$player.find('.-title').html('');
+        self.$player.find('.-artist').html('');
+        self.$player.find('iframe').attr('src', '');
+      });
+
+      // Easter egg > when clicking on heart icon in the footer
+      self.$body.on('click', '.app-footer .icon-heart', function() {
+        self.$player.find('.-title').html('lofi hip hop radio - beats to study/relax to 🐾');
+        self.$player.find('.-artist').html('Chillhop Music');
+        self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/7NOSDKb0HlU');
+        self.$player.removeClass('invisible');
       });
     })();
   }

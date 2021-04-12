@@ -61,6 +61,19 @@
     {% include 'modals/manage-artist.html.twig' %}
     {% include 'modals/manage-vinyl.html.twig' %}
 
+    <div class="app-player invisible">
+      <div class="-inner">
+        <div class="-infos">
+          <div class="-artist"></div>
+          <div class="-title"></div>
+          <span class="-close icon-close"></span>
+        </div>
+        <div class="-player ratio ratio-1x1">
+          <iframe src="" frameborder="0"></iframe>
+        </div>
+      </div>
+    </div>
+
     {#
     {% if bg_animated == true %}
       <div class="app-bg"></div>

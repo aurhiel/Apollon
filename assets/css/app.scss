@@ -61,3 +61,87 @@
     }
   }
 }
+
+
+
+.app-player {
+  position: fixed;
+  z-index: 5;
+  bottom: 5rem;
+  right: 0;
+  width: 8rem;
+  overflow: hidden;
+
+  .-inner {
+    background-color: darken($dark, 4%);
+    border-radius: .3rem 0 0 .3rem;
+    padding: .4rem;
+  }
+
+  .-infos {
+    // text-overflow: ellipsis;
+    // white-space: normal;
+    // display: -webkit-box;
+    // -webkit-line-clamp: 1;
+    // -webkit-box-orient: vertical;
+    font-size: .75rem;
+    line-height: 1;
+    margin-bottom: .2rem;
+    position: relative;
+    z-index: 1;
+  }
+  .-artist, .-title {
+    padding-right: 1.8rem;
+  }
+  .-artist {
+    font-size: .65rem;
+    margin-bottom: .2rem;
+  }
+  .-title {
+    font-weight: bold;
+  }
+  .-close {
+    background-color: rgba(255, 255, 255, .08);
+    color: $gray-600;
+    font-size: 1.2em;
+    line-height: 1;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    right: .2em;
+    margin-top: -.8em;
+    padding: .2em .2em .2em .2em;
+    cursor: pointer;
+    transition: color 400ms ease,
+      box-shadow 400ms ease;
+
+    &:hover {
+      color: #fff;
+      box-shadow: 0 0 0 .18em rgba(255, 255, 255, .025);
+    }
+  }
+
+  .-player {
+    border-radius: .2rem;
+    overflow: hidden;
+  }
+}
+
+
+@include media-breakpoint-up(md) {
+  .app-player {
+    width: 12rem;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .app-player {
+    width: 14rem;
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .app-player {
+    width: 16rem;
+  }
+}
