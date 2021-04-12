@@ -43,9 +43,19 @@
     content: $icon-minus-square;
   }
 }
+.icon-pause {
+  &:before {
+    content: $icon-pause;
+  }
+}
+.icon-play {
+  &:before {
+    content: $icon-play;
+  }
+}
 .icon-plus {
   &:before {
-    content: $icon-plus;
+    content: $icon-plus; 
   }
 }
 .icon-plus-circle {
@@ -76,5 +86,15 @@
 .icon-users {
   &:before {
     content: $icon-users;
+  }
+}
+.icon-close {
+  &:before {
+    content: $icon-close;
+  }
+}
+.icon-close-circle {
+  &:before {
+    content: $icon-close-circle;
   }
 }
