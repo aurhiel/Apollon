@@ -345,15 +345,13 @@ class AppController extends AbstractController
 
         // Only admin user can add vinyls & artists
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
-            // 1) Build vinyl & artist forms
-            $form_vinyl = $this->createForm(VinylType::class, $vinyl);
+            // 1) Build artist forms
             $form_artist = $this->createForm(ArtistType::class, $artist);
 
-            // 2) Handle vinyl & artist forms
-            $form_vinyl->handleRequest($request);
+            // 2) Handle artist forms
             $form_artist->handleRequest($request);
 
-            // 3) Save artist or vinyl
+            // 3) Save artist
             if ($form_artist->isSubmitted() && $form_artist->isValid()) {
                 $r_artist = $em->getRepository(Artist::class);
 
@@ -395,7 +393,16 @@ class AppController extends AbstractController
                     $artist       = new Artist();
                     $form_artist  = $this->createForm(ArtistType::class, $artist);
                 }
-            } elseif ($form_vinyl->isSubmitted() && $form_vinyl->isValid()) {
+            }
+
+            // 1) Build vinyl forms
+            $form_vinyl = $this->createForm(VinylType::class, $vinyl);
+
+            // 2) Handle vinyl forms
+            $form_vinyl->handleRequest($request);
+
+            // 3) Save vinyl
+            if ($form_vinyl->isSubmitted() && $form_vinyl->isValid()) {
                 $r_vinyl = $em->getRepository(Vinyl::class);
                 $vinyl_existing = $r_vinyl->findOneByTrackFaceA($vinyl->getTrackFaceA());
                 $already_exist = (!is_null($vinyl_existing) ? ($vinyl_existing->getTrackFaceB() == $vinyl->getTrackFaceB()) : false);
