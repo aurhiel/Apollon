@@ -18,6 +18,7 @@ use Symfony\Component\Security\Core\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Finder\Finder;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
   * Require ROLE_VIEWER for *every* controller method in this class.
@@ -154,6 +155,95 @@ class AppController extends AbstractController
 
         // No direct access
         return $this->redirectToRoute('home');
+    }
+
+    /**
+     * @Route("/vinyles/{id}/{trackFace}/youtube-id", name="vinyl_delete")
+     */
+    public function vinyl_get_youtube_id($id, $trackFace, HttpClientInterface $client)
+    {
+        $auth_key     = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
+        $base_url     = 'https://youtube.googleapis.com/youtube/v3/search?key='. $auth_key . '&maxResults=1';
+        $em           = $this->getDoctrine()->getManager();
+        $return_data  = [];
+
+        // Retrieve item to update quantity
+        $repo   = $em->getRepository(Vinyl::class);
+        $entity = $repo->findOneById($id);
+
+        if ($entity !== null && ($trackFace == 'A' || $trackFace == 'B')) {
+          $methodGetYTID = "getTrackFace{$trackFace}YoutubeID";
+          $methodGetTrack = "getTrackFace{$trackFace}";
+          $youtubeID = $entity->{$methodGetYTID}();
+
+          // Search for a YouTube video only if we don't have any yet
+          if (is_null($youtubeID)) {
+              // Retrieve track artists list in an array
+              $artists = [];
+              foreach ($entity->getArtists() as $artist) {
+                  $artists[] = $artist->getName();
+              }
+
+              // Create query (track name + artists names)
+              $query = $entity->{$methodGetTrack}() . ' - ' . implode($artists, ', ');
+
+              // Execute request to retrieve some YouTube videos
+              $response = $client->request(
+                  'GET',
+                  $base_url . '&q=' . $query
+              );
+              $r_array = $response->toArray();
+
+              // Check if there is some results > store YouTube ID in database (for later use)
+              if (!empty($r_array) && isset($r_array['items']) && isset($r_array['items'][0])) {
+                  $youtubeID = $r_array['items'][0]['id']['videoId'];
+                  $methodSetYTID = "setTrackFace{$trackFace}YoutubeID";
+                  // Set YouTube ID found
+                  $entity->{$methodSetYTID}($youtubeID);
+                  $em->persist($entity);
+
+                  // Try to save (flush) or clear
+                  try {
+                      // Flush OK !
+                      $em->flush();
+                  } catch (\Exception $e) {
+                      // Something goes wrong
+                      $em->clear();
+
+                      $return_data = [
+                          'query_status'    => 0,
+                          'exception'       => $e->getMessage(),
+                          'message_status'  => 'Un problème est survenu lors la sauvegarde de l\'ID YouTube en base de données.'
+                      ];
+                  }
+              }
+          }
+
+          // If Youtube ID has been found > return it or display an error message
+          if (!is_null($youtubeID)) {
+              $return_data = array(
+                  'query_status'  => 1,
+                  'id_entity'     => $entity->getId(),
+                  'youtube_id'    => $youtubeID
+              );
+          } elseif (empty($return_data)) {
+              $return_data = [
+                  'query_status'    => 0,
+                  'slug_status'     => 'error',
+                  'message_status'  => 'Aucun ID YouTube n\'a pu être trouvé pour la face ' . $trackFace . ' du vinyle.'
+              ];
+          }
+        } else {
+            // Data to return/display
+            $return_data = [
+                'query_status'      => 0,
+                'slug_status'       => 'error',
+                'message_status'    => 'Le vinyle avec pour ID: "' . $id . '" n\'existe pas en base de données.'
+            ];
+        }
+
+        dump($return_data);
+        exit;
     }
 
     /**

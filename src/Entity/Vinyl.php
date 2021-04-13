@@ -30,9 +30,19 @@ class Vinyl
     private $trackFaceA;
 
     /**
+     * @ORM\Column(type="string", length=64, nullable=true)
+     */
+    private $trackFaceAYoutubeID;
+
+    /**
      * @ORM\Column(type="string", length=255)
      */
     private $trackFaceB;
+
+    /**
+     * @ORM\Column(type="string", length=64, nullable=true)
+     */
+    private $trackFaceBYoutubeID;
 
     /**
      * @ORM\ManyToMany(targetEntity=Artist::class, inversedBy="vinyls")
@@ -83,6 +93,18 @@ class Vinyl
         return $this;
     }
 
+    public function getTrackFaceAYoutubeID(): ?string
+    {
+        return $this->trackFaceAYoutubeID;
+    }
+
+    public function setTrackFaceAYoutubeID(?string $trackFaceAYoutubeID): self
+    {
+        $this->trackFaceAYoutubeID = $trackFaceAYoutubeID;
+
+        return $this;
+    }
+
     public function getTrackFaceB(): ?string
     {
         return $this->trackFaceB;
@@ -91,6 +113,18 @@ class Vinyl
     public function setTrackFaceB(string $trackFaceB): self
     {
         $this->trackFaceB = $trackFaceB;
+
+        return $this;
+    }
+
+    public function getTrackFaceBYoutubeID(): ?string
+    {
+        return $this->trackFaceBYoutubeID;
+    }
+
+    public function setTrackFaceBYoutubeID(?string $trackFaceBYoutubeID): self
+    {
+        $this->trackFaceBYoutubeID = $trackFaceBYoutubeID;
 
         return $this;
     }

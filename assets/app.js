@@ -120,13 +120,18 @@ var app = {
       var auth_key = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
       self.$vinyls.on('click', 'td.col-track', function() {
         var $col    = $(this);
+        var $row    = $col.parents('tr').first();
         var track   = $col.html().trim();
-        var artist  = $col.parents('tr').first().find('.col-artist').html().trim();
+        var artist  = $row.find('.col-artist').html().trim();
+        var id_vinyl = $row.data('vinyl-id');
+        var track_face  = $col.data('track-face');
+
+        console.log(track, artist, 'vinyles/' + id_vinyl + '/' + track_face + '/youtube-id');
 
         // Get youtube videos
         $.ajax({
-          method: 'GET',
-          url: 'https://youtube.googleapis.com/youtube/v3/search?maxResults=1&q=' + track + ' - ' + artist + '&key=' + auth_key,
+          method: 'POST',
+          url: 'vinyles/' + id_vinyl + '/' + track_face + '/youtube-id',
           success: function(r) {
             if (typeof r.items != 'undefined') {
               // Update artist & track title
