@@ -158,9 +158,9 @@ class AppController extends AbstractController
     }
 
     /**
-     * @Route("/vinyles/{id}/{trackFace}/youtube-id", name="vinyl_delete")
+     * @Route("/vinyles/{id}/{trackFace}/youtube-id", name="vinyl_get_youtube_id")
      */
-    public function vinyl_get_youtube_id($id, $trackFace, HttpClientInterface $client)
+    public function vinyl_get_youtube_id($id, $trackFace, Request $request, HttpClientInterface $client)
     {
         $auth_key     = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
         $base_url     = 'https://youtube.googleapis.com/youtube/v3/search?key='. $auth_key . '&maxResults=1';
@@ -212,6 +212,7 @@ class AppController extends AbstractController
 
                       $return_data = [
                           'query_status'    => 0,
+                          'slug_status'     => 'error',
                           'exception'       => $e->getMessage(),
                           'message_status'  => 'Un problème est survenu lors la sauvegarde de l\'ID YouTube en base de données.'
                       ];
@@ -223,6 +224,7 @@ class AppController extends AbstractController
           if (!is_null($youtubeID)) {
               $return_data = array(
                   'query_status'  => 1,
+                  'slug_status'   => 'success',
                   'id_entity'     => $entity->getId(),
                   'youtube_id'    => $youtubeID
               );
@@ -242,8 +244,16 @@ class AppController extends AbstractController
             ];
         }
 
-        dump($return_data);
-        exit;
+        // Display return data as JSON when using AJAX or redirect to home
+        if ($request->isXmlHttpRequest()) {
+            return $this->json($return_data);
+        } else {
+            // Set message in flashbag on direct access
+            $request->getSession()->getFlashBag()->add($return_data['slug_status'], $return_data['message_status']);
+
+            // No direct access
+            return $this->redirectToRoute('home');
+        }
     }
 
     /**

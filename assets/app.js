@@ -126,28 +126,25 @@ var app = {
         var id_vinyl = $row.data('vinyl-id');
         var track_face  = $col.data('track-face');
 
-        console.log(track, artist, 'vinyles/' + id_vinyl + '/' + track_face + '/youtube-id');
+        // debug
+        // console.log(track, artist, 'vinyles/' + id_vinyl + '/' + track_face + '/youtube-id');
 
         // Get youtube videos
         $.ajax({
           method: 'POST',
-          url: 'vinyles/' + id_vinyl + '/' + track_face + '/youtube-id',
+          url: '/vinyles/' + id_vinyl + '/' + track_face + '/youtube-id',
           success: function(r) {
-            if (typeof r.items != 'undefined') {
-              // Update artist & track title
-              self.$player.find('.-title').html(track);
-              self.$player.find('.-artist').html(artist);
+            if (r.query_status == 1 && r.youtube_id != null) {
+                // Update artist & track title
+                self.$player.find('.-title').html(track);
+                self.$player.find('.-artist').html(artist);
 
-              // Update <iframe> source
-              self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/' + r.items[0].id.videoId + '?autoplay=1&fs=0&rel=0&showinfo=0');
+                // Update <iframe> source
+                self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/' + r.youtube_id + '?autoplay=1&fs=0&rel=0&showinfo=0');
 
-              // Display player
-              self.$player.removeClass('invisible');
+                // Display player
+                self.$player.removeClass('invisible');
             }
-          },
-          error: function(r) {
-            if (typeof r.responseJSON != 'undefined')
-              alert(r.responseJSON.error.message);
           }
         });
       });
