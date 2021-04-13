@@ -1,5 +1,4 @@
 {# default twig values #}
-{% set bg_animated = ((bg_animated is not defined) ? false : bg_animated) %}
 {% set domain = app.request.getSchemeAndHttpHost() %}
 <!DOCTYPE html>
 <html>
@@ -34,7 +33,7 @@
     {% block javascripts %}{% endblock %}
   </head>
 
-  <body class="app-core{% if core_class is defined %} {{ core_class }}{% endif %}{% if bg_animated == true %} app-core--bg-animated{% endif %} app-core--no-script">
+  <body class="app-core{% if core_class is defined %} {{ core_class }}{% endif %} app-core--no-script">
     {# Header #}
     {% block header %}
       {% include 'components/header.html.twig' %}
@@ -57,11 +56,7 @@
       {% include 'components/footer.html.twig' %}
     {% endblock %}
 
-    {# Modals #}
-    {% include 'modals/manage-artist.html.twig' %}
-    {% include 'modals/manage-vinyl.html.twig' %}
-    {% include 'modals/confirm-delete.html.twig' %}
-
+    {# Player (YouTube) #}
     <div class="app-player invisible">
       <div class="-inner">
         <div class="-infos">
@@ -75,11 +70,9 @@
       </div>
     </div>
 
-    {#
-    {% if bg_animated == true %}
-      <div class="app-bg"></div>
-    {% endif %}
-    #}
-    <div class="app-bg"></div>
+    {# Modals #}
+    {% include 'modals/manage-artist.html.twig' %}
+    {% include 'modals/manage-vinyl.html.twig' %}
+    {% include 'modals/confirm-delete.html.twig' %}
   </body>
 </html>
