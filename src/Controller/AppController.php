@@ -397,8 +397,29 @@ class AppController extends AbstractController
         $artists  = $r_artist->findAll();
 
         return $this->render('artists.html.twig', [
-            'user'        => $user,
-            'artists'     => $artists,
+            'user'    => $user,
+            'artists' => $artists,
+        ]);
+    }
+
+    /**
+     * @Route("/artistes/{id}", name="artists_infos")
+     */
+    public function artists_infos($id, Security $security)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $user = $security->getUser();
+
+        // Retrieve item to delete
+        $r_artist = $em->getRepository(Artist::class);
+        $artist   = $r_artist->findOneById($id);
+
+        // Retrieve total vinyls quantity (with duplicate vinyls)
+        // $r_vinyl = $em->getRepository(Vinyl::class);
+
+        return $this->render('artist-single.html.twig', [
+            'user'    => $user,
+            'artist'  => $artist,
         ]);
     }
 
@@ -579,7 +600,7 @@ class AppController extends AbstractController
 
         // Retrieve vinyls
         $r_vinyl = $em->getRepository(Vinyl::class);
-        $vinyls = $r_vinyl->findAll($order_by, $direction);
+        $vinyls = $r_vinyl->findAll();
 
         // Re-order vinyls if asked
         if(!is_null($order_by) && !is_null($direction)) {
@@ -589,6 +610,9 @@ class AppController extends AbstractController
                 if ($order_by == 'track-face-a') {
                     $a_str = strtolower($a->getTrackFaceA());
                     $b_str = strtolower($b->getTrackFaceA());
+                } elseif ($order_by == 'track-face-b') {
+                    $a_str = strtolower($a->getTrackFaceB());
+                    $b_str = strtolower($b->getTrackFaceB());
                 } elseif ($order_by == 'artist') {
                     $a_str = strtolower($a->getArtists()->first()->getName());
                     $b_str = strtolower($b->getArtists()->first()->getName());

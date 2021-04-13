@@ -39,6 +39,19 @@ class VinylRepository extends ServiceEntityRepository
             ->getQuery()->getSingleScalarResult()
         ;
     }
+
+    public function countAllByArtist($artist)
+    {
+        return $this->createQueryBuilder('v')
+            ->select('SUM(v.quantity) AS nb_vinyls')
+            ->join('v.artists', 'a')
+            ->where('a.id = :id_artist')
+            ->setParameter('id_artist', $artist->getId())
+            ->groupBy('a.id')
+            ->getQuery()->getSingleScalarResult()
+        ;
+    }
+
     public function resetDatabase()
     {
         return $this->createQueryBuilder('v')

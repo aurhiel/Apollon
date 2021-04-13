@@ -4,7 +4,7 @@
   <div class="container">
     <h1 class="mb-3"><span class="icon-users text-primary"></span> Liste des artistes{% if artists is not empty %} <small class="fw-normal text-muted">({{ artists|length }})</small>{% endif %}</h1>
     {% if artists is not empty %}
-      <div class="list-users row g-5">
+      <div class="list-users row">
       {% for artist in artists %}
         <div class="col-6 col-sm-4 col-md-3 col-lg-2">
           <div class="-item" data-artist-id="{{ artist.id }}" data-artist-name="{{ artist.name }}">
@@ -21,6 +21,13 @@
             {% endif %}
             </div>
             <h3 class="-item-name">{{ artist.name }}</h3>
+            <div class="-item-nb-vinyls small">({{ artist.vinylsQuantity }} vinyle{% if artist.vinylsQuantity > 1 %}s{% endif %})</div>
+            <div class="-item-link pt-2">
+              <a href="{{ path('artists_infos', { id: artist.id }) }}"
+                class="btn btn-outline-primary text-white">
+                + infos
+              </a>
+            </div>
           </div>
         </div>
       {% endfor %}

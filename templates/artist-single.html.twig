@@ -2,35 +2,23 @@
 
 {% block body %}
   <div class="container">
-    <h1 class="mb-4"><span class="icon-disc text-primary"></span> Liste des vinyles{% if vinyls is not empty %} <small class="fw-normal text-muted">(<span class="-vinyls-total-quantity">{{ total_vinyls }}</span>)</small>{% endif %}</h1>
-    {% if vinyls is not empty %}
+    <h1 class="mb-1"><span class="icon-user text-primary"></span> {{ artist.name }}</h1>
+    <div class="text-muted mb-4">
+      {% set vinyls_total_unique = artist.vinyls|length %}
+      <b>{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité : <b>{{ artist.vinylsQuantity }}</b>
+    </div>
+    {% if artist.vinyls is not empty %}
       <div class="table-responsive">
         <table id="vinyls-entities" class="table table-bordered table-striped table-dark mb-0">
           <tr>
             <th scope="col" class="col-id">#</th>
             <th scope="col" class="col-rpm">T.</th>
             <th scope="col" class="col-track">
-              <span class="me-2">Face A</span>
-              <a href="{{ path('home', { order_by: 'track-face-a', direction: 'asc' }) }}"
-                class="text-decoration-none{% if vinyls_order_by == 'track-face-a' and vinyls_direction == 'asc' %} text-muted pe-none{% endif %}">
-                <span class="icon-chevron-up"></span>
-              </a>
-              <a href="{{ path('home', { order_by: 'track-face-a', direction: 'desc' }) }}"
-                class="text-decoration-none{% if vinyls_order_by == 'track-face-a' and vinyls_direction == 'desc' %} text-muted pe-none{% endif %}">
-                <span class="icon-chevron-down"></span>
-              </a>
+              <span>Face A</span>
             </th>
             <th scope="col" class="col-track">Face B</th>
             <th scope="col" class="col-artist">
-              <span class="me-2">Artiste(s)</span>
-              <a href="{{ path('home', { order_by: 'artist', direction: 'asc' }) }}"
-                class="text-decoration-none{% if vinyls_order_by == 'artist' and vinyls_direction == 'asc' %} text-muted pe-none{% endif %}">
-                <span class="icon-chevron-up"></span>
-              </a>
-              <a href="{{ path('home', { order_by: 'artist', direction: 'desc' }) }}"
-                class="text-decoration-none{% if vinyls_order_by == 'artist' and vinyls_direction == 'desc' %} text-muted pe-none{% endif %}">
-                <span class="icon-chevron-down"></span>
-              </a>
+              <span>Artiste(s)</span>
             </th>
             <th scope="col" class="col-quantity">Qté</th>
             <th scope="col" class="col-quantity">Vendu(s)</th>
@@ -38,7 +26,7 @@
             <th scope="col" class="col-actions"></th>
           {% endif %}
           </tr>
-        {% for vinyl in vinyls %}
+        {% for vinyl in artist.vinyls %}
           <tr data-vinyl-id="{{ vinyl.id }}">
             <th scope="row" class="col-id">{{ vinyl.id }}</th>
             <td class="col-rpm">{{ vinyl.rpm }}</td>

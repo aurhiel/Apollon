@@ -3,10 +3,26 @@
 .list-users {
   .-item {
     text-align: center;
+    padding: 1.8rem .6rem;
+    position: relative;
+    z-index: 1;
 
     &:hover {
       .-item-name {
         opacity: 1;
+      }
+
+      .-item-nb-vinyls {
+        opacity: .5;
+        // transition: opacity 1000ms ease 100ms;
+      }
+
+      .-item-link {
+        pointer-events: auto;
+        bottom: 0;
+        opacity: 1;
+        transition: bottom 400ms ease,
+          opacity 600ms ease;
       }
     }
   }
@@ -64,5 +80,27 @@
     margin-bottom: 0;
     opacity: .6;
     transition: opacity 400ms ease;
+  }
+
+  .-item-nb-vinyls {
+    opacity: .3;
+    transition: opacity 400ms ease;
+  }
+
+  .-item-link {
+    position: absolute;
+    left: 0;
+    bottom: -.6rem;
+    width: 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition: bottom 400ms ease,
+      opacity 200ms ease;
+
+    .btn {
+      font-size: .75rem;
+      letter-spacing: .1em;
+      padding: .1em 1.4em 0 1.4em;
+    }
   }
 }

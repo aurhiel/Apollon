@@ -9,6 +9,10 @@
     display: none;
   }
 
+  .col-rpm {
+    text-align: center;
+  }
+
   .col-quantity {
     text-align: center;
     vertical-align: middle;
@@ -45,6 +49,13 @@
 
   .col-actions {
     text-align: right;
+    vertical-align: middle;
+  }
+}
+
+
+#vinyls-entities {
+  td {
     vertical-align: middle;
   }
 }
