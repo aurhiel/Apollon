@@ -12,9 +12,11 @@
               <span class="-picture-icon icon-user"></span>
             {% if is_granted('ROLE_ADMIN') %}
               <span class="-picture-delete-user">
-                <a href="{{ path('artist_delete', { id: artist.id }) }}" class="btn btn-sm btn-danger px-2 py-1">
+                <button class="btn btn-sm btn-danger px-2 py-1"
+                  data-confirm-href="{{ path('artist_delete', { id: artist.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer l'artiste: <b>{{ artist.name }}</b> ?"
+                    data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
                   <span class="icon-trash"></span>
-                </a>
+                </button>
               </span>
             {% endif %}
             </div>

@@ -45,8 +45,10 @@
             <td class="col-track" data-track-face="A">{{ vinyl.trackFaceA }}</td>
             <td class="col-track" data-track-face="B">{{ vinyl.trackFaceB }}</td>
             <td class="col-artist">
+              {% set artists_str = null %}
               {% if vinyl.artists is not empty %}
                 {% for artist in vinyl.artists %}
+                  {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
                   {{ artist.name }}{% if loop.last == false %}, {% endif %}
                 {% endfor %}
               {% endif %}
@@ -71,9 +73,11 @@
             </td>
           {% if is_granted('ROLE_ADMIN') %}
             <td class="col-actions">
-              <a href="{{ path('vinyl_delete', { id: vinyl.id }) }}" class="btn btn-sm btn-outline-danger px-2 py-1">
+              <button class="btn btn-sm btn-outline-danger px-2 py-1"
+                data-confirm-href="{{ path('vinyl_delete', { id: vinyl.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer ce vinyle ?<br>- Face A: <b>{{ vinyl.trackFaceA }}</b><br>- Face B: <b>{{ vinyl.trackFaceB }}</b><br><i>{{ artists_str }}</i>"
+                  data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
                 <span class="icon-trash"></span>
-              </a>
+              </button>
             </td>
           {% endif %}
           </tr>

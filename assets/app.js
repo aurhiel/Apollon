@@ -66,6 +66,7 @@ var app = {
       // Vinyl & artist modals
       self.$modal_artist  = self.$body.find('#modal-manage-artist');
       self.$modal_vinyl   = self.$body.find('#modal-manage-vinyl');
+      self.$modal_confirm = self.$body.find('#modal-confirm-delete');
 
       // Vinyls list container
       self.$vinyls = self.$body.find('#vinyls-entities');
@@ -80,12 +81,28 @@ var app = {
       // Trigger scroll event after ready to display elements already on screen
       // self.$window.trigger('scroll');
 
-      // if (self.$modal_artist.length > 0) {
-      //   self.$modal_artist.get(0).addEventListener('show.bs.modal', function () {
-      //     console.log('Yay ! ~');
-      //   });
-      // }
+      // Modal: Confirm delete, add link to delete and add custom things (title, body, ...)
+      if (self.$modal_confirm.length > 0) {
+        self.$modal_confirm.get(0).addEventListener('show.bs.modal', function (e) {
+          var $modal_confirm = $(this);
+          var $btn_clicked = $(e.relatedTarget);
 
+          // Check if the confirm[data-href] is defined
+          if (typeof $btn_clicked.data('confirm-href') != 'undefined') {
+            // Reset modal body and set body if defined
+            $modal_confirm.find('.modal-body').html('');
+            if (typeof $btn_clicked.data('confirm-body') != 'undefined')
+              $modal_confirm.find('.modal-body').html($('<div>' + $btn_clicked.data('confirm-body') + '</div>'));
+
+            // Set delete link href
+            $modal_confirm.find('.btn-ok').attr('href', $btn_clicked.data('confirm-href'));
+          } else {
+            console.log('[modal.confirm()] Must define a data-href');
+          }
+        });
+      }
+
+      // Button to update vinyls quantity (total & sold)
       self.$vinyls.on('click', '.btn-qty', function() {
         var $btn      = $(this);
         var $col_qty  = $btn.parents('.col-quantity').first();
