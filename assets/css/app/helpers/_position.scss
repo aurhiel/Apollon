@@ -3,5 +3,5 @@
 .sticky-bottom {
   position: sticky;
   bottom: 0;
-  z-index: 1020;
+  z-index: $zindex-sticky;
 }
