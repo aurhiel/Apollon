@@ -48,14 +48,24 @@
     content: $icon-pause;
   }
 }
+.icon-pause-circle {
+  &:before {
+    content: $icon-pause-circle;
+  }
+}
 .icon-play {
   &:before {
     content: $icon-play;
   }
 }
+.icon-play-circle {
+  &:before {
+    content: $icon-play-circle;
+  }
+}
 .icon-plus {
   &:before {
-    content: $icon-plus; 
+    content: $icon-plus;
   }
 }
 .icon-plus-circle {
