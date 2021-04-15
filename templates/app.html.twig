@@ -5,7 +5,7 @@
     <h1 class="mb-4"><span class="icon-disc text-primary"></span> Liste des vinyles{% if vinyls is not empty %} <small class="fw-normal text-muted">(<span class="-vinyls-total-quantity">{{ total_vinyls }}</span>)</small>{% endif %}</h1>
     {% if vinyls is not empty %}
       <div class="table-responsive">
-        <table id="vinyls-entities" class="table table-bordered table-striped table-dark mb-0">
+        <table id="vinyls-entities" class="table table-bordered table-striped table-hover table-dark mb-0">
           <tr>
             <th scope="col" class="col-id">#</th>
             <th scope="col" class="col-rpm">T.</th>
@@ -42,8 +42,12 @@
           <tr data-vinyl-id="{{ vinyl.id }}">
             <th scope="row" class="col-id">{{ vinyl.id }}</th>
             <td class="col-rpm">{{ vinyl.rpm }}</td>
-            <td class="col-track" data-track-face="A">{{ vinyl.trackFaceA }}</td>
-            <td class="col-track" data-track-face="B">{{ vinyl.trackFaceB }}</td>
+            <td class="col-track" data-track-face="A">
+              {{ vinyl.trackFaceA }} <span class="-icon-play icon-play-circle"></span>
+            </td>
+            <td class="col-track" data-track-face="B">
+              {{ vinyl.trackFaceB }} <span class="-icon-play icon-play-circle"></span>
+            </td>
             <td class="col-artist">
               {% set artists_str = null %}
               {% if vinyl.artists is not empty %}

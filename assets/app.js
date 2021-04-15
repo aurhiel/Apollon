@@ -138,13 +138,11 @@ var app = {
       self.$vinyls.on('click', 'td.col-track', function() {
         var $col    = $(this);
         var $row    = $col.parents('tr').first();
-        var track   = $col.html().trim();
-        var artist  = $row.find('.col-artist').html().trim();
         var id_vinyl = $row.data('vinyl-id');
         var track_face  = $col.data('track-face');
 
         // debug
-        // console.log(track, artist, 'vinyles/' + id_vinyl + '/' + track_face + '/youtube-id');
+        // console.log('vinyles/' + id_vinyl + '/' + track_face + '/youtube-id');
 
         // Get youtube videos
         $.ajax({
@@ -153,8 +151,8 @@ var app = {
           success: function(r) {
             if (r.query_status == 1 && r.youtube_id != null) {
                 // Update artist & track title
-                self.$player.find('.-title').html(track);
-                self.$player.find('.-artist').html(artist);
+                self.$player.find('.-title').html(r.vinyl.track);
+                self.$player.find('.-artist').html(r.vinyl.artists);
 
                 // Update <iframe> source
                 self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/' + r.youtube_id + '?autoplay=1&fs=0&rel=0&showinfo=0');

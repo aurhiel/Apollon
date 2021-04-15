@@ -176,14 +176,14 @@ class AppController extends AbstractController
           $methodGetTrack = "getTrackFace{$trackFace}";
           $youtubeID = $entity->{$methodGetYTID}();
 
+          // Retrieve track artists list in an array
+          $artists = [];
+          foreach ($entity->getArtists() as $artist) {
+              $artists[] = $artist->getName();
+          }
+
           // Search for a YouTube video only if we don't have any yet
           if (is_null($youtubeID)) {
-              // Retrieve track artists list in an array
-              $artists = [];
-              foreach ($entity->getArtists() as $artist) {
-                  $artists[] = $artist->getName();
-              }
-
               // Create query (track name + artists names)
               $query = $entity->{$methodGetTrack}() . ' - ' . implode($artists, ', ');
 
@@ -226,7 +226,11 @@ class AppController extends AbstractController
                   'query_status'  => 1,
                   'slug_status'   => 'success',
                   'id_entity'     => $entity->getId(),
-                  'youtube_id'    => $youtubeID
+                  'youtube_id'    => $youtubeID,
+                  'vinyl'         => [
+                      'track'   => $entity->{$methodGetTrack}(),
+                      'artists' => implode($artists, ', ')
+                  ],
               );
           } elseif (empty($return_data)) {
               $return_data = [

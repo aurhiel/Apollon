@@ -13,6 +13,23 @@
     text-align: center;
   }
 
+  .col-track {
+    &:hover {
+      cursor: pointer;
+
+      .-icon-play {
+        opacity: .25;
+        &:hover { opacity: .5; }
+      }
+    }
+
+    .-icon-play {
+      text-decoration: none;
+      opacity: 0;
+      transition: opacity 400ms ease;
+    }
+  }
+
   .col-quantity {
     text-align: center;
     vertical-align: middle;
