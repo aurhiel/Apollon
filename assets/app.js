@@ -175,6 +175,13 @@ var app = {
         self.$player.find('iframe').attr('src', '');
       });
 
+      // Auto-select in multi-select TODO multiple selection
+      self.$body.find('.form-multi-select').each(function() {
+        var $container = $(this);
+        if (typeof $container.data('ms-autoselect') != 'undefined')
+          $container.find('input[value="' + $container.data('ms-autoselect') + '"]').prop('checked', true);
+      });
+
       // Easter egg > when clicking on heart icon in the footer
       self.$body.on('click', '.app-footer .icon-heart', function() {
         self.$player.find('.-title').html('lofi hip hop radio - beats to study/relax to 🐾');

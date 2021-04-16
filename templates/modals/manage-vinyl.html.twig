@@ -38,7 +38,7 @@
                   {{ form_errors(form_vinyl.track_face_B) }}
                 </div>
 
-                <div class="col-12 form-group form-multi-select">
+                <div class="col-12 form-group form-multi-select"{% if artist_added is not empty %} data-ms-autoselect="{{ artist_added.id }}"{% endif %}>
                   {{ form_label(form_vinyl.artists) }}
                   {{ form_widget(form_vinyl.artists) }}
                   {{ form_errors(form_vinyl.artists) }}

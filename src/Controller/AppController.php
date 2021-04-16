@@ -467,6 +467,7 @@ class AppController extends AbstractController
         $artist = new Artist();
         $return = array();
         $user   = $security->getUser();
+        $artist_added = null;
 
         // Only admin user can add vinyls & artists
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
@@ -494,6 +495,9 @@ class AppController extends AbstractController
                             'message_status'  => 'Sauvegarde de l\'artiste effectuée avec succès.',
                             'id_entity'       => $artist->getId()
                         );
+
+                        // Assign added artist to re-used later
+                        $artist_added = $artist;
 
                         // Clear/reset form
                         $artist       = new Artist();
@@ -636,6 +640,7 @@ class AppController extends AbstractController
             'total_vinyls'  => $r_vinyl->countAll(),
             'vinyls_order_by'   => $order_by,
             'vinyls_direction'  => $direction,
+            'artist_added'      => $artist_added,
         ]);
     }
 
