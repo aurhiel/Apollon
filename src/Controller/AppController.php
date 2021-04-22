@@ -616,15 +616,19 @@ class AppController extends AbstractController
                 $a_str = null;
                 $b_str = null;
                 if ($order_by == 'track-face-a') {
-                    $a_str = strtolower($a->getTrackFaceA());
-                    $b_str = strtolower($b->getTrackFaceA());
+                    $a_str = $a->getTrackFaceA();
+                    $b_str = $b->getTrackFaceA();
                 } elseif ($order_by == 'track-face-b') {
-                    $a_str = strtolower($a->getTrackFaceB());
-                    $b_str = strtolower($b->getTrackFaceB());
+                    $a_str = $a->getTrackFaceB();
+                    $b_str = $b->getTrackFaceB();
                 } elseif ($order_by == 'artist') {
-                    $a_str = strtolower($a->getArtists()->first()->getName());
-                    $b_str = strtolower($b->getArtists()->first()->getName());
+                    $a_str = $a->getArtists()->first()->getName();
+                    $b_str = $b->getArtists()->first()->getName();
                 }
+
+                // Remove accents
+                $this->removeAccents($a_str);
+                $this->removeAccents($b_str);
 
                 // Re-order only if "a" and "b" string are defined
                 if (!is_null($a_str) && !is_null($b_str))
@@ -678,5 +682,11 @@ class AppController extends AbstractController
         }
 
         return $rows;
+    }
+
+    private function removeAccents(&$string)
+    {
+        $string = strtr(utf8_decode($string), utf8_decode('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ'), 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
+        return $string;
     }
 }
