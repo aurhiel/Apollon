@@ -25,6 +25,11 @@ class Artist
     private $name;
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $avatar_filename;
+
+    /**
      * @ORM\ManyToMany(targetEntity=Vinyl::class, mappedBy="artists")
      */
     private $vinyls;
@@ -47,6 +52,18 @@ class Artist
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getAvatarFilename(): ?string
+    {
+        return $this->avatar_filename;
+    }
+
+    public function setAvatarFilename(?string $avatar_filename): self
+    {
+        $this->avatar_filename = $avatar_filename;
 
         return $this;
     }

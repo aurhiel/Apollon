@@ -28,7 +28,8 @@
   }
 
   .-item-picture {
-    background-color: $white;
+    background: $white no-repeat center;
+    background-size: cover;
     color: $dark;
     font-size: 2rem;
     text-align: center;

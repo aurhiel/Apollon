@@ -8,6 +8,9 @@ form_artist :
   name :
     label       : "Nom / Pseudo"
     placeholder : "Nom / Pseudo"
+  avatar :
+    label       : "Photo / Avatar"
+    placeholder : "Photo / Avatar"
 
 ## ARTIST FORM ##
 form_vinyl :

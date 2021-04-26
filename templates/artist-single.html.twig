@@ -2,88 +2,99 @@
 
 {% block body %}
   <div class="container">
-    <h1 class="mb-1"><span class="icon-user text-primary"></span> {{ artist.name }}</h1>
-    <div class="text-muted mb-4">
-      {% set vinyls_total_unique = artist.vinyls|length %}
-      <b>{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité : <b>{{ artist.vinylsQuantity }}</b>
-    </div>
-    {% if artist.vinyls is not empty %}
-      <div class="table-responsive">
-        <table id="vinyls-entities" class="table table-bordered table-striped table-dark mb-0">
-          <thead>
-            <tr>
-              <th scope="col" class="col-id">#</th>
-              <th scope="col" class="col-rpm">T.</th>
-              <th scope="col" class="col-track">
-                <span>Face A</span>
-              </th>
-              <th scope="col" class="col-track">Face B</th>
-              <th scope="col" class="col-artist">
-                <span>Artiste(s)</span>
-              </th>
-              <th scope="col" class="col-quantity">Qté</th>
-              <th scope="col" class="col-quantity">Vendu(s)</th>
-            {% if is_granted('ROLE_ADMIN') %}
-              <th scope="col" class="col-actions"></th>
-            {% endif %}
-            </tr>
-          </thead>
-          <tbody>
-          {% for vinyl in artist.vinyls %}
-            <tr data-vinyl-id="{{ vinyl.id }}">
-              <th scope="row" class="col-id">{{ vinyl.id }}</th>
-              <td class="col-rpm">{{ vinyl.rpm }}</td>
-              <td class="col-track" data-track-face="A">
-                {{ vinyl.trackFaceA }} <span class="-icon-play icon-play-circle"></span>
-              </td>
-              <td class="col-track" data-track-face="B">
-                {{ vinyl.trackFaceB }} <span class="-icon-play icon-play-circle"></span>
-              </td>
-              <td class="col-artist">
-                {% set artists_str = null %}
-                {% if vinyl.artists is not empty %}
-                  {% for artist in vinyl.artists %}
-                    {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
-                    {{ artist.name }}{% if loop.last == false %}, {% endif %}
-                  {% endfor %}
-                {% endif %}
-              </td>
-              <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}">
-                {% if is_granted('ROLE_ADMIN') %}
-                  <span class="btn-qty icon-minus-square{% if vinyl.quantity < 2 %} disabled{% endif %}" data-qty-type="-1"></span>
-                  <span class="qty-amount">{{ vinyl.quantity }}</span>
-                  <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
-                {% else %}
-                  {{ vinyl.quantity }}
-                {% endif %}
-              </td>
-              <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}" data-qty-type="sold">
-                {% if is_granted('ROLE_ADMIN') %}
-                  <span class="btn-qty icon-minus-square{% if vinyl.quantitySold < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
-                  <span class="qty-amount">{{ vinyl.quantitySold }}</span>
-                  <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
-                {% else %}
-                  {{ vinyl.quantitySold }}
-                {% endif %}
-              </td>
-            {% if is_granted('ROLE_ADMIN') %}
-              <td class="col-actions">
-                <button class="btn btn-sm btn-outline-danger px-2 py-1"
-                  data-confirm-href="{{ path('vinyl_delete', { id: vinyl.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer ce vinyle ?<br>- Face A: <b>{{ vinyl.trackFaceA }}</b><br>- Face B: <b>{{ vinyl.trackFaceB }}</b><br><i>{{ artists_str }}</i>"
-                    data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
-                  <span class="icon-trash"></span>
-                </button>
-              </td>
-            {% endif %}
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div class="alert alert-secondary fw-bold">
-        Aucun vinyle à afficher.
+    <div class="row">
+    {% if artist.avatarFilename is not empty %}
+      <div class="col-12 col-md-2 col-lg-3 mb-3 text-center text-md-start">
+        <img src="{{ asset('uploads/avatars/' ~ artist.avatarFileName) }}" alt="{{ artist.name }}"
+          class="img-thumbnail p-0 border-0">
       </div>
     {% endif %}
+      <div class="col-12{% if artist.avatarFilename is not empty %} col-md-10 col-lg-9{% endif %}">
+        <h1 class="text-center text-md-start mb-1"><span class="icon-user text-primary rounded"></span> {{ artist.name }}</h1>
+        <div class="text-muted text-center text-md-start mb-4">
+          {% set vinyls_total_unique = artist.vinyls|length %}
+          <b>{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité : <b>{{ artist.vinylsQuantity }}</b>
+        </div>
+
+        {% if artist.vinyls is not empty %}
+          <div class="table-responsive">
+            <table id="vinyls-entities" class="table table-bordered table-striped table-dark mb-0">
+              <thead>
+                <tr>
+                  <th scope="col" class="col-id">#</th>
+                  <th scope="col" class="col-rpm">T.</th>
+                  <th scope="col" class="col-track">
+                    <span>Face A</span>
+                  </th>
+                  <th scope="col" class="col-track">Face B</th>
+                  <th scope="col" class="col-artist">
+                    <span>Artiste(s)</span>
+                  </th>
+                  <th scope="col" class="col-quantity">Qté</th>
+                  <th scope="col" class="col-quantity">Vendu(s)</th>
+                {% if is_granted('ROLE_ADMIN') %}
+                  <th scope="col" class="col-actions"></th>
+                {% endif %}
+                </tr>
+              </thead>
+              <tbody>
+              {% for vinyl in artist.vinyls %}
+                <tr data-vinyl-id="{{ vinyl.id }}">
+                  <th scope="row" class="col-id">{{ vinyl.id }}</th>
+                  <td class="col-rpm">{{ vinyl.rpm }}</td>
+                  <td class="col-track" data-track-face="A">
+                    {{ vinyl.trackFaceA }} <span class="-icon-play icon-play-circle"></span>
+                  </td>
+                  <td class="col-track" data-track-face="B">
+                    {{ vinyl.trackFaceB }} <span class="-icon-play icon-play-circle"></span>
+                  </td>
+                  <td class="col-artist">
+                    {% set artists_str = null %}
+                    {% if vinyl.artists is not empty %}
+                      {% for artist in vinyl.artists %}
+                        {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
+                        {{ artist.name }}{% if loop.last == false %}, {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                  </td>
+                  <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}">
+                    {% if is_granted('ROLE_ADMIN') %}
+                      <span class="btn-qty icon-minus-square{% if vinyl.quantity < 2 %} disabled{% endif %}" data-qty-type="-1"></span>
+                      <span class="qty-amount">{{ vinyl.quantity }}</span>
+                      <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+                    {% else %}
+                      {{ vinyl.quantity }}
+                    {% endif %}
+                  </td>
+                  <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}" data-qty-type="sold">
+                    {% if is_granted('ROLE_ADMIN') %}
+                      <span class="btn-qty icon-minus-square{% if vinyl.quantitySold < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
+                      <span class="qty-amount">{{ vinyl.quantitySold }}</span>
+                      <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+                    {% else %}
+                      {{ vinyl.quantitySold }}
+                    {% endif %}
+                  </td>
+                {% if is_granted('ROLE_ADMIN') %}
+                  <td class="col-actions">
+                    <button class="btn btn-sm btn-outline-danger px-2 py-1"
+                      data-confirm-href="{{ path('vinyl_delete', { id: vinyl.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer ce vinyle ?<br>- Face A: <b>{{ vinyl.trackFaceA }}</b><br>- Face B: <b>{{ vinyl.trackFaceB }}</b><br><i>{{ artists_str }}</i>"
+                        data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
+                      <span class="icon-trash"></span>
+                    </button>
+                  </td>
+                {% endif %}
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="alert alert-secondary fw-bold">
+            Aucun vinyle à afficher.
+          </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
 {% endblock %}

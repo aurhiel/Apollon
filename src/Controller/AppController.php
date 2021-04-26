@@ -10,6 +10,9 @@ use App\Entity\Vinyl;
 use App\Form\ArtistType;
 use App\Form\VinylType;
 
+// Services
+use App\Service\FileUploader;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,6 +30,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
   */
 class AppController extends AbstractController
 {
+    const G_AUTH_KEY = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
+
+    const G_SEARCH_CX = 'ac4fe16cc213c6af9';
+
     /**
      * @Route("/importer-csv", name="import_csv")
      */
@@ -162,8 +169,7 @@ class AppController extends AbstractController
      */
     public function vinyl_get_youtube_id($id, $trackFace, Request $request, HttpClientInterface $client)
     {
-        $auth_key     = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
-        $base_url     = 'https://youtube.googleapis.com/youtube/v3/search?key='. $auth_key . '&maxResults=1';
+        $base_url     = 'https://youtube.googleapis.com/youtube/v3/search?key='. self::G_AUTH_KEY . '&maxResults=1';
         $em           = $this->getDoctrine()->getManager();
         $return_data  = [];
 
@@ -409,7 +415,7 @@ class AppController extends AbstractController
     /**
      * @Route("/artistes/{id}", name="artists_infos")
      */
-    public function artists_infos($id, Security $security)
+    public function artists_infos($id, Security $security, HttpClientInterface $client, FileUploader $fileUploader)
     {
         $em = $this->getDoctrine()->getManager();
         $user = $security->getUser();
@@ -420,6 +426,19 @@ class AppController extends AbstractController
 
         // Retrieve total vinyls quantity (with duplicate vinyls)
         // $r_vinyl = $em->getRepository(Vinyl::class);
+
+        // Check if artist has a photo, if not > search and download it
+        if (is_null($artist->getAvatarFilename())) {
+            $img_googled = $this->searchArtistPhoto($client, $artist->getName());
+            if ($img_googled) {
+                $artist_slug = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $artist->getName());
+                $avatarFileName = $fileUploader->upload($img_googled, '/avatars', $artist_slug . '.' . pathinfo($img_googled, PATHINFO_EXTENSION));
+                $artist->setAvatarFilename($avatarFileName);
+            }
+            // Persist & flush new artist's avatar
+            $em->persist($artist);
+            $em->flush();
+        }
 
         return $this->render('artist-single.html.twig', [
             'user'    => $user,
@@ -460,7 +479,7 @@ class AppController extends AbstractController
     /**
      * @Route("/{order_by}/{direction}", name="home", defaults={"order_by"=null,"direction"=null})
      */
-    public function index($order_by, $direction, Request $request, Security $security, AuthorizationCheckerInterface $authChecker): Response
+    public function index($order_by, $direction, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader): Response
     {
         $em     = $this->getDoctrine()->getManager();
         $vinyl  = new Vinyl();
@@ -483,6 +502,14 @@ class AppController extends AbstractController
 
                 // Check if artist is already in database
                 if (is_null($r_artist->findOneByName($artist->getName()))) {
+                    /** @var UploadedFile $documentFile */
+                    $avatarFile = $form_artist->get('avatar')->getData();
+
+                    if ($avatarFile) {
+                        $avatarFileName = $fileUploader->upload($avatarFile, '/avatars');
+                        $artist->setAvatarFilename($avatarFileName);
+                    }
+
                     $em->persist($artist);
 
                     // 4) Try to save (flush) or clear
@@ -653,6 +680,8 @@ class AppController extends AbstractController
         ]);
     }
 
+
+
     private $csvParsingOptions = array(
         'finder_in'       => '../public/uploads/',
         'finder_name'     => 'vinyls.csv',
@@ -693,5 +722,31 @@ class AppController extends AbstractController
     {
         $string = strtr(utf8_decode($string), utf8_decode('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ'), 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
         return $string;
+    }
+
+    private function searchArtistPhoto(HttpClientInterface $client, string $artist_name)
+    {
+        $base_url = 'https://customsearch.googleapis.com/customsearch/v1?key='. self::G_AUTH_KEY . '&cx=' . self::G_SEARCH_CX . '&searchType=image&imgSize=medium&num=1';
+        $img_url = false;
+
+        // Check if $client and $artist_name are correctly defined
+        if (!empty($client) && !empty($artist_name)) {
+            // Search for an artist photo on Google
+            $response = $client->request(
+                'GET',
+                $base_url . '&q=' . $artist_name
+            );
+
+            if ($response->getStatusCode() == 200) {
+                $r_array = $response->toArray();
+
+                $img_url = null;
+                // Check if there is some results > retrieve & download artist photo
+                if (!empty($r_array) && isset($r_array['items']) && isset($r_array['items'][0]))
+                    $img_url = $r_array['items'][0]['link'];
+            }
+        }
+
+        return $img_url;
     }
 }
