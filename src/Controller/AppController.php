@@ -622,8 +622,13 @@ class AppController extends AbstractController
                     $a_str = $a->getTrackFaceB();
                     $b_str = $b->getTrackFaceB();
                 } elseif ($order_by == 'artist') {
-                    $a_str = $a->getArtists()->first()->getName();
-                    $b_str = $b->getArtists()->first()->getName();
+                    $a_first_artist = $a->getArtists()->first();
+                    $b_first_artist = $b->getArtists()->first();
+                    // Check if an artist is defined
+                    if (is_object($a_first_artist) && is_object($b_first_artist)) {
+                        $a_str = $a_first_artist->getName();
+                        $b_str = $b_first_artist->getName();
+                    }
                 }
 
                 // Remove accents

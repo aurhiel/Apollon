@@ -46,6 +46,7 @@ class Vinyl
 
     /**
      * @ORM\ManyToMany(targetEntity=Artist::class, inversedBy="vinyls")
+     * @ORM\OrderBy({"name" = "ASC"})
      */
     private $artists;
 
