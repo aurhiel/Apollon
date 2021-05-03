@@ -8,6 +8,11 @@
     content: $icon-chevron-up;
   }
 }
+.icon-clipboard {
+  &:before {
+    content: $icon-clipboard;
+  }
+}
 .icon-code {
   &:before {
     content: $icon-code;
@@ -26,6 +31,21 @@
 .icon-edit {
   &:before {
     content: $icon-edit;
+  }
+}
+.icon-file-minus {
+  &:before {
+    content: $icon-file-minus;
+  }
+}
+.icon-file-plus {
+  &:before {
+    content: $icon-file-plus;
+  }
+}
+.icon-file-text {
+  &:before {
+    content: $icon-file-text;
   }
 }
 .icon-heart {
