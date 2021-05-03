@@ -744,6 +744,8 @@ class AppController extends AbstractController
                 // Check if there is some results > retrieve & download artist photo
                 if (!empty($r_array) && isset($r_array['items']) && isset($r_array['items'][0]))
                     $img_url = $r_array['items'][0]['link'];
+            } else {
+                dump($response->getStatusCode(), $response->getInfo());
             }
         }
 

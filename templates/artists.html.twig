@@ -8,7 +8,7 @@
       {% for artist in artists %}
         <div class="col-6 col-sm-4 col-md-3 col-lg-2">
           <div class="-item" data-artist-id="{{ artist.id }}" data-artist-name="{{ artist.name }}">
-            <div class="-item-picture"{% if artist.avatarFileName is not empty %} style="background-image: url('{{ asset('uploads/avatars/' ~ artist.avatarFileName) }}');"{% endif %}>
+            <div class="-item-picture"{% if artist.avatarFileName is not empty %} style="background-color: transparent; background-image: url('{{ asset('uploads/avatars/' ~ artist.avatarFileName) }}');"{% endif %}>
               {% if artist.avatarFileName is empty %}
                 <span class="-picture-icon icon-user"></span>
               {% endif %}
