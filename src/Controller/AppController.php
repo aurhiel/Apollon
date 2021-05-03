@@ -407,6 +407,9 @@ class AppController extends AbstractController
         $artists  = $r_artist->findAll();
 
         return $this->render('artists.html.twig', [
+            'meta'    => [
+                'title' => 'Artistes'
+            ],
             'user'    => $user,
             'artists' => $artists,
         ]);
@@ -441,6 +444,9 @@ class AppController extends AbstractController
         }
 
         return $this->render('artist-single.html.twig', [
+            'meta'    => [
+                'title' => $artist->getName()
+            ],
             'user'    => $user,
             'artist'  => $artist,
         ]);
@@ -474,6 +480,27 @@ class AppController extends AbstractController
 
         // No direct access
         return $this->redirectToRoute('artists');
+    }
+
+    /**
+     * @Route("/annonces", name="adverts")
+     */
+    public function adverts(Security $security)
+    {
+        $em   = $this->getDoctrine()->getManager();
+        $user = $security->getUser();
+
+        // Retrieve artists
+        // $r_artist = $em->getRepository(Artist::class);
+        // $artists  = $r_artist->findAll();
+
+        return $this->render('adverts.html.twig', [
+            'meta'    => [
+                'title' => 'Annonces'
+            ],
+            'user'    => $user,
+            'adverts' => [],
+        ]);
     }
 
     /**
