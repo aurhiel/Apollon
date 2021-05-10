@@ -60,9 +60,15 @@ class Vinyl
      */
     private $quantitySold = 0;
 
+    /**
+     * @ORM\OneToMany(targetEntity=InSale::class, mappedBy="vinyl")
+     */
+    private $inSales;
+
     public function __construct()
     {
         $this->artists = new ArrayCollection();
+        $this->inSales = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -174,6 +180,46 @@ class Vinyl
     public function setQuantitySold(int $quantitySold): self
     {
         $this->quantitySold = $quantitySold;
+
+        return $this;
+    }
+
+    public function getQuantityAvailable()
+    {
+        $qty_in_sale = 0;
+        foreach ($this->getInSales() as $inSale) {
+            $qty_in_sale += $inSale->getQuantity();
+        }
+
+        return $this->quantity - $qty_in_sale;
+    }
+
+    /**
+     * @return Collection|InSale[]
+     */
+    public function getInSales(): Collection
+    {
+        return $this->inSales;
+    }
+
+    public function addInSale(InSale $inSale): self
+    {
+        if (!$this->inSales->contains($inSale)) {
+            $this->inSales[] = $inSale;
+            $inSale->setVinyl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInSale(InSale $inSale): self
+    {
+        if ($this->inSales->removeElement($inSale)) {
+            // set the owning side to null (unless already changed)
+            if ($inSale->getVinyl() === $this) {
+                $inSale->setVinyl(null);
+            }
+        }
 
         return $this;
     }

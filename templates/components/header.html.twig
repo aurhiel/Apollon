@@ -1,6 +1,9 @@
 {% set is_home = (app.request.attributes.get('_route') == 'home') %}
 {% set has_form_artist = (form_artist is defined and form_artist is not empty) %}
 {% set has_form_vinyl = (form_vinyl is defined and form_vinyl is not empty) %}
+{% set has_form_advert = (form_advert is defined and form_advert is not empty) %}
+{% set has_actions = (has_form_artist == true or has_form_vinyl == true or has_form_advert == true) %}
+
 <header class="app-header sticky-top">
   <nav class="navbar navbar-expand navbar-dark bg-dark -bg-pattern pb-0">
     <div class="container pb-2 -border-bottom -border-secondary">
@@ -19,48 +22,59 @@
         <div class="navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link{% if (app.request.attributes.get('_route') == 'artists') %} active{% endif %}" href="{{ path('artists') }}">
+              <a class="nav-link{% if (app.request.attributes.get('_route') == 'artists') %} active{% endif %}"
+                href="{{ path('artists') }}">
                 Artistes
               </a>
             </li>
-
+          {% if is_granted('ROLE_VIEWER') %}
             <li class="nav-item">
-              <a class="nav-link{% if (app.request.attributes.get('_route') == 'adverts') %} active{% endif %}" href="{{ path('adverts') }}">
+              <a class="nav-link{% if (app.request.attributes.get('_route') == 'adverts') %} active{% endif %}"
+                href="{{ path('adverts') }}">
                 Annonces
               </a>
             </li>
-
-            {#<li class="nav-item">
-              <a class="nav-link" href="#">Logs.</a>
-            </li>#}
+          {% endif %}
           </ul>
         </div>
       {% endblock %}
 
       {# Navbar actions #}
       {% block actions %}
-        <div class="navbar-actions">
-        {% if has_form_artist == true %}
-          <button class="btn btn-sm btn-outline-primary text-white px-2 px-md-4" type="button"
-            name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-artist">
-            <span class="icon-user-plus me-md-1"></span><span class="d-none d-md-inline"> artiste</span>
-          </button>
+        {% if has_actions == true %}
+          <div class="navbar-actions">
+          {% if has_form_artist == true %}
+            <button class="btn btn-sm btn-outline-primary text-white px-2 px-md-4" type="button"
+              name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-artist">
+              <span class="icon-user-plus me-md-1"></span><span class="d-none d-md-inline"> artiste</span>
+            </button>
+          {% endif %}
+          {% if has_form_vinyl == true %}
+            <button class="btn btn-sm btn-outline-primary text-white px-2 px-md-4 ms-2 ms-md-3" type="button"
+              name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-vinyl">
+              <span class="icon-plus-circle me-md-1"></span><span class="d-none d-md-inline"> vinyle</span>
+            </button>
+          {% endif %}
+          {% if has_form_advert == true %}
+            <button class="btn btn-sm btn-outline-primary text-white px-2 px-md-4 ms-2 ms-md-3" type="button"
+              name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-advert">
+              <span class="icon-file-plus me-md-1"></span><span class="d-none d-md-inline"> annonce</span>
+            </button>
+          {% endif %}
+          </div>
         {% endif %}
-        {% if has_form_vinyl == true %}
-          <button class="btn btn-sm btn-outline-primary text-white px-2 px-md-4 ms-2 ms-md-3" type="button"
-            name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-vinyl">
-            <span class="icon-plus-circle me-md-1"></span><span class="d-none d-md-inline"> vinyle</span>
-          </button>
-        {% endif %}
-        </div>
       {% endblock %}
 
-    {% if user is defined and user.username is defined %}
-      <div class="navbar-user small{% if has_form_artist == true or has_form_vinyl == true %} border-start border-secondary ps-1 ms-2 ps-md-3 ms-md-4{% endif %}">
-        <span class="-hello text-muted">Hi, </span>
-        <span class="-name text-capitalize">{{ user.username }}{% if user.username == 'losovia' %} 💕{% elseif user.username == 'anderson' %} 🌱{% endif %}</span>
+      <div class="navbar-user small{% if has_actions == true %} border-start border-secondary ps-1 ms-2 ps-md-3 ms-md-4{% endif %}">
+        {% if user is defined and user.username is defined %}
+          <span class="-hello text-muted">Hi, </span>
+          <span class="-name text-capitalize">{{ user.username }}{% if user.username == 'losovia' %} 💕{% elseif user.username == 'anderson' %} 🌱{% endif %}</span>
+        {% else %}
+          <a href="{{ path('login') }}" class="text-decoration-none">
+            Connexion
+          </a>
+        {% endif %}
       </div>
-    {% endif %}
     </div>
   </nav>
 </header>

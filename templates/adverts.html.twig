@@ -8,8 +8,39 @@
       <small class="fw-normal text-muted">({{ adverts|length }})</small>{% endif %}
     </h1>
     {% if adverts is not empty %}
-      <div class="alert alert-warning">
-        // TODO !
+      <div class="table-responsive">
+        <table id="adverts-entities" class="table table-bordered table-striped table-hover table-dark mb-0">
+          <thead>
+            <tr>
+              <th scope="col" class="col-id">#</th>
+              <th scope="col" class="col-title">Titre</th>
+              <th scope="col" class="col-description">Description</th>
+              <th scope="col" class="col-price">Prix</th>
+            {% if is_granted('ROLE_ADMIN') %}
+              <th scope="col" class="col-actions"></th>
+            {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+          {% for advert in adverts %}
+            <tr data-advert-id="{{ advert.id }}">
+              <th scope="row" class="col-id">{{ advert.id }}</th>
+              <td class="col-title">{{ advert.title }}</td>
+              <td class="col-description">{{ advert.description }}</td>
+              <td class="col-price">{{ advert.price }}€</td>
+            {% if is_granted('ROLE_ADMIN') %}
+              <td class="col-actions">
+                <button class="btn btn-sm btn-outline-danger px-2 py-1"
+                  data-confirm-href="{{ path('advert_delete', { id: advert.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer l'annonce <b>{{ advert.title }}</b> ?"
+                    data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
+                  <span class="icon-file-minus"></span>
+                </button>
+              </td>
+            {% endif %}
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
       </div>
     {% else %}
       <div class="alert alert-secondary">

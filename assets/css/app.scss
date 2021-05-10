@@ -139,6 +139,19 @@
 }
 
 
+#modal-manage-advert {
+  .form-control-quantity {
+    font-size: 1.4rem;
+  }
+
+  .-item-vinyl { /* [...] */ }
+  
+  .-vinyl-tracks, .-vinyl-artists {
+    line-height: 1.2;
+  }
+}
+
+
 @include media-breakpoint-up(md) {
   .app-player {
     position: fixed;

@@ -5,10 +5,13 @@ namespace App\Controller;
 // Entities
 use App\Entity\Artist;
 use App\Entity\Vinyl;
+use App\Entity\Advert;
+use App\Entity\InSale;
 
 // Forms
 use App\Form\ArtistType;
 use App\Form\VinylType;
+use App\Form\AdvertType;
 
 // Services
 use App\Service\FileUploader;
@@ -28,6 +31,18 @@ class AppController extends AbstractController
     const G_AUTH_KEY = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
 
     const G_SEARCH_CX = 'ac4fe16cc213c6af9';
+
+    /**
+     * @Route("/connexion", name="login")
+     * @IsGranted("ROLE_VIEWER")
+     */
+    public function login(Security $security)
+    {
+        $user = $security->getUser();
+
+        // No direct access, redirect to home after login
+        return $this->redirectToRoute('home');
+    }
 
     /**
      * @Route("/importer-csv", name="import_csv")
@@ -465,23 +480,170 @@ class AppController extends AbstractController
 
     /**
      * @Route("/annonces", name="adverts")
+     * @IsGranted("ROLE_VIEWER")
      */
-    public function adverts(Security $security)
+    public function adverts(Request $request, Security $security, AuthorizationCheckerInterface $authChecker)
     {
-        $em   = $this->getDoctrine()->getManager();
-        $user = $security->getUser();
+        $em     = $this->getDoctrine()->getManager();
+        $user   = $security->getUser();
+        $advert = new Advert();
+
+
+        // Only admin user can add vinyls & artists
+        if(true === $authChecker->isGranted('ROLE_ADMIN')) {
+            // 1) Build advert forms
+            $form_advert = $this->createForm(AdvertType::class, $advert);
+
+            // 2) Handle advert forms
+            $form_advert->handleRequest($request);
+
+            // 3) Save advert
+            if ($form_advert->isSubmitted() && $form_advert->isValid()) {
+                $em->persist($advert);
+
+                // 4) Try to save (flush) or clear
+                try {
+                    // Flush OK !
+                    // $em->flush();
+
+                    $return = array(
+                        'query_status'    => 'success',
+                        'message_status'  => 'Sauvegarde de l\'annonce effectuée avec succès.',
+                        'id_entity'       => $advert->getId()
+                    );
+
+                    // Assign added advert to re-used later
+                    $advert_added = $advert;
+
+                    // Assign vinyls to created advert
+                    $r_vinyl    = $em->getRepository(Vinyl::class);
+                    $vinyls_qty = $request->get('advert_vinyl_qty');
+                    $vinyls     = $r_vinyl->findById(array_keys($vinyls_qty));
+
+                    foreach ($vinyls as $vinyl) {
+                        $vinyl_qty  = ((isset($vinyls_qty[$vinyl->getId()]) && isset($vinyls_qty[$vinyl->getId()][0])) ? (int)$vinyls_qty[$vinyl->getId()][0] : 0);
+                        $inSale     = new InSale();
+
+                        if ($vinyl_qty > 0) {
+                            $inSale->setVinyl($vinyl);
+                            $inSale->setAdvert($advert);
+                            $inSale->setQuantity($vinyl_qty);
+
+                            // Persist & flush new vinyl in sale
+                            $em->persist($inSale);
+                            $em->flush();
+                        }
+                    }
+
+                    // Clear/reset form
+                    $advert       = new Advert();
+                    $form_advert  = $this->createForm(AdvertType::class, $advert);
+                } catch (\Exception $e) {
+                    // Something goes wrong
+                    $em->clear();
+
+                    $return = array(
+                        'query_status'    => 'error',
+                        'exception'       => $e->getMessage(),
+                        'message_status'  => 'Un problème est survenu lors de la sauvegarde de l\'annonce.'
+                    );
+                }
+            }
+
+            // Set flash message if $return has message_status
+            if (isset($return['message_status']) && !empty($return['message_status'])) {
+                $request->getSession()->getFlashBag()->add(
+                    (isset($return['query_status']) ? $return['query_status'] : 'notice'),
+                    $return['message_status']
+                );
+            }
+        }
 
         // Retrieve adverts
-        // $r_artist = $em->getRepository(Artist::class);
-        // $artists  = $r_artist->findAll();
+        $r_advert = $em->getRepository(Advert::class);
+        $adverts  = $r_advert->findAll();
+
+        // Retrieve vinyls to use in advert form and create "InSale" related
+        //  to a new advert
+        $r_vinyl        = $em->getRepository(Vinyl::class);
+        $vinyls_to_sale = $r_vinyl->findAllAvailableForSale();
+
+        usort($vinyls_to_sale, function($a, $b) {
+            $a_str = null;
+            $b_str = null;
+            $a_first_artist = $a->getArtists()->first();
+            $b_first_artist = $b->getArtists()->first();
+            // Check if an artist is defined
+            if (is_object($a_first_artist) && is_object($b_first_artist)) {
+                $a_str = $a_first_artist->getName();
+                $b_str = $b_first_artist->getName();
+            }
+
+            // Remove accents
+            $this->removeAccents($a_str);
+            $this->removeAccents($b_str);
+
+            // Re-order only if "a" and "b" string are defined
+            if (!is_null($a_str) && !is_null($b_str))
+                return strcmp($a_str, $b_str);
+        });
 
         return $this->render('adverts.html.twig', [
             'meta'    => [
                 'title' => 'Annonces'
             ],
-            'user'    => $user,
-            'adverts' => [],
+            'user'            => $user,
+            'form_advert'     => isset($form_advert) ? $form_advert->createView() : null,
+            'adverts'         => $adverts,
+            'vinyls_to_sale'  => $vinyls_to_sale,
         ]);
+    }
+
+    /**
+     * @Route("/annonces/{id}/supprimer", name="advert_delete")
+     * @IsGranted("ROLE_ADMIN")
+     */
+    public function advert_delete($id, Request $request, AuthorizationCheckerInterface $authChecker)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        // Retrieve item to delete
+        $repo   = $em->getRepository(Advert::class);
+        $entity = $repo->findOneById($id);
+
+        if ($entity !== null) {
+            // Remove related in sales
+            foreach ($entity->getInSales() as $inSale) {
+                $em->remove($inSale);
+            }
+
+            // Delete entity & flush
+            $em->remove($entity);
+            $em->flush();
+
+            // Set $return success message
+            $return = array(
+                'query_status'    => 'success',
+                'message_status'  => 'L\'annonce a bien été supprimé.'
+            );
+
+        } else {
+            $return = array(
+                'query_status'    => 'error',
+                'message_status'  => 'L\'annonce avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.'
+            );
+        }
+
+        // Set flash message if $return has message_status
+        if (isset($return['message_status']) && !empty($return['message_status'])) {
+            $request->getSession()->getFlashBag()->add(
+                (isset($return['query_status']) ? $return['query_status'] : 'notice'),
+                $return['message_status']
+            );
+        }
+
+        // No direct access
+        return $this->redirectToRoute('adverts');
     }
 
     /**

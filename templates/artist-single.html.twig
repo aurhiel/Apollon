@@ -11,10 +11,10 @@
     {% endif %}
       <div class="col-12{% if artist.avatarFilename is not empty %} col-md-10 col-lg-9{% endif %}">
         <h1 class="text-center text-md-start mb-1"><span class="icon-user text-primary rounded"></span> {{ artist.name }}</h1>
-        <div class="text-muted text-center text-md-start mb-4">
+        <p class="text-muted text-center text-md-start mb-4">
           {% set vinyls_total_unique = artist.vinyls|length %}
           <b>{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité : <b>{{ artist.vinylsQuantity }}</b>
-        </div>
+        </p>
 
         {% if artist.vinyls is not empty %}
           <div class="table-responsive">
@@ -59,18 +59,22 @@
                   </td>
                   <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}">
                     {% if is_granted('ROLE_ADMIN') %}
-                      <span class="btn-qty icon-minus-square{% if vinyl.quantity < 2 %} disabled{% endif %}" data-qty-type="-1"></span>
-                      <span class="qty-amount">{{ vinyl.quantity }}</span>
-                      <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+                      <span class="form-control-quantity">
+                        <span class="btn-qty icon-minus-square{% if vinyl.quantity < 2 %} disabled{% endif %}" data-qty-type="-1"></span>
+                        <span class="qty-amount">{{ vinyl.quantity }}</span>
+                        <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+                      </span>
                     {% else %}
                       {{ vinyl.quantity }}
                     {% endif %}
                   </td>
                   <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}" data-qty-type="sold">
                     {% if is_granted('ROLE_ADMIN') %}
-                      <span class="btn-qty icon-minus-square{% if vinyl.quantitySold < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
-                      <span class="qty-amount">{{ vinyl.quantitySold }}</span>
-                      <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+                      <span class="form-control-quantity">
+                        <span class="btn-qty icon-minus-square{% if vinyl.quantitySold < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
+                        <span class="qty-amount">{{ vinyl.quantitySold }}</span>
+                        <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+                      </span>
                     {% else %}
                       {{ vinyl.quantitySold }}
                     {% endif %}

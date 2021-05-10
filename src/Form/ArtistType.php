@@ -26,12 +26,6 @@ class ArtistType extends AbstractType
                     // 'class'       => 'required-giga'
                 ]
             ])
-            ->add('send', SubmitType::class, [
-                'label' => 'form_basic.save.label',
-                'attr'  => [
-                    'class' => 'btn-send btn-primary'
-                ]
-            ])
             ->add('avatar', FileType::class, [
                 'label' => 'form_artist.avatar.label',
                 'attr'  => [
@@ -56,6 +50,12 @@ class ArtistType extends AbstractType
                         'mimeTypesMessage' => 'Please upload a valid Image file',
                     ])
                 ],
+            ])
+            ->add('send', SubmitType::class, [
+                'label' => 'form_basic.save.label',
+                'attr'  => [
+                    'class' => 'btn-send btn-primary'
+                ]
             ])
         ;
     }

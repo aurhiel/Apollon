@@ -32,6 +32,25 @@ class VinylRepository extends ServiceEntityRepository
         ;
     }
 
+    public function findAllAvailableForSale()
+    {
+        return $this->createQueryBuilder('v')
+            // ->select('(v.quantity - v.quantitySold) AS qty_available')
+            // Join relations
+            ->leftJoin('v.artists', 'artists')
+            ->addSelect('artists')
+            ->leftJoin('v.inSales', 'isa')
+            ->addSelect('isa')
+            // Where
+            ->andWhere('(v.quantity - v.quantitySold) > 0')
+            ->andWhere('isa.quantity IS NULL OR (v.quantity - isa.quantity) > 0')
+            // Order
+            ->orderBy('v.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     public function countAll()
     {
         return $this->createQueryBuilder('v')

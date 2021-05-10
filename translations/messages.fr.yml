@@ -12,6 +12,18 @@ form_artist :
     label       : "Photo / Avatar"
     placeholder : "Photo / Avatar"
 
+## ADVERT FORM ##
+form_advert :
+  title :
+    label       : "Titre"
+    placeholder : "Titre de l'annonce"
+  description :
+    label       : "Description"
+    placeholder : "Description"
+  price :
+    label       : "Prix"
+    placeholder : "Prix"
+
 ## ARTIST FORM ##
 form_vinyl :
   rpm :

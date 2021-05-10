@@ -63,14 +63,18 @@ var app = {
 
       self.$player = self.$body.find('.app-player');
 
-      // Vinyl & artist modals
+      // Modals
       self.$modal_artist  = self.$body.find('#modal-manage-artist');
       self.$modal_vinyl   = self.$body.find('#modal-manage-vinyl');
+      self.$modal_advert  = self.$body.find('#modal-manage-advert');
       self.$modal_confirm = self.$body.find('#modal-confirm-delete');
 
       // Vinyls list container
       self.$vinyls = self.$body.find('#vinyls-entities');
       self.$vinyls_total_qty = self.$body.find('.-vinyls-total-quantity');
+
+      // Adverts list container
+      self.$adverts = self.$body.find('#advers-entities');
 
       // Remove loading (not used yet...)
       self.unload();
@@ -119,7 +123,7 @@ var app = {
               alert(r.message_status);
             } else {
               $col_qty.find('.qty-amount').html(r.new_quantity);
-              $col_qty.find('.btn-qty[data-qty-type="-1"]').toggleClass('disabled', (r.new_quantity < min_limit))
+              $col_qty.find('.btn-qty[data-qty-type="-1"]').toggleClass('disabled', (r.new_quantity < min_limit));
 
               if (typeof r.total_vinyls != 'undefined')
                 self.$vinyls_total_qty.html(r.total_vinyls);
@@ -128,12 +132,73 @@ var app = {
         });
       });
 
+      // Advert vinyls quantity update event
+      var total_selected = 0;
+      var tracks_selected = [];
+      self.$modal_advert.on('click', '.btn-qty', function() {
+        var $btn        = $(this);
+        var $control    = $btn.parents('.form-control-quantity').first();
+        var $multi_select = $control.parents('.form-multi-select').first();
+        var $qty_amount = $control.find('.qty-amount');
+        var $qty_input  = $control.find('.advert-vinyl-qty');
+        var $form       = $control.parents('form').first();
+        var $vinyl      = $control.parents('.-item-vinyl').first();
+        var $tracks     = $vinyl.find('.-vinyl-tracks');
+        var artists_str = $vinyl.find('.-vinyl-artists .-list').html();
+        var current_qty = parseInt($control.find('.qty-amount').html());
+        var new_qty     = current_qty + parseInt($btn.data('qty-type'));
+        var max_qty     = parseInt($control.data('qty-max'));
+
+        if (new_qty <= max_qty && new_qty >= 0) {
+          // Disable or enable quantity up/down button
+          $control.find('.btn-qty[data-qty-type="-1"]').toggleClass('disabled', (new_qty < 1));
+          $control.find('.btn-qty[data-qty-type="+1"]').toggleClass('disabled', (new_qty == max_qty));
+
+          // Update <input> quantity for submit
+          $qty_input.val(new_qty);
+
+          // Update new quantity in HTML content
+          $qty_amount.html(new_qty);
+
+          total_selected += parseInt($btn.data('qty-type'));
+          $multi_select.find('.-vinyls-total-selected .-amount').html(total_selected);
+
+          tracks_selected.push({
+            face_A: $vinyl.find('.-vinyl-track-A').html(),
+            face_B: $vinyl.find('.-vinyl-track-B').html(),
+            artists: artists_str
+          });
+        }
+
+        // Create advert title & description if enough vinyls quantity
+        var advert_title = '';
+        var advert_desc = '';
+        if (total_selected > 0) {
+          // Create advert title
+          advert_title = ((total_selected < 2) ? 'Vinyle - ' : 'Lot de ' + total_selected + ' vinyles - ') + $tracks.data('vinyl-rpm') + 'T';
+          if (total_selected < 2)
+            advert_title += (' - ' + artists_str);
+
+          // TODO Update description
+          if (total_selected > 1) {
+            advert_desc = 'Je vends ce lot de ' + total_selected + ' vinyles, ' + $tracks.data('vinyl-rpm') + ' tours, ...';
+          } else {
+            advert_desc = 'Je vends ce vinyle de ' + artists_str;
+          }
+        }
+
+        // Update advert title <input>, description <textarea> & price <input>
+        $form.find('#advert_title').val(advert_title);
+        $form.find('#advert_description').val(advert_desc);
+        $form.find('#advert_price').val(total_selected > 0 ? total_selected : '');
+      });
+
       // Create YouTube player (iframe & co) using JS
       // var tag = document.createElement('script');
       // tag.src = "https://www.youtube.com/player_api";
       // var firstScriptTag = document.getElementsByTagName('script')[0];
       // firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-      //
+
       var auth_key = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
       self.$vinyls.on('click', 'td.col-track', function() {
         var $col    = $(this);

@@ -14,7 +14,7 @@
     border: $input-border-width solid $input-border-color;
     @include border-radius($input-border-radius, 0);
     padding: .4rem .6rem;
-    max-height: 8rem;
+    max-height: 12rem;
     overflow: auto;
     @include box-shadow($input-box-shadow);
     @include transition($input-transition);
@@ -22,6 +22,60 @@
     &:hover {
       border-color: $input-focus-border-color;
       box-shadow: $input-focus-box-shadow;
+    }
+  }
+}
+
+
+// Quantity
+.form-control-quantity {
+  text-align: center;
+  min-width: 4rem;
+  white-space: nowrap;
+
+  &:hover {
+    .btn-qty {
+      opacity: .6;
+    }
+  }
+
+  > * {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .btn-qty {
+    font-size: .8em;
+    opacity: .4;
+    transition: opacity 400ms ease;
+
+    &:hover {
+      cursor: pointer;
+      opacity: 1;
+    }
+
+    &.disabled {
+      pointer-events: none;
+      opacity: .1;
+    }
+  }
+}
+
+
+@include media-breakpoint-up(lg) {
+  // Symfony form's multiple <select> (with checkboxes)
+  .form-multi-select {
+    > div {
+      max-height: 16rem;
+    }
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  // Symfony form's multiple <select> (with checkboxes)
+  .form-multi-select {
+    > div {
+      max-height: 20rem;
     }
   }
 }
