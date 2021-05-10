@@ -144,8 +144,19 @@
     font-size: 1.4rem;
   }
 
+  .form-multi-select {
+    position: relative;
+    z-index: 1;
+
+    .-vinyls-total-selected {
+      position: absolute;
+      right: 1rem;
+      pointer-events: none;
+    }
+  }
+
   .-item-vinyl { /* [...] */ }
-  
+
   .-vinyl-tracks, .-vinyl-artists {
     line-height: 1.2;
   }

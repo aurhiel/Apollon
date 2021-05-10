@@ -85,6 +85,28 @@ var app = {
       // Trigger scroll event after ready to display elements already on screen
       // self.$window.trigger('scroll');
 
+      // Images library preview
+      self.$body.on('change', '.form-image-lib input', function() {
+        var $file_input = $(this);
+        var files       = $file_input.get(0).files;
+        var $parent     = $file_input.parents('.form-image-lib').first();
+        var $library    = $parent.find('.-images-library');
+
+        if (files.length > 0) {
+          $library.addClass('-has-images').html('');
+          for (var i = 0; i < files.length; i++) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+              $library.append($('<span class="-item ratio ratio-1x1" style="background-image: url(' + e.currentTarget.result + ');"></span>'));
+            };
+            reader.readAsDataURL(files[i]);
+          }
+        } else {
+          // Reset if no files selected
+          $library.removeClass('-has-images').html($library.data('initial-text'));
+        }
+      });
+
       // Modal: Confirm delete, add link to delete and add custom things (title, body, ...)
       if (self.$modal_confirm.length > 0) {
         self.$modal_confirm.get(0).addEventListener('show.bs.modal', function (e) {

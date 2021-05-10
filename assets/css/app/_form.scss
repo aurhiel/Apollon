@@ -1,6 +1,13 @@
 // Forms & cie
 //
 
+
+.custom-file {
+  label {
+    display: none;
+  }
+}
+
 // Symfony form's multiple <select> (with checkboxes)
 .form-multi-select {
   .col-form-label {
@@ -57,6 +64,44 @@
     &.disabled {
       pointer-events: none;
       opacity: .1;
+    }
+  }
+}
+
+.form-image-lib {
+  .-images-library {
+    background-color: rgba(0, 0, 0, .1);
+    color: $gray-500;
+    line-height: 1;
+    text-align: center;
+    border: $input-border-width dashed $gray-700;
+    @include border-radius($input-border-radius, 0);
+    padding: 1rem;
+    margin-top: .8rem;
+
+    .-item {
+      background: no-repeat center;
+      background-size: cover;
+      width: 19%;
+      @include border-radius(.6rem, 0);
+      display: inline-block;
+      vertical-align: middle;
+      overflow: hidden;
+      margin: .2rem;
+
+      img {
+        height: auto;
+        width: auto;
+        max-width: 100%;
+      }
+    }
+
+    &.-has-images {
+      // border: solid 1px $gray-600;
+      background-color: $input-bg;
+      text-align: left;
+      border: $input-border-width solid $input-border-color;
+      padding: .2rem;
     }
   }
 }

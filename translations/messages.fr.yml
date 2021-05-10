@@ -23,6 +23,9 @@ form_advert :
   price :
     label       : "Prix"
     placeholder : "Prix"
+  images :
+    label       : "Photo(s)"
+    placeholder : "Photo(s)"
 
 ## ARTIST FORM ##
 form_vinyl :

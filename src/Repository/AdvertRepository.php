@@ -19,6 +19,18 @@ class AdvertRepository extends ServiceEntityRepository
         parent::__construct($registry, Advert::class);
     }
 
+    public function findAll()
+    {
+        return $this->createQueryBuilder('a')
+            // Join relations
+            ->leftJoin('a.images', 'images')
+            ->addSelect('images')
+            // Get query & result
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return Advert[] Returns an array of Advert objects
     //  */

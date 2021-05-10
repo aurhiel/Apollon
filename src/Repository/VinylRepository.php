@@ -43,7 +43,8 @@ class VinylRepository extends ServiceEntityRepository
             ->addSelect('isa')
             // Where
             ->andWhere('(v.quantity - v.quantitySold) > 0')
-            ->andWhere('isa.quantity IS NULL OR (v.quantity - isa.quantity) > 0')
+            // NOTE not working, done in twig
+            // ->andWhere('isa.quantity IS NULL OR (v.quantity - isa.quantity) > 0')
             // Order
             ->orderBy('v.id', 'ASC')
             ->getQuery()

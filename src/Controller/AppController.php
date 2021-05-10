@@ -5,6 +5,7 @@ namespace App\Controller;
 // Entities
 use App\Entity\Artist;
 use App\Entity\Vinyl;
+use App\Entity\Image;
 use App\Entity\Advert;
 use App\Entity\InSale;
 
@@ -482,7 +483,7 @@ class AppController extends AbstractController
      * @Route("/annonces", name="adverts")
      * @IsGranted("ROLE_VIEWER")
      */
-    public function adverts(Request $request, Security $security, AuthorizationCheckerInterface $authChecker)
+    public function adverts(Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader)
     {
         $em     = $this->getDoctrine()->getManager();
         $user   = $security->getUser();
@@ -533,6 +534,23 @@ class AppController extends AbstractController
                             $em->persist($inSale);
                             $em->flush();
                         }
+                    }
+
+                    // Upload advert images
+                    $images = $form_advert->get('images')->getData();
+                    foreach ($images as $imgData) {
+                        // Upload new advert image
+                        $imageFileName = $fileUploader->upload($imgData, '/adverts');
+
+                        // Create & persist new Image entity after upload
+                        $image = new Image();
+                        $image->setFilename($imageFileName);
+
+                        // Add new image to current advert
+                        $advert->addImage($image);
+
+                        $em->persist($image);
+                        $em->flush();
                     }
 
                     // Clear/reset form
@@ -612,19 +630,30 @@ class AppController extends AbstractController
         $entity = $repo->findOneById($id);
 
         if ($entity !== null) {
+            $upload_dir = $this->getParameter('uploads_directory');
+            // Remove related images
+            $images = $entity->getImages();
+            foreach ($images as $key => $image) {
+                // Delete image file
+                unlink($upload_dir . '/adverts/' . $image->getFilename());
+                //  & remove it from database
+                $em->remove($image);
+            }
+
             // Remove related in sales
-            foreach ($entity->getInSales() as $inSale) {
+            $in_sales = $entity->getInSales();
+            foreach ($in_sales as $inSale) {
                 $em->remove($inSale);
             }
 
-            // Delete entity & flush
+            // Delete advert & flush
             $em->remove($entity);
             $em->flush();
 
             // Set $return success message
             $return = array(
                 'query_status'    => 'success',
-                'message_status'  => 'L\'annonce a bien été supprimé.'
+                'message_status'  => 'L\'annonce a bien été supprimée.'
             );
 
         } else {
