@@ -53,6 +53,11 @@
     content: $icon-heart;
   }
 }
+.icon-log-out {
+  &:before {
+    content: $icon-log-out;
+  }
+}
 .icon-minus-circle {
   &:before {
     content: $icon-minus-circle;
@@ -98,9 +103,14 @@
     content: $icon-plus-square;
   }
 }
+.icon-power {
+  &:before {
+    content: $icon-power;
+  }
+}
 .icon-trash {
   &:before {
-    content: $icon-trash;
+    content: $icon-trash; 
   }
 }
 .icon-user {

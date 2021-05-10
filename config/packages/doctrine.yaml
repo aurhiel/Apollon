@@ -17,3 +17,9 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+        dql:
+            datetime_functions:
+                # date: App\Bundle\Doctrine\DQL\Date
+                # from_unixtime: App\Bundle\Doctrine\DQL\FromUnixtime
+                # signed: App\Bundle\Doctrine\DQL\CastAsSigned
+                int: App\Bundle\Doctrine\DQL\CastAsInteger
