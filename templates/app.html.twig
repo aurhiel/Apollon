@@ -6,7 +6,7 @@
       <span class="icon-disc text-primary"></span>
       Liste des vinyles{% if vinyls is not empty %} <small class="fw-normal text-muted">(<span class="-vinyls-total-quantity">{{ total_vinyls }}</span>)</small>{% endif %}
     </h1>
-    <p class="text-muted text-center text-md-start mb-4">
+    <p class="text-muted mb-4">
       {% set vinyls_total_unique = vinyls|length %}
       <b>{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité : <b>{{ total_vinyls }}</b>
     </p>
