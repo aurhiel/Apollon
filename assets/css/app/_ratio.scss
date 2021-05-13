@@ -1,0 +1,12 @@
+// Ratio
+//
+
+.ratio-bg {
+  display: inline-block;
+  overflow: hidden;
+  > * {
+    display: block;
+    background: no-repeat center;
+    background-size: cover;
+  }
+}

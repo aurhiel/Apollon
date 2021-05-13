@@ -105,3 +105,17 @@
     }
   }
 }
+
+
+.list-adverts {
+  .-item {
+    .ratio-bg {
+      display: block;
+    }
+  }
+  .-item-desc {
+    font-size: .9rem;
+    height: 10rem;
+    overflow: auto;
+  }
+}
