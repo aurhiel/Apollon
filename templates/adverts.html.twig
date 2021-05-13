@@ -11,7 +11,7 @@
       <b>{{ nb_vinyls_in_sale }}</b> vinyle en vente - Vendu(s) : <b>{{ nb_vinyls_sold }}</b> / Total prévu : <b>{{ total_prices }}€</b> - Total perçu : <b class="badge bg-warning text-dark ms-1">// todo</b>
     </p>
     {% if adverts is not empty %}
-      <div class="list-adverts row g-4">
+      <div class="list-adverts row g-4" data-masonry='{"percentPosition": true }'>
       {% for advert in adverts %}
         <div class="-item col-12 col-lg-6 col-xxl-4">
           <div class="card text-dark" data-advert-id="{{ advert.id }}">
@@ -21,7 +21,7 @@
                 <div class="col-3 col-xl-2 text-end"><span class="badge bg-primary">{{ advert.price }}€</span></div>
               </h2>
             </div>
-            <div class="-item-desc p-3">
+            <div class="-item-desc p-3 pb-0">
               {{ advert.description|nl2br }}
             </div>
             {% if advert.images is not empty %}

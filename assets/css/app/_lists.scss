@@ -115,7 +115,7 @@
   }
   .-item-desc {
     font-size: .9rem;
-    height: 10rem;
+    max-height: 10rem;
     overflow: auto;
   }
 }
