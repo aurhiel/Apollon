@@ -52,6 +52,14 @@ class VinylRepository extends ServiceEntityRepository
         ;
     }
 
+    public function countVinylsSold()
+    {
+        return $this->createQueryBuilder('v')
+            ->select('SUM(v.quantitySold) AS nb_vinyls_sold')
+            ->getQuery()->getSingleScalarResult()
+        ;
+    }
+
     public function countAll()
     {
         return $this->createQueryBuilder('v')

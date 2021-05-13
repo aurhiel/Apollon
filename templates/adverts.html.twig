@@ -2,61 +2,66 @@
 
 {% block body %}
   <div class="container">
-    <h1 class="mb-3">
+    <h1 class="mb-1">
       <span class="icon-file-text text-primary"></span>
       Liste des annonces{% if adverts is not empty %}
       <small class="fw-normal text-muted">({{ adverts|length }})</small>{% endif %}
     </h1>
+    <p class="text-muted mb-4">
+      <b>{{ nb_vinyls_in_sale }}</b> vinyle en vente - Vendu(s) : <b>{{ nb_vinyls_sold }}</b> / Total prévu : <b>{{ total_prices }}€</b> - Total perçu : <b class="badge bg-warning text-dark ms-1">// todo</b>
+    </p>
     {% if adverts is not empty %}
-      <div class="table-responsive">
-        <table id="adverts-entities" class="table table-bordered table-striped table-hover table-dark mb-0">
-          <thead>
-            <tr>
-              <th scope="col" class="col-id">#</th>
-              <th scope="col" class="col-title">Titre</th>
-              <th scope="col" class="col-description">Description</th>
-              <th scope="col" class="col-images">Photo(s)</th>
-              <th scope="col" class="col-price">Prix</th>
-            {% if is_granted('ROLE_ADMIN') %}
-              <th scope="col" class="col-actions"></th>
-            {% endif %}
-            </tr>
-          </thead>
-          <tbody>
-          {% for advert in adverts %}
-            <tr data-advert-id="{{ advert.id }}">
-              <th scope="row" class="col-id">{{ advert.id }}</th>
-              <td class="col-title">{{ advert.title }}</td>
-              <td class="col-description">{{ advert.description }}</td>
-              <td class="col-images">
-                {% if advert.images is not empty %}
-                <div class="row g-2">
-                  {% for img in advert.images %}
-                  <div class="col-3">
-                    <a href="{{ asset('uploads/adverts/' ~ img.filename) }}" target="_blank">
-                      <img class="img-fluid rounded" src="{{ asset('uploads/adverts/' ~ img.filename) }}">
-                    </a>
-                  </div>
-                  {% endfor %}
+      <div class="list-adverts row g-4">
+      {% for advert in adverts %}
+        <div class="-item col-12 col-lg-6 col-xxl-4">
+          <div class="card text-dark" data-advert-id="{{ advert.id }}">
+            <div class="card-header">
+              <h2 class="h5 mb-0 text-dark row align-items-center">
+                <div class="-item-title col-9 col-xl-10 pe-0">{{ advert.title }}</div>
+                <div class="col-3 col-xl-2 text-end"><span class="badge bg-primary">{{ advert.price }}€</span></div>
+              </h2>
+            </div>
+            <div class="-item-desc p-3">
+              {{ advert.description|nl2br }}
+            </div>
+            {% if advert.images is not empty %}
+            <div class="card-body">
+              <div class="row g-2 g-sm-3 g-md-2">
+                {% for img in advert.images %}
+                <div class="col-3 col-md-2 col-lg-3 col-xl-2 col-xxl-3">
+                  <a class="ratio ratio-1x1 ratio-bg rounded" href="{{ asset('uploads/adverts/' ~ img.filename) }}" target="_blank">
+                    <span style="background-image: url({{ asset('uploads/adverts/' ~ img.filename) }})"></span>
+                  </a>
                 </div>
-                {% else %}
-                  --
-                {% endif %}
-              </td>
-              <td class="col-price">{{ advert.price }}€</td>
-            {% if is_granted('ROLE_ADMIN') %}
-              <td class="col-actions">
-                <button class="btn btn-sm btn-outline-danger px-2 py-1"
-                  data-confirm-href="{{ path('advert_delete', { id: advert.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer l'annonce <b>{{ advert.title }}</b> ?"
-                    data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
-                  <span class="icon-file-minus"></span>
-                </button>
-              </td>
+                {% endfor %}
+              </div>
+            </div>
             {% endif %}
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
+            {% if is_granted('ROLE_ADMIN') %}
+            <div class="card-footer">
+              <div class="row align-items-center">
+                <div class="col-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="advert-{{ advert.id }}-is-sold">
+                    <label class="form-check-label" for="advert-{{ advert.id }}-is-sold">
+                      Annonce vendue
+                    </label>
+                  </div>
+                </div>
+                <div class="col-6 text-end">
+                  <button class="btn btn-sm btn-outline-danger"
+                    data-confirm-href="{{ path('advert_delete', { id: advert.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer l'annonce <b>{{ advert.title }}</b> ?"
+                      data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
+                    <span class="icon-file-minus me-1"></span>
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
       </div>
     {% else %}
       <div class="alert alert-secondary">

@@ -19,6 +19,15 @@ class InSaleRepository extends ServiceEntityRepository
         parent::__construct($registry, InSale::class);
     }
 
+    public function countVinylsInSale()
+    {
+        return $this->createQueryBuilder('i')
+            ->select('SUM(i.quantity) AS nb_vinyls_in_sale')
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
     // /**
     //  * @return InSale[] Returns an array of InSale objects
     //  */

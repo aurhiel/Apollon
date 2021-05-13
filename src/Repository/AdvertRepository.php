@@ -31,6 +31,15 @@ class AdvertRepository extends ServiceEntityRepository
         ;
     }
 
+    public function countTotalPrices($value='')
+    {
+        return $this->createQueryBuilder('a')
+            ->select('SUM(a.price) AS total_price')
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
     // /**
     //  * @return Advert[] Returns an array of Advert objects
     //  */

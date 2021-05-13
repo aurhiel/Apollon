@@ -489,7 +489,6 @@ class AppController extends AbstractController
         $user   = $security->getUser();
         $advert = new Advert();
 
-
         // Only admin user can add vinyls & artists
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
             // 1) Build advert forms
@@ -606,6 +605,12 @@ class AppController extends AbstractController
                 return strcmp($a_str, $b_str);
         });
 
+        // Get some data
+        $r_in_sale          = $em->getRepository(InSale::class);
+        $nb_vinyls_in_sale  = $r_in_sale->countVinylsInSale();
+        $nb_vinyls_sold     = $r_vinyl->countVinylsSold();
+        $total_prices       = $r_advert->countTotalPrices();
+
         return $this->render('adverts.html.twig', [
             'meta'    => [
                 'title' => 'Annonces'
@@ -614,6 +619,9 @@ class AppController extends AbstractController
             'form_advert'     => isset($form_advert) ? $form_advert->createView() : null,
             'adverts'         => $adverts,
             'vinyls_to_sale'  => $vinyls_to_sale,
+            'nb_vinyls_in_sale' => $nb_vinyls_in_sale,
+            'nb_vinyls_sold'    => $nb_vinyls_sold,
+            'total_prices'      => $total_prices,
         ]);
     }
 
