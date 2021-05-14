@@ -504,7 +504,7 @@ class AppController extends AbstractController
                 // 4) Try to save (flush) or clear
                 try {
                     // Flush OK !
-                    // $em->flush();
+                    $em->flush();
 
                     $return = array(
                         'query_status'    => 'success',

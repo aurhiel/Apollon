@@ -156,7 +156,9 @@ var app = {
 
       // Advert vinyls quantity update event
       var total_selected = 0;
-      var tracks_selected = [];
+      // var vinyls_selected = [];
+      var vinyls_selected = {};
+      // var artists_selected = {};
       self.$modal_advert.on('click', '.btn-qty', function() {
         var $btn        = $(this);
         var $control    = $btn.parents('.form-control-quantity').first();
@@ -165,6 +167,7 @@ var app = {
         var $qty_input  = $control.find('.advert-vinyl-qty');
         var $form       = $control.parents('form').first();
         var $vinyl      = $control.parents('.-item-vinyl').first();
+        var vinyl_id    = $vinyl.data('vinyl-id');
         var $tracks     = $vinyl.find('.-vinyl-tracks');
         var artists_str = $vinyl.find('.-vinyl-artists .-list').html();
         var current_qty = parseInt($control.find('.qty-amount').html());
@@ -185,27 +188,81 @@ var app = {
           total_selected += parseInt($btn.data('qty-type'));
           $multi_select.find('.-vinyls-total-selected .-amount').html(total_selected);
 
-          tracks_selected.push({
-            face_A: $vinyl.find('.-vinyl-track-A').html(),
-            face_B: $vinyl.find('.-vinyl-track-B').html(),
-            artists: artists_str
-          });
+          // Create tracks selected by artists if enough quantity
+          if (new_qty > 0) {
+            if (typeof vinyls_selected[artists_str] == 'undefined') {
+              vinyls_selected[artists_str] = {
+                artists : artists_str,
+                tracks  : {},
+              };
+            }
+
+            // Push new track
+            vinyls_selected[artists_str].tracks[vinyl_id] = {
+              face_A: $vinyl.find('.-vinyl-track-A').html(),
+              face_B: $vinyl.find('.-vinyl-track-B').html(),
+              quantity: new_qty,
+            };
+          } else {
+            delete vinyls_selected[artists_str].tracks[vinyl_id];
+            console.log(Object.keys(vinyls_selected[artists_str].tracks).length);
+          }
         }
 
         // Create advert title & description if enough vinyls quantity
         var advert_title = '';
         var advert_desc = '';
         if (total_selected > 0) {
-          // Create advert title
-          advert_title = ((total_selected < 2) ? 'Vinyle - ' : 'Lot de ' + total_selected + ' vinyles - ') + $tracks.data('vinyl-rpm') + 'T';
-          if (total_selected < 2)
-            advert_title += (' - ' + artists_str);
+          // Loop on tracks selected to add them into title & description
+          var i_artist = 0;
+          var nb_artists = Object.keys(vinyls_selected).length;
+          for (const artist_name in vinyls_selected) {
+            var last = (i_artist === (nb_artists - 1));
 
-          // TODO Update description
-          if (total_selected > 1) {
-            advert_desc = 'Je vends ce lot de ' + total_selected + ' vinyles, ' + $tracks.data('vinyl-rpm') + ' tours, ...';
-          } else {
-            advert_desc = 'Je vends ce vinyle de ' + artists_str;
+            if (vinyls_selected.hasOwnProperty(artist_name)) {
+              var tracks = vinyls_selected[artist_name].tracks;
+              var nb_tracks = Object.keys(tracks).length;
+
+              if (nb_tracks > 0) {
+                // Init advert_title & _desc
+                if (advert_title == '') {
+                  // Create advert title
+                  advert_title = ((total_selected < 2) ? 'Vinyle ' : 'Lot de ' + total_selected + ' vinyles - ') + $tracks.data('vinyl-rpm') + 'T';
+                  if (total_selected < 2) {
+                    advert_title += (' - ' + artist_name);
+                  }
+
+                  // Create desc
+                  if (total_selected > 1) {
+                    advert_desc = 'Je vends ce lot de ' + total_selected + ' vinyles, ' + $tracks.data('vinyl-rpm') + ' tours, comprenant les titres suivants :\r\n';
+                  } else {
+                    advert_desc = 'Je vends ce vinyle de ' + artist_name + ' composé des morceaux ';
+                  }
+                }
+
+                // Add artist in desc (only when have selected more than 1 vinyl)
+                if (total_selected > 1)
+                  advert_desc += artist_name + ((nb_tracks > 1) ? ' :': '');
+
+                for (const vinyl_id in tracks) {
+                  if (tracks.hasOwnProperty(vinyl_id)) {
+                    var vinyl = tracks[vinyl_id];
+                    // Add vinyl track faces in desc
+                    if (total_selected > 1) {
+                      advert_desc += ((nb_tracks > 1) ? '\r\n': ' ') + '- ' + ((vinyl.quantity > 1) ? vinyl.quantity + 'x ' : '') +
+                        vinyl.face_A + ' / ' + vinyl.face_B;
+                    } else {
+                      advert_desc += '« ' + vinyl.face_A + ' » et « ' + vinyl.face_B + ' »';
+                    }
+                  }
+                }
+              }
+            }
+
+            if (last == false)
+              advert_desc += '\r\n';
+
+            i_artist++;
           }
         }
 
@@ -213,6 +270,36 @@ var app = {
         $form.find('#advert_title').val(advert_title);
         $form.find('#advert_description').val(advert_desc);
         $form.find('#advert_price').val(total_selected > 0 ? total_selected : '');
+      });
+
+      // Event:Advert is sold / not sold
+      self.$adverts.on('change', '.advert-checkbox-is-sold', function(e) {
+        var $checkbox = $(this);
+
+        console.log($checkbox.is(':checked'));
+
+        // $.ajax({
+        //   method: 'POST',
+        //   url: '/vinyles/' + id_vinyl + '/' + track_face + '/youtube-id',
+        //   success: function(r) {
+        //     if (r.query_status == 1 && r.youtube_id != null) {
+        //         // Update artist & track title
+        //         self.$player.find('.-title').html(r.vinyl.track);
+        //         self.$player.find('.-artist').html(r.vinyl.artists);
+        //
+        //         // Update <iframe> source
+        //         self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/' + r.youtube_id + '?autoplay=1&fs=0&rel=0&showinfo=0');
+        //
+        //         // Display player
+        //         self.$player.removeClass('invisible');
+        //     }
+        //   }
+        // });
+
+        // Ultimate-stop smashing
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
       });
 
       // Create YouTube player (iframe & co) using JS
@@ -269,7 +356,7 @@ var app = {
           $container.find('input[value="' + $container.data('ms-autoselect') + '"]').prop('checked', true);
       });
 
-      // Easter egg > when clicking on heart icon in the footer
+      // Easter egg:When clicking on heart icon in the footer
       self.$body.on('click', '.app-footer .icon-heart', function() {
         self.$player.find('.-title').html('lofi hip hop radio - beats to study/relax to 🐾');
         self.$player.find('.-artist').html('Chillhop Music');
