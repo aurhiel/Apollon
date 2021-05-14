@@ -275,6 +275,7 @@ var app = {
       // Event:Advert is sold / not sold
       self.$ads_total_vinyls_sold = self.$body.find('.-total-vinyls-sold');
       self.$ads_total_price_got   = self.$body.find('.-total-prices-got');
+      self.$ads_vinyls_avg_price  = self.$body.find('.-price-vinyls-average');
       self.$adverts.on('change', '.advert-checkbox-is-sold', function(e) {
         var $checkbox = $(this);
         var $advert   = $checkbox.parents('.-item').first();
@@ -285,9 +286,12 @@ var app = {
           url: '/annonces/' + advert_id + '/est-vendue/' + (($checkbox.is(':checked')) ? '1' : '0'),
           success: function(r) {
             if (r.query_status == 1) {
+              var new_nb_sold   = parseFloat(self.$ads_total_vinyls_sold.html()) + ($advert.data('advert-total-qty') * ($checkbox.is(':checked') ? 1 : -1));
+              var new_total_got = parseFloat(self.$ads_total_price_got.html()) + ($advert.data('advert-price') * ($checkbox.is(':checked') ? 1 : -1));
               // Update datas
-              self.$ads_total_vinyls_sold.html(parseFloat(self.$ads_total_vinyls_sold.html()) + ($advert.data('advert-total-qty') * ($checkbox.is(':checked') ? 1 : -1)));
-              self.$ads_total_price_got.html(parseFloat(self.$ads_total_price_got.html()) + ($advert.data('advert-price') * ($checkbox.is(':checked') ? 1 : -1)) + '€');
+              self.$ads_total_vinyls_sold.html(new_nb_sold);
+              self.$ads_total_price_got.html(new_total_got + '€');
+              self.$ads_vinyls_avg_price.html((Math.round((new_total_got / new_nb_sold) * 100) / 100) + '€');
             } else {
               alert(r.message_status);
             }
