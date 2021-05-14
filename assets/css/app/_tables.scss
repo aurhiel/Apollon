@@ -69,6 +69,15 @@
     line-height: 1.25;
     vertical-align: middle;
   }
+
+  tr {
+    &.disabled {
+      --bs-table-accent-bg: #{$gray-800};
+      color: $gray-700;
+      pointer-events: none;
+      user-select: none;
+    }
+  }
 }
 
 

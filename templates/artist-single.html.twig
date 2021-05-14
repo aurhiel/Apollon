@@ -13,7 +13,8 @@
         <h1 class="text-center text-md-start mb-1"><span class="icon-user text-primary rounded"></span> {{ artist.name }}</h1>
         <p class="text-muted text-center text-md-start mb-4">
           {% set vinyls_total_unique = artist.vinyls|length %}
-          <b>{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité : <b>{{ artist.vinylsQuantity }}</b>
+          <b class="badge bg-primary rounded-pill">{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} -
+          Quantité : <b class="badge bg-primary rounded-pill">{{ artist.vinylsQuantity }}</b>
         </p>
 
         {% if artist.vinyls is not empty %}
@@ -39,7 +40,7 @@
               </thead>
               <tbody>
               {% for vinyl in artist.vinyls %}
-                <tr data-vinyl-id="{{ vinyl.id }}">
+                <tr {% if vinyl.quantitySold >= vinyl.quantity and is_granted('ROLE_ADMIN') == false %}class="disabled" {% endif %}data-vinyl-id="{{ vinyl.id }}">
                   <th scope="row" class="col-id">{{ vinyl.id }}</th>
                   <td class="col-rpm">{{ vinyl.rpm }}</td>
                   <td class="col-track" data-track-face="A">
