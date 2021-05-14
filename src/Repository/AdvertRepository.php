@@ -40,6 +40,16 @@ class AdvertRepository extends ServiceEntityRepository
         ;
     }
 
+    public function countTotalPricesCheckout($value='')
+    {
+        return $this->createQueryBuilder('a')
+            ->select('SUM(a.price) AS total_price')
+            ->andWhere('a.is_sold = true')
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
     // /**
     //  * @return Advert[] Returns an array of Advert objects
     //  */

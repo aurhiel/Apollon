@@ -273,28 +273,26 @@ var app = {
       });
 
       // Event:Advert is sold / not sold
+      self.$ads_total_vinyls_sold = self.$body.find('.-total-vinyls-sold');
+      self.$ads_total_price_got   = self.$body.find('.-total-prices-got');
       self.$adverts.on('change', '.advert-checkbox-is-sold', function(e) {
         var $checkbox = $(this);
+        var $advert   = $checkbox.parents('.-item').first();
+        var advert_id = $checkbox.val();
 
-        console.log($checkbox.is(':checked'));
-
-        // $.ajax({
-        //   method: 'POST',
-        //   url: '/vinyles/' + id_vinyl + '/' + track_face + '/youtube-id',
-        //   success: function(r) {
-        //     if (r.query_status == 1 && r.youtube_id != null) {
-        //         // Update artist & track title
-        //         self.$player.find('.-title').html(r.vinyl.track);
-        //         self.$player.find('.-artist').html(r.vinyl.artists);
-        //
-        //         // Update <iframe> source
-        //         self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/' + r.youtube_id + '?autoplay=1&fs=0&rel=0&showinfo=0');
-        //
-        //         // Display player
-        //         self.$player.removeClass('invisible');
-        //     }
-        //   }
-        // });
+        $.ajax({
+          method: 'POST',
+          url: '/annonces/' + advert_id + '/est-vendue/' + (($checkbox.is(':checked')) ? '1' : '0'),
+          success: function(r) {
+            if (r.query_status == 1) {
+              // Update datas
+              self.$ads_total_vinyls_sold.html(parseFloat(self.$ads_total_vinyls_sold.html()) + ($advert.data('advert-total-qty') * ($checkbox.is(':checked') ? 1 : -1)));
+              self.$ads_total_price_got.html(parseFloat(self.$ads_total_price_got.html()) + ($advert.data('advert-price') * ($checkbox.is(':checked') ? 1 : -1)) + '€');
+            } else {
+              alert(r.message_status);
+            }
+          }
+        });
 
         // Ultimate-stop smashing
         e.preventDefault();

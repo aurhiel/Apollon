@@ -107,7 +107,8 @@ class AppController extends AbstractController
                     $em->flush();
 
                     $return = array(
-                        'query_status'    => 'success',
+                        'query_status'    => 1,
+                        'slug_status'     => 'success',
                         'message_status'  => 'Importation des vinyles effectuée avec succès.',
                         'id_entity'       => $vinyl->getId()
                     );
@@ -116,14 +117,15 @@ class AppController extends AbstractController
                     $em->clear();
 
                     $return = array(
-                        'query_status'    => 'danger',
+                        'query_status'    => 0,
+                        'slug_status'     => 'error',
                         'exception'       => $e->getMessage(),
                         'message_status'  => 'Un problème est survenu lors de l\'importation des vinyles.'
                     );
                 }
 
                 // Set $return message
-                $request->getSession()->getFlashBag()->add($return['query_status'], $return['message_status']);
+                $request->getSession()->getFlashBag()->add($return['slug_status'], $return['message_status']);
             } else {
                 // Set message if file is empty / not found
                 $request->getSession()->getFlashBag()->add('notice',
@@ -507,7 +509,8 @@ class AppController extends AbstractController
                     $em->flush();
 
                     $return = array(
-                        'query_status'    => 'success',
+                        'query_status'    => 1,
+                        'slug_status'     => 'success',
                         'message_status'  => 'Sauvegarde de l\'annonce effectuée avec succès.',
                         'id_entity'       => $advert->getId()
                     );
@@ -560,7 +563,8 @@ class AppController extends AbstractController
                     $em->clear();
 
                     $return = array(
-                        'query_status'    => 'error',
+                        'query_status'    => 0,
+                        'slug_status'     => 'error',
                         'exception'       => $e->getMessage(),
                         'message_status'  => 'Un problème est survenu lors de la sauvegarde de l\'annonce.'
                     );
@@ -570,7 +574,7 @@ class AppController extends AbstractController
             // Set flash message if $return has message_status
             if (isset($return['message_status']) && !empty($return['message_status'])) {
                 $request->getSession()->getFlashBag()->add(
-                    (isset($return['query_status']) ? $return['query_status'] : 'notice'),
+                    (isset($return['slug_status']) ? $return['slug_status'] : 'notice'),
                     $return['message_status']
                 );
             }
@@ -610,6 +614,7 @@ class AppController extends AbstractController
         $nb_vinyls_in_sale  = $r_in_sale->countVinylsInSale();
         $nb_vinyls_sold     = $r_vinyl->countVinylsSold();
         $total_prices       = $r_advert->countTotalPrices();
+        $total_checkout     = $r_advert->countTotalPricesCheckout();
 
         return $this->render('adverts.html.twig', [
             'meta'    => [
@@ -621,7 +626,8 @@ class AppController extends AbstractController
             'vinyls_to_sale'  => $vinyls_to_sale,
             'nb_vinyls_in_sale' => $nb_vinyls_in_sale,
             'nb_vinyls_sold'    => $nb_vinyls_sold,
-            'total_prices'      => $total_prices,
+            'total_prices'      => (float)$total_prices,
+            'total_prices_checkout' => (float)$total_checkout,
         ]);
     }
 
@@ -660,13 +666,15 @@ class AppController extends AbstractController
 
             // Set $return success message
             $return = array(
-                'query_status'    => 'success',
+                'query_status'    => 1,
+                'slug_status'     => 'success',
                 'message_status'  => 'L\'annonce a bien été supprimée.'
             );
 
         } else {
             $return = array(
-                'query_status'    => 'error',
+                'query_status'    => 0,
+                'slug_status'     => 'error',
                 'message_status'  => 'L\'annonce avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.'
             );
         }
@@ -674,13 +682,87 @@ class AppController extends AbstractController
         // Set flash message if $return has message_status
         if (isset($return['message_status']) && !empty($return['message_status'])) {
             $request->getSession()->getFlashBag()->add(
-                (isset($return['query_status']) ? $return['query_status'] : 'notice'),
+                (isset($return['slug_status']) ? $return['slug_status'] : 'notice'),
                 $return['message_status']
             );
         }
 
         // No direct access
         return $this->redirectToRoute('adverts');
+    }
+
+    /**
+     * @Route("/annonces/{id}/est-vendue/{isSold}", name="advert_update_is_sold")
+     * @IsGranted("ROLE_ADMIN")
+     */
+    public function advert_update_is_sold($id, $isSold, Request $request)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        // Retrieve advert to update
+        $repo   = $em->getRepository(Advert::class);
+        $advert = $repo->findOneById($id);
+
+        if ($advert !== null) {
+            try {
+                $advert_is_sold = ($isSold === '1');
+                // Update advert is sold or not
+                $advert->setIsSold($advert_is_sold);
+
+                // TODO Retrieve vinyls & update their quantities
+                $inSales = $advert->getInSales();
+                foreach ($inSales as $is) {
+                  $vinyl    = $is->getVinyl();
+                  $max_qty  = $vinyl->getQuantity();
+                  $old_qty_sold = $vinyl->getQuantitySold();
+                  $qty_sold     = $is->getQuantity();
+
+                  // Up / Down vinyls quantity sold
+                  if ($advert_is_sold == true) {
+                      if ($old_qty_sold + $qty_sold <= $max_qty)
+                          $vinyl->setQuantitySold($old_qty_sold + $qty_sold);
+                  } else {
+                      if ($old_qty_sold - $qty_sold >= 0)
+                          $vinyl->setQuantitySold($old_qty_sold - $qty_sold);
+                  }
+                }
+
+                // Flush database
+                $em->flush();
+
+                // Set $return success message
+                $return = array(
+                    'query_status'    => 1,
+                    'slug_status'     => 'success',
+                    'message_status'  => (($advert_is_sold) ? 'L\'annonce a bien été passée à l\'état vendue.' : 'L\'annonce est de nouveau en vente.')
+                );
+            } catch (\Exception $e) {
+                $return = array(
+                    'query_status'    => 0,
+                    'slug_status'     => 'error',
+                    'exception'       => $e->getMessage(),
+                    'message_status'  => 'Un problème est survenu lors du changement de l\'état est vendu de l\'annonce.'
+                );
+            }
+
+        } else {
+            $return = array(
+                'query_status'    => 0,
+                'slug_status'     => 'error',
+                'message_status'  => 'L\'annonce avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.'
+            );
+        }
+
+        // Display return data as JSON when using AJAX or redirect to home
+        if ($request->isXmlHttpRequest()) {
+            return $this->json($return);
+        } else {
+            // Set message in flashbag on direct access
+            $request->getSession()->getFlashBag()->add($return['slug_status'], $return['message_status']);
+
+            // No direct access
+            return $this->redirectToRoute('adverts');
+        }
     }
 
     /**
@@ -725,7 +807,8 @@ class AppController extends AbstractController
                         $em->flush();
 
                         $return = array(
-                            'query_status'    => 'success',
+                            'query_status'    => 1,
+                            'slug_status'     => 'success',
                             'message_status'  => 'Sauvegarde de l\'artiste effectuée avec succès.',
                             'id_entity'       => $artist->getId()
                         );
@@ -741,7 +824,8 @@ class AppController extends AbstractController
                         $em->clear();
 
                         $return = array(
-                            'query_status'    => 'error',
+                            'query_status'    => 0,
+                            'slug_status'     => 'error',
                             'exception'       => $e->getMessage(),
                             'message_status'  => 'Un problème est survenu lors de la sauvegarde de l\'artiste.'
                         );
@@ -749,7 +833,8 @@ class AppController extends AbstractController
                 } else {
                     // If artist already exist > add message status & clear/reset form
                     $return = array(
-                        'query_status'    => 'notice',
+                        'query_status'    => 0,
+                        'slug_status'     => 'notice',
                         'message_status'  => 'L\'artiste "' . $artist->getName() . '" est déjà présent dans la base de données et n\'a donc pas été ajouté.',
                         'id_entity'       => $artist->getId()
                     );
@@ -782,7 +867,8 @@ class AppController extends AbstractController
                         $em->flush();
 
                         $return = array(
-                            'query_status'    => 'notice',
+                            'query_status'    => 0,
+                            'slug_status'     => 'notice',
                             'message_status'  => 'Le vinyle existe déjà en base de donnée,
                               sa quantité a donc été augmentée (quantité: ' . $vinyl_existing->getQuantity() . ').',
                             'id_entity'       => $vinyl_existing->getId()
@@ -796,7 +882,8 @@ class AppController extends AbstractController
                         $em->clear();
 
                         $return = array(
-                            'query_status'    => 'error',
+                            'query_status'    => 0,
+                            'slug_status'     => 'error',
                             'exception'       => $e->getMessage(),
                             'message_status'  => 'Un problème est survenu lors de la modification de la quantité du vinyle.'
                         );
@@ -810,7 +897,8 @@ class AppController extends AbstractController
                         $em->flush();
 
                         $return = array(
-                            'query_status'    => 'success',
+                            'query_status'    => 1,
+                            'slug_status'     => 'success',
                             'message_status'  => 'Sauvegarde du vinyle effectuée avec succès.',
                             'id_entity'       => $vinyl->getId()
                         );
@@ -823,7 +911,8 @@ class AppController extends AbstractController
                         $em->clear();
 
                         $return = array(
-                            'query_status'    => 'error',
+                            'query_status'    => 0,
+                            'slug_status'     => 'error',
                             'exception'       => $e->getMessage(),
                             'message_status'  => 'Un problème est survenu lors de la sauvegarde du vinyle.'
                         );
@@ -834,7 +923,7 @@ class AppController extends AbstractController
             // Set flash message if $return has message_status
             if (isset($return['message_status']) && !empty($return['message_status'])) {
                 $request->getSession()->getFlashBag()->add(
-                    (isset($return['query_status']) ? $return['query_status'] : 'notice'),
+                    (isset($return['slug_status']) ? $return['slug_status'] : 'notice'),
                     $return['message_status']
                 );
             }

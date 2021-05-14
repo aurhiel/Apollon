@@ -44,6 +44,11 @@ class Advert
      */
     private $images;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $is_sold;
+
     public function __construct()
     {
         $this->inSales = new ArrayCollection();
@@ -147,6 +152,18 @@ class Advert
                 $image->setAdvert(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getIsSold(): ?bool
+    {
+        return $this->is_sold;
+    }
+
+    public function setIsSold(?bool $is_sold): self
+    {
+        $this->is_sold = $is_sold;
 
         return $this;
     }
