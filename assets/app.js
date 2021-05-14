@@ -205,7 +205,7 @@ var app = {
             };
           } else {
             delete vinyls_selected[artists_str].tracks[vinyl_id];
-            console.log(Object.keys(vinyls_selected[artists_str].tracks).length);
+            // console.log(Object.keys(vinyls_selected[artists_str].tracks).length);
           }
         }
 
@@ -256,11 +256,11 @@ var app = {
                     }
                   }
                 }
+
+                if (last == false)
+                  advert_desc += '\r\n';
               }
             }
-
-            if (last == false)
-              advert_desc += '\r\n';
 
             i_artist++;
           }
