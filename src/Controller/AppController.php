@@ -964,12 +964,16 @@ class AppController extends AbstractController
             });
         }
 
+        // Get some additionnals data
+        $nb_vinyls_sold = $r_vinyl->countVinylsSold();
+
         return $this->render('app.html.twig', [
             'user'          => $user,
             'form_artist'   => isset($form_artist) ? $form_artist->createView() : null,
             'form_vinyl'    => isset($form_vinyl) ? $form_vinyl->createView() : null,
             'vinyls'        => $vinyls,
-            'total_vinyls'  => $r_vinyl->countAll(),
+            'total_vinyls'      => $r_vinyl->countAll(),
+            'nb_vinyls_sold'    => $nb_vinyls_sold,
             'vinyls_order_by'   => $order_by,
             'vinyls_direction'  => $direction,
             'artist_added'      => $artist_added,

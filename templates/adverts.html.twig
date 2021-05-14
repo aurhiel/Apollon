@@ -8,9 +8,9 @@
       <small class="fw-normal text-muted">({{ adverts|length }})</small>{% endif %}
     </h1>
     <p class="text-muted mb-4">
-      <b class="-total-vinyls-in-sale">{{ nb_vinyls_in_sale }}</b> vinyle{% if nb_vinyls_in_sale > 1 %}s{% endif %} en vente -
-      Vendu{% if nb_vinyls_sold > 1 %}s{% endif %} : <b class="-total-vinyls-sold">{{ nb_vinyls_sold }}</b> /
-      Total prévu : <b class="-total-price-to-get">{{ total_prices }}€</b> - Total perçu : <b class="-total-prices-got">{{ total_prices_checkout }}€</b>
+      <b class="-total-vinyls-in-sale badge bg-primary rounded-pill">{{ nb_vinyls_in_sale }}</b> vinyle{% if nb_vinyls_in_sale > 1 %}s{% endif %} en vente -
+      Vendu{% if nb_vinyls_sold > 1 %}s{% endif %} : <b class="-total-vinyls-sold badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> /
+      Total prévu : <b class="-total-price-to-get badge bg-primary rounded-pill">{{ total_prices }}€</b> - Total perçu : <b class="-total-prices-got badge bg-primary rounded-pill">{{ total_prices_checkout }}€</b>
     </p>
     {% if adverts is not empty %}
       <div id="advers-entities" class="list-adverts row g-4" data-masonry='{"percentPosition": true }'>

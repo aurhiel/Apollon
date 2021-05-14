@@ -8,7 +8,7 @@
     </h1>
     <p class="text-muted mb-4">
       {% set vinyls_total_unique = vinyls|length %}
-      <b>{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité : <b>{{ total_vinyls }}</b>
+      <b class="badge bg-primary rounded-pill">{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité : <b class="badge bg-primary rounded-pill">{{ total_vinyls }}</b> - Qté. vendu : <b class="badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> ({{ (100 * nb_vinyls_sold / total_vinyls)|round(2) }}%)
     </p>
     {% if vinyls is not empty %}
       <div class="table-responsive">
