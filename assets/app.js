@@ -258,7 +258,7 @@ var app = {
                 }
 
                 if (last == false)
-                  advert_desc += '\r\n';
+                  advert_desc += '\r\n\r\n';
               }
             }
 
