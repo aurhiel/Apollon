@@ -12,7 +12,8 @@
       Vendu{% if nb_vinyls_sold > 1 %}s{% endif %} : <b class="-total-vinyls-sold badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> /
       Total prévu : <b class="-total-price-to-get badge bg-primary rounded-pill">{{ total_prices }}€</b> -
       Total perçu : <b class="-total-prices-got badge bg-primary rounded-pill">{{ total_prices_checkout }}€</b> -
-      Prix moy. / vinyle : <b class="-price-vinyls-average badge bg-primary rounded-pill">{{ (total_prices_checkout / nb_vinyls_sold)|round(2) }}€</b>
+      Prix moy. / vinyle : <b class="-price-vinyls-average badge bg-primary rounded-pill">{{ (total_prices_checkout / nb_vinyls_sold)|round(2) }}€</b> -
+      Prix moy. / annonce : <b class="-price-ads-average badge bg-primary rounded-pill" data-ads-qty="{{ adverts|length }}">{{ (total_prices_checkout / adverts|length)|round(2) }}€</b>
     </p>
     {% if adverts is not empty %}
       <div id="advers-entities" class="list-adverts row g-4" data-masonry='{"percentPosition": true }'>

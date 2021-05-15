@@ -279,6 +279,7 @@ var app = {
       self.$ads_total_vinyls_sold = self.$body.find('.-total-vinyls-sold');
       self.$ads_total_price_got   = self.$body.find('.-total-prices-got');
       self.$ads_vinyls_avg_price  = self.$body.find('.-price-vinyls-average');
+      self.$ads_avg_price         = self.$body.find('.-price-ads-average');
       self.$adverts.on('change', '.advert-checkbox-is-sold', function(e) {
         var $checkbox = $(this);
         var $advert   = $checkbox.parents('.-item').first();
@@ -295,6 +296,7 @@ var app = {
               self.$ads_total_vinyls_sold.html(new_nb_sold);
               self.$ads_total_price_got.html(new_total_got + '€');
               self.$ads_vinyls_avg_price.html((Math.round((new_total_got / new_nb_sold) * 100) / 100) + '€');
+              self.$ads_avg_price.html((Math.round(new_total_got / self.$ads_avg_price.data('ads-qty'))) + '€');
             } else {
               alert(r.message_status);
             }
