@@ -228,9 +228,9 @@ var app = {
                 if (advert_title == '') {
                   // Create advert title
                   advert_title = ((total_selected < 2) ? 'Vinyle ' : 'Lot de ' + total_selected + ' vinyles - ') + $tracks.data('vinyl-rpm') + 'T';
-                  if (total_selected < 2) {
+                  //  & push artist name in title if only 1 vinyl selected
+                  if (total_selected < 2)
                     advert_title += (' - ' + artist_name);
-                  }
 
                   // Create desc
                   if (total_selected > 1) {
@@ -245,14 +245,17 @@ var app = {
                   advert_desc += artist_name + ((nb_tracks > 1) ? ' :': '');
 
                 for (const vinyl_id in tracks) {
+                  // Add vinyl track faces in desc
                   if (tracks.hasOwnProperty(vinyl_id)) {
                     var vinyl = tracks[vinyl_id];
-                    // Add vinyl track faces in desc
+                    // Multi-vinyl selected
                     if (total_selected > 1) {
                       advert_desc += ((nb_tracks > 1) ? '\r\n': ' ') + '- ' + ((vinyl.quantity > 1) ? vinyl.quantity + 'x ' : '') +
                         vinyl.face_A + ' / ' + vinyl.face_B;
                     } else {
+                      // Only 1 vinyl selected : add track faces in title & description
                       advert_desc += '« ' + vinyl.face_A + ' » et « ' + vinyl.face_B + ' »';
+                      advert_title += ' - ' + tracks[vinyl_id].face_A + ' / ' + tracks[vinyl_id].face_B;
                     }
                   }
                 }
