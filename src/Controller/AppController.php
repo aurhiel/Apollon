@@ -623,6 +623,7 @@ class AppController extends AbstractController
             'user'            => $user,
             'form_advert'     => isset($form_advert) ? $form_advert->createView() : null,
             'adverts'         => $adverts,
+            'total_vinyls'    => $r_vinyl->countAll(),
             'vinyls_to_sale'  => $vinyls_to_sale,
             'nb_vinyls_in_sale' => $nb_vinyls_in_sale,
             'nb_vinyls_sold'    => $nb_vinyls_sold,

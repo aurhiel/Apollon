@@ -62,6 +62,12 @@
             </button>
           {% endif %}
           </div>
+        {% elseif user is not defined %}
+          <div class="navbar-actions">
+            <a class="btn btn-sm btn-outline-primary text-white px-3 px-md-4 ms-2 ms-md-3" href="tel:0695064091">
+              <span class="icon-phone me-1"></span> 06 95 06 40 91
+            </a>
+          </div>
         {% endif %}
       {% endblock %}
 
@@ -69,10 +75,6 @@
         {% if user is defined and user.username is defined %}
           <span class="-hello text-muted">Hi, </span>
           <span class="-name text-capitalize">{{ user.username }}{% if user.username == 'losovia' %} 💕{% elseif user.username == 'anderson' %} 🌱{% endif %}</span>
-        {% else %}
-          <a href="{{ path('login') }}" class="text-decoration-none">
-            Connexion
-          </a>
         {% endif %}
       </div>
     </div>

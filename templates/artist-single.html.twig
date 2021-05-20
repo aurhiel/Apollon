@@ -32,7 +32,9 @@
                     <span>Artiste(s)</span>
                   </th>
                   <th scope="col" class="col-quantity">Qté</th>
+                {% if is_granted('ROLE_VIEWER') %}
                   <th scope="col" class="col-quantity">Vendu(s)</th>
+                {% endif %}
                 {% if is_granted('ROLE_ADMIN') %}
                   <th scope="col" class="col-actions"></th>
                 {% endif %}
@@ -58,6 +60,7 @@
                       {% endfor %}
                     {% endif %}
                   </td>
+                {% if is_granted('ROLE_VIEWER') %}
                   <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}">
                     {% if is_granted('ROLE_ADMIN') %}
                       <span class="form-control-quantity">
@@ -80,6 +83,11 @@
                       {{ vinyl.quantitySold }}
                     {% endif %}
                   </td>
+                {% else %}
+                  <td class="col-quantity">
+                    {{ vinyl.quantity - vinyl.quantitySold }}
+                  </td>
+                {% endif %}
                 {% if is_granted('ROLE_ADMIN') %}
                   <td class="col-actions">
                     <button class="btn btn-sm btn-outline-danger px-2 py-1"

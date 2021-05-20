@@ -8,17 +8,23 @@
         et beaucoup de
         <abbr title="passion" class="icon icon-heart" data-toggle="tooltip"></abbr>
       </div>
-    {% if is_granted('ROLE_ADMIN') %}
       <div class="col-md-6 my-1 text-md-end">
         <ul class="list-inline mb-0">
           <li class="list-inline-item">
+          {% if is_granted('ROLE_ADMIN') %}
             <a href="{{ path('import_csv') }}">
               Import CSV
             </a>
+          {% else %}
+            {% if is_granted('ROLE_VIEWER') == false %}
+              <a href="{{ path('login') }}" class="text-decoration-none">
+                Connexion
+              </a>
+            {% endif %}
+          {% endif %}
           </li>
         </ul>
       </div>
-    {% endif %}
     </div>
   </div>
 </footer>

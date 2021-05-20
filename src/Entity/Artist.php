@@ -95,7 +95,7 @@ class Artist
         return $this;
     }
 
-    public function getVinylsQuantity($value='')
+    public function getVinylsQuantity()
     {
         $quantity = 0;
         foreach ($this->vinyls as $vinyl) {

@@ -8,7 +8,7 @@
     </h1>
     <p class="text-muted mb-4">
       {% set vinyls_total_unique = vinyls|length %}
-      <b class="badge bg-primary rounded-pill">{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité : <b class="badge bg-primary rounded-pill">{{ total_vinyls }}</b> - Qté. vendu : <b class="badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> ({{ (100 * nb_vinyls_sold / total_vinyls)|round(2) }}%)
+      <b class="badge bg-primary rounded-pill">{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité disponible : <b class="badge bg-primary rounded-pill">{{ total_vinyls - nb_vinyls_sold }}</b> - Qté. vendu : <b class="badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> ({{ (100 * nb_vinyls_sold / total_vinyls)|round(2) }}%)
     </p>
     {% if vinyls is not empty %}
       <div class="table-responsive">
@@ -41,7 +41,9 @@
                 </a>
               </th>
               <th scope="col" class="col-quantity">Qté</th>
+            {% if is_granted('ROLE_VIEWER') %}
               <th scope="col" class="col-quantity">Vendu(s)</th>
+            {% endif %}
             {% if is_granted('ROLE_ADMIN') %}
               <th scope="col" class="col-actions"></th>
             {% endif %}
@@ -53,20 +55,21 @@
               <th scope="row" class="col-id">{{ vinyl.id }}</th>
               <td class="col-rpm">{{ vinyl.rpm }}</td>
               <td class="col-track" data-track-face="A">
-                {{ vinyl.trackFaceA }} <span class="-icon-play icon-play-circle"></span>
+                {{ vinyl.trackFaceA }}&nbsp;<span class="-icon-play icon-play-circle"></span>
               </td>
               <td class="col-track" data-track-face="B">
-                {{ vinyl.trackFaceB }} <span class="-icon-play icon-play-circle"></span>
+                {{ vinyl.trackFaceB }}&nbsp;<span class="-icon-play icon-play-circle"></span>
               </td>
               <td class="col-artist">
                 {% set artists_str = null %}
                 {% if vinyl.artists is not empty %}
                   {% for artist in vinyl.artists %}
                     {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
-                    {{ artist.name }}{% if loop.last == false %}, {% endif %}
+                    <a href="{{ path('artists_infos', { id: artist.id }) }}">{{ artist.name }}</a>{% if loop.last == false %}, {% endif %}
                   {% endfor %}
                 {% endif %}
               </td>
+            {% if is_granted('ROLE_VIEWER') %}
               <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}">
                 {% if is_granted('ROLE_ADMIN') %}
                   <span class="form-control-quantity">
@@ -89,6 +92,11 @@
                   {{ vinyl.quantitySold }}
                 {% endif %}
               </td>
+            {% else %}
+              <td class="col-quantity">
+                {{ vinyl.quantity - vinyl.quantitySold }}
+              </td>
+            {% endif %}
             {% if is_granted('ROLE_ADMIN') %}
               <td class="col-actions">
                 <button class="btn btn-sm btn-outline-danger px-2 py-1"
