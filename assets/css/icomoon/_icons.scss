@@ -1,3 +1,8 @@
+.icon-check-circle {
+  &:before {
+    content: $icon-check-circle;
+  }
+}
 .icon-chevron-down {
   &:before {
     content: $icon-chevron-down;
@@ -53,6 +58,11 @@
     content: $icon-heart;
   }
 }
+.icon-loader {
+  &:before {
+    content: $icon-loader;
+  }
+}
 .icon-log-out {
   &:before {
     content: $icon-log-out;
@@ -76,6 +86,11 @@
 .icon-pause-circle {
   &:before {
     content: $icon-pause-circle;
+  }
+}
+.icon-phone {
+  &:before {
+    content: $icon-phone;
   }
 }
 .icon-play {
@@ -110,7 +125,7 @@
 }
 .icon-trash {
   &:before {
-    content: $icon-trash; 
+    content: $icon-trash;
   }
 }
 .icon-user {
