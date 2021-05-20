@@ -62,7 +62,7 @@
             </button>
           {% endif %}
           </div>
-        {% elseif user is not defined %}
+        {% elseif is_granted('ROLE_VIEWER') == false %}
           <div class="navbar-actions">
             <a class="btn btn-sm btn-outline-primary text-white px-3 px-md-4 ms-2 ms-md-3" href="tel:0695064091">
               <span class="icon-phone me-1"></span> 06 95 06 40 91
