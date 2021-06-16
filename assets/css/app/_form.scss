@@ -2,6 +2,11 @@
 //
 
 
+
+// Fields
+//
+
+// Files
 .custom-file {
   label {
     display: none;
@@ -106,6 +111,22 @@
   }
 }
 
+
+
+// Forms
+//
+
+// Specific forms
+.form-advert {
+  textarea {
+    min-height: 10rem;
+  }
+}
+
+
+
+// Responsive
+//
 
 @include media-breakpoint-up(lg) {
   // Symfony form's multiple <select> (with checkboxes)

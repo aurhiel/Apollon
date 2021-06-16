@@ -128,6 +128,11 @@ var app = {
         });
       }
 
+      // Disable every form's buttons after submitting the form
+      self.$body.find('.form').on('submit', function() {
+        $(this).find('.btn').addClass('disabled');
+      });
+
       // Button to update vinyls quantity (total & sold)
       self.$vinyls.on('click', '.btn-qty', function() {
         var $btn      = $(this);
