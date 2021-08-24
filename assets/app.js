@@ -63,6 +63,9 @@ var app = {
 
       self.$player = self.$body.find('.app-player');
 
+      // Header
+      self.$header = self.$body.find('.app-header');
+
       // Modals
       self.$modal_artist  = self.$body.find('#modal-manage-artist');
       self.$modal_vinyl   = self.$body.find('#modal-manage-vinyl');
@@ -214,70 +217,100 @@ var app = {
           }
         }
 
-        // Create advert title & description if enough vinyls quantity
-        var advert_title = '';
-        var advert_desc = '';
-        if (total_selected > 0) {
-          // Loop on tracks selected to add them into title & description
-          var i_artist = 0;
-          var nb_artists = Object.keys(vinyls_selected).length;
-          for (const artist_name in vinyls_selected) {
-            var last = (i_artist === (nb_artists - 1));
+        // Create advert title & description if enough vinyls quantity & not edit
+        if (self.$modal_advert.hasClass('-is-edit') == false) {
+          var advert_title = '';
+          var advert_desc = '';
+          if (total_selected > 0) {
+            // Loop on tracks selected to add them into title & description
+            var i_artist = 0;
+            var nb_artists = Object.keys(vinyls_selected).length;
+            for (const artist_name in vinyls_selected) {
+              var last = (i_artist === (nb_artists - 1));
 
-            if (vinyls_selected.hasOwnProperty(artist_name)) {
-              var tracks = vinyls_selected[artist_name].tracks;
-              var nb_tracks = Object.keys(tracks).length;
+              if (vinyls_selected.hasOwnProperty(artist_name)) {
+                var tracks = vinyls_selected[artist_name].tracks;
+                var nb_tracks = Object.keys(tracks).length;
 
-              if (nb_tracks > 0) {
-                // Init advert_title & _desc
-                if (advert_title == '') {
-                  // Create advert title
-                  advert_title = ((total_selected < 2) ? 'Vinyle ' : 'Lot de ' + total_selected + ' vinyles - ') + $tracks.data('vinyl-rpm') + 'T';
-                  //  & push artist name in title if only 1 vinyl selected
-                  if (total_selected < 2)
-                    advert_title += (' - ' + artist_name);
+                if (nb_tracks > 0) {
+                  // Init advert_title & _desc
+                  if (advert_title == '') {
+                    // Create advert title
+                    advert_title = ((total_selected < 2) ? 'Vinyle ' : 'Lot de ' + total_selected + ' vinyles - ') + $tracks.data('vinyl-rpm') + 'T';
+                    //  & push artist name in title if only 1 vinyl selected
+                    if (total_selected < 2)
+                      advert_title += (' - ' + artist_name);
 
-                  // Create desc
-                  if (total_selected > 1) {
-                    advert_desc = 'Je vends ce lot de ' + total_selected + ' vinyles, ' + $tracks.data('vinyl-rpm') + ' tours, comprenant les titres suivants :\r\n';
-                  } else {
-                    advert_desc = 'Je vends ce vinyle de ' + artist_name + ' composé des morceaux ';
-                  }
-                }
-
-                // Add artist in desc (only when have selected more than 1 vinyl)
-                if (total_selected > 1)
-                  advert_desc += artist_name + ((nb_tracks > 1) ? ' :': '');
-
-                for (const vinyl_id in tracks) {
-                  // Add vinyl track faces in desc
-                  if (tracks.hasOwnProperty(vinyl_id)) {
-                    var vinyl = tracks[vinyl_id];
-                    // Multi-vinyl selected
+                    // Create desc
                     if (total_selected > 1) {
-                      advert_desc += ((nb_tracks > 1) ? '\r\n': ' ') + '- ' + ((vinyl.quantity > 1) ? vinyl.quantity + 'x ' : '') +
-                        vinyl.face_A + ' / ' + vinyl.face_B;
+                      advert_desc = 'Je vends ce lot de ' + total_selected + ' vinyles, ' + $tracks.data('vinyl-rpm') + ' tours, comprenant les titres suivants :\r\n';
                     } else {
-                      // Only 1 vinyl selected : add track faces in title & description
-                      advert_desc += '« ' + vinyl.face_A + ' » et « ' + vinyl.face_B + ' »';
-                      advert_title += ' - ' + tracks[vinyl_id].face_A + ' / ' + tracks[vinyl_id].face_B;
+                      advert_desc = 'Je vends ce vinyle de ' + artist_name + ' composé des morceaux ';
                     }
                   }
+
+                  // Add artist in desc (only when have selected more than 1 vinyl)
+                  if (total_selected > 1)
+                    advert_desc += artist_name + ((nb_tracks > 1) ? ' :': '');
+
+                  for (const vinyl_id in tracks) {
+                    // Add vinyl track faces in desc
+                    if (tracks.hasOwnProperty(vinyl_id)) {
+                      var vinyl = tracks[vinyl_id];
+                      // Multi-vinyl selected
+                      if (total_selected > 1) {
+                        advert_desc += ((nb_tracks > 1) ? '\r\n': ' ') + '- ' + ((vinyl.quantity > 1) ? vinyl.quantity + 'x ' : '') +
+                          vinyl.face_A + ' / ' + vinyl.face_B;
+                      } else {
+                        // Only 1 vinyl selected : add track faces in title & description
+                        advert_desc += '« ' + vinyl.face_A + ' » et « ' + vinyl.face_B + ' »';
+                        advert_title += ' - ' + tracks[vinyl_id].face_A + ' / ' + tracks[vinyl_id].face_B;
+                      }
+                    }
+                  }
+
+                  if (last == false)
+                    advert_desc += '\r\n\r\n';
                 }
-
-                if (last == false)
-                  advert_desc += '\r\n\r\n';
               }
+
+              i_artist++;
             }
-
-            i_artist++;
           }
-        }
 
-        // Update advert title <input>, description <textarea> & price <input>
-        $form.find('#advert_title').val(advert_title);
-        $form.find('#advert_description').val(advert_desc);
-        $form.find('#advert_price').val(total_selected > 0 ? total_selected : '');
+          // Update advert title <input>, description <textarea> & price <input>
+          $form.find('#advert_title').val(advert_title);
+          $form.find('#advert_description').val(advert_desc);
+          $form.find('#advert_price').val(total_selected > 0 ? total_selected : '');
+        }
+      });
+
+      // Auto open advert modal on edit & add event on modal hide
+      if (self.$modal_advert.hasClass('-is-edit')) {
+        self.$header.find('.btn[name="toggle-modal-form-advert"]').trigger('click');
+
+        // Redirect on hide (= cancel edit)
+        self.$modal_advert.get(0).addEventListener('hide.bs.modal', function(e) {
+          window.location.href = "/annonces";
+          // Ultimate-stop smashing
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        });
+      }
+
+      // Event:Display adverts gallery
+      self.$adverts.on('click', '.advert-display-gallery', function() {
+        var $btn = $(this);
+        var $container = $btn.parents('.advert-gallery').first();
+        var adverts_msnry = Masonry.data(self.$adverts[0]);
+
+        // Hide button & display gallery
+        $btn.addClass('d-none');
+        $container.find('.advert-list-imgs').removeClass('d-none');
+
+        // Refresh Masonry items position
+        adverts_msnry.layout();
       });
 
       // Event:Advert is sold / not sold
@@ -313,6 +346,7 @@ var app = {
         e.stopPropagation();
         return false;
       });
+
 
       // Create YouTube player (iframe & co) using JS
       // var tag = document.createElement('script');

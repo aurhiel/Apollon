@@ -1,5 +1,5 @@
 {% if form_advert is defined and form_advert is not empty %}
-  <div class="modal fade" id="modal-manage-advert" tabindex="-1" aria-labelledby="modal-manage-advert-label" aria-hidden="true">
+  <div class="modal fade{% if is_advert_edit == true %} -is-edit{% endif %}" id="modal-manage-advert" tabindex="-1" aria-labelledby="modal-manage-advert-label" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">

@@ -482,14 +482,19 @@ class AppController extends AbstractController
     }
 
     /**
-     * @Route("/annonces", name="adverts")
+     * @Route("/annonces/{id}", name="adverts", defaults={"id"=null})
      * @IsGranted("ROLE_VIEWER")
      */
-    public function adverts(Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader)
+    public function adverts($id, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader)
     {
         $em     = $this->getDoctrine()->getManager();
         $user   = $security->getUser();
-        $advert = new Advert();
+
+        // Retrieve advert if asked ($advert_entity != null) or new one
+        $r_advert     = $em->getRepository(Advert::class);
+        $advert_edit  = $r_advert->findOneById($id);
+        $is_edit  = !is_null($advert_edit);
+        $advert   = ($is_edit === true) ? $advert_edit : new Advert();
 
         // Only admin user can add vinyls & artists
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
@@ -511,7 +516,7 @@ class AppController extends AbstractController
                     $return = array(
                         'query_status'    => 1,
                         'slug_status'     => 'success',
-                        'message_status'  => 'Sauvegarde de l\'annonce effectuée avec succès.',
+                        'message_status'  => (($is_edit === true) ? 'Modification' : 'Ajout' ) . ' de l\'annonce effectuée avec succès.',
                         'id_entity'       => $advert->getId()
                     );
 
@@ -566,7 +571,7 @@ class AppController extends AbstractController
                         'query_status'    => 0,
                         'slug_status'     => 'error',
                         'exception'       => $e->getMessage(),
-                        'message_status'  => 'Un problème est survenu lors de la sauvegarde de l\'annonce.'
+                        'message_status'  => 'Un problème est survenu lors de la ' . ($is_edit === true ? 'modification' : 'sauvegarde') . ' de l\'annonce.'
                     );
                 }
             }
@@ -577,6 +582,10 @@ class AppController extends AbstractController
                     (isset($return['slug_status']) ? $return['slug_status'] : 'notice'),
                     $return['message_status']
                 );
+
+                // Redirect on adverts home after editing one
+                if ($is_edit === true)
+                    return $this->redirectToRoute('adverts');
             }
         }
 
@@ -623,6 +632,7 @@ class AppController extends AbstractController
             'user'            => $user,
             'form_advert'     => isset($form_advert) ? $form_advert->createView() : null,
             'adverts'         => $adverts,
+            'is_advert_edit'  => $is_edit,
             'total_vinyls'    => $r_vinyl->countAll(),
             'vinyls_to_sale'  => $vinyls_to_sale,
             'nb_vinyls_in_sale' => $nb_vinyls_in_sale,
