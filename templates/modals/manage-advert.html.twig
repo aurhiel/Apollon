@@ -1,5 +1,6 @@
 {% if form_advert is defined and form_advert is not empty %}
-  <div class="modal fade{% if is_advert_edit == true %} -is-edit{% endif %}" id="modal-manage-advert" tabindex="-1" aria-labelledby="modal-manage-advert-label" aria-hidden="true">
+  <div class="modal fade{% if is_advert_edit == true %} -is-edit{% endif %}" id="modal-manage-advert" tabindex="-1" aria-labelledby="modal-manage-advert-label" aria-hidden="true"
+    {% if is_advert_edit == true %}data-bs-backdrop="static"{% endif %}>
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -29,7 +30,7 @@
                   {{ form_widget(form_advert.description) }}
                   {{ form_errors(form_advert.description) }}
                 </div>
-                <div class="col-md-12 form-group form-multi-select">
+                <div class="col-md-12 form-group form-multi-select{% if is_advert_edit == true %} d-none{% endif %}">
                   <legend class="col-form-label required">Vinyle(s) à vendre</legend>
                   <div class="border-0 p-0">
                     <ul class="list-group">
@@ -77,10 +78,73 @@
                   {{ form_label(form_advert.images) }}
                   {{ form_widget(form_advert.images) }}
                   {{ form_errors(form_advert.images) }}
-                  <div class="-images-library" data-initial-text="Aucune photo sélectionnée">
-                    Aucune photo sélectionnée
+                  <div class="-images-library{% if advert_to_edit is not null and advert_to_edit.images is not empty %} -has-images{% endif %}" data-initial-text="Aucune photo sélectionnée">
+                    {% if advert_to_edit is not null and advert_to_edit.images is not empty %}
+                      {% for img in advert_to_edit.images %}
+                        <span class="-item -in-database ratio ratio-1x1" style="background-image: url({{ asset('uploads/adverts/' ~ img.filename) }})"
+                          data-id-image="{{ img.id }}">
+                          <button class="btn btn-danger px-2 pt-2 pb-1" type="button"
+                            data-confirm-href="{{ path('advert_image_delete', { id: img.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer cette image ?"
+                              data-confirm-link-class="btn-advert-delete-img" data-confirm-always-close="true" data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
+                            <span class="icon-file-minus"></span>
+                            <span class="sr-only"></span>
+                          </button>
+                        </span>
+                      {% endfor %}
+                    {% else %}
+                      Aucune photo sélectionnée
+                    {% endif %}
                   </div>
                 </div>
+                {% if is_advert_edit == true and advert_to_edit.inSales is not empty %}
+                <div class="col-md-12 form-group">
+                  <legend class="col-form-label fw-bold pt-0">Vinyle(s) en vente</legend>
+                  <div class="table-responsive rounded" style="max-height: 18rem">
+                    <table id="vinyls-entities" class="table table-bordered table-striped table-hover table-light mb-0">
+                      <thead>
+                        <tr>
+                          <th scope="col" class="col-id">#</th>
+                          <th scope="col" class="col-rpm">T.</th>
+                          <th scope="col" class="col-track">Face A</th>
+                          <th scope="col" class="col-track">Face B</th>
+                          <th scope="col" class="col-artist">Artiste(s)</th>
+                          <th scope="col" class="col-quantity">Qté</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% set total_qty_in_sale = 0 %}
+                      {% for inSale in advert_to_edit.inSales %}
+                        {% set vinyl = inSale.vinyl %}
+                        <tr data-vinyl-id="{{ vinyl.id }}">
+                          <th scope="row" class="col-id">{{ vinyl.id }}</th>
+                          <td class="col-rpm">{{ vinyl.rpm }}</td>
+                          <td class="col-track" data-track-face="A">
+                            {{ vinyl.trackFaceA }}&nbsp;<span class="-icon-play icon-play-circle"></span>
+                          </td>
+                          <td class="col-track" data-track-face="B">
+                            {{ vinyl.trackFaceB }}&nbsp;<span class="-icon-play icon-play-circle"></span>
+                          </td>
+                          <td class="col-artist">
+                            {% set artists_str = null %}
+                            {% if vinyl.artists is not empty %}
+                              {% for artist in vinyl.artists %}
+                                {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
+                                <a href="{{ path('artists_infos', { id: artist.id }) }}">{{ artist.name }}</a>{% if loop.last == false %}, {% endif %}
+                              {% endfor %}
+                            {% endif %}
+                          </td>
+                          <td class="col-quantity">{{ inSale.quantity }}</td>
+                        </tr>
+                        {% set total_qty_in_sale = total_qty_in_sale + inSale.quantity %}
+                      {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="-vinyls-total-selected small mt-2 mb-0 text-end text-muted">
+                    Total vinyles: <b class="-amount">{{ total_qty_in_sale }}</b>
+                  </p>
+                </div>
+                {% endif %}
               </div>
             </div>
           </div>

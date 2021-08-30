@@ -73,7 +73,7 @@
                   <a href="{{ path('adverts', { id: advert.id }) }}" class="btn btn-sm btn-outline-secondary px-2 me-1">
                     <span class="icon-edit"></span>
                   </a>
-                  <button class="btn btn-sm btn-outline-danger"
+                  <button class="btn btn-sm btn-outline-danger" type="button"
                     data-confirm-href="{{ path('advert_delete', { id: advert.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer l'annonce <b>{{ advert.title }}</b> ?"
                       data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
                     <span class="icon-file-minus me-1"></span>

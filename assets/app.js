@@ -96,7 +96,7 @@ var app = {
         var $library    = $parent.find('.-images-library');
 
         if (files.length > 0) {
-          $library.addClass('-has-images').html('');
+          $library.addClass('-has-images').find('.-item').not('.-in-database').remove();
           for (var i = 0; i < files.length; i++) {
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -112,9 +112,13 @@ var app = {
 
       // Modal: Confirm delete, add link to delete and add custom things (title, body, ...)
       if (self.$modal_confirm.length > 0) {
+        var $btn_clicked = null;
+        // Add links & custom things just before modal is showed
         self.$modal_confirm.get(0).addEventListener('show.bs.modal', function (e) {
           var $modal_confirm = $(this);
-          var $btn_clicked = $(e.relatedTarget);
+          var $btn_confirm = $modal_confirm.find('.btn-ok');
+
+          $btn_clicked = $(e.relatedTarget);
 
           // Check if the confirm[data-href] is defined
           if (typeof $btn_clicked.data('confirm-href') != 'undefined') {
@@ -124,10 +128,40 @@ var app = {
               $modal_confirm.find('.modal-body').html($('<div>' + $btn_clicked.data('confirm-body') + '</div>'));
 
             // Set delete link href
-            $modal_confirm.find('.btn-ok').attr('href', $btn_clicked.data('confirm-href'));
+            $btn_confirm.attr('href', $btn_clicked.data('confirm-href'));
+
+            // Set link additionnal CSS class
+            if (typeof $btn_clicked.data('confirm-link-class') !== 'undefined')
+              $btn_confirm.addClass($btn_clicked.data('confirm-link-class'));
+
+            // Always close modal (click on cancel or submit)
+            if ((typeof $btn_clicked.data('confirm-always-close') !== 'undefined') && $btn_clicked.data('confirm-always-close') === true)
+              $btn_confirm.attr('data-bs-dismiss', 'modal');
+
+            // Update modal confirm delete z-index & backdrop z-index
+            //  (not confirm backdrop but it's working ! ...)
+            self.$body.find('.modal').last().css('z-index', 1090);
+            self.$body.find('.modal-backdrop').css('z-index', 1080);
           } else {
             console.log('[modal.confirm()] Must define a data-href');
           }
+        });
+
+        // When confirm modal is hidden
+        self.$modal_confirm.get(0).addEventListener('hidden.bs.modal', function (e) {
+          var $modal_confirm = $(this);
+          var $btn_confirm = $modal_confirm.find('.btn-ok');
+
+          // Clear custom link CSS classes
+          if ($btn_clicked != null && typeof $btn_clicked.data('confirm-link-class') !== 'undefined') {
+            $btn_confirm.removeClass($btn_clicked.data('confirm-link-class'));
+            $btn_clicked = null;
+          }
+          // & clear forced dismiss
+          $btn_confirm.removeAttr('data-bs-dismiss');
+
+          // Clear shitty forcing backdrop z-index (can't use confirm backdrop upon overs modal)
+          self.$body.find('.modal-backdrop').removeAttr('style');
         });
       }
 
@@ -292,6 +326,7 @@ var app = {
         // Redirect on hide (= cancel edit)
         self.$modal_advert.get(0).addEventListener('hide.bs.modal', function(e) {
           window.location.href = "/annonces";
+
           // Ultimate-stop smashing
           e.preventDefault();
           e.stopPropagation();
@@ -311,6 +346,30 @@ var app = {
 
         // Refresh Masonry items position
         adverts_msnry.layout();
+      });
+
+      // Event: Advert delete image
+      self.$body.on('click', '.btn-advert-delete-img', function(e) {
+        $.ajax({
+          method: 'POST',
+          url: $(this).attr('href'),
+          success: function(r) {
+            if (r.query_status == 1) {
+              if (typeof r.image_deleted != 'undefined') {
+                var $img_item = self.$modal_advert.find('.form-image-lib .-item[data-id-image="' + r.image_deleted.id + '"]')
+                // Delete image item in form library
+                $img_item.remove();
+              }
+            } else {
+              alert(r.message_status);
+            }
+          }
+        });
+
+        // Ultimate-stop smashing
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
       });
 
       // Event:Advert is sold / not sold
@@ -370,15 +429,15 @@ var app = {
           url: '/vinyles/' + id_vinyl + '/' + track_face + '/youtube-id',
           success: function(r) {
             if (r.query_status == 1 && r.youtube_id != null) {
-                // Update artist & track title
-                self.$player.find('.-title').html(r.vinyl.track);
-                self.$player.find('.-artist').html(r.vinyl.artists);
+              // Update artist & track title
+              self.$player.find('.-title').html(r.vinyl.track);
+              self.$player.find('.-artist').html(r.vinyl.artists);
 
-                // Update <iframe> source
-                self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/' + r.youtube_id + '?autoplay=1&fs=0&rel=0&showinfo=0');
+              // Update <iframe> source
+              self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/' + r.youtube_id + '?autoplay=1&fs=0&rel=0&showinfo=0');
 
-                // Display player
-                self.$player.removeClass('invisible');
+              // Display player
+              self.$player.removeClass('invisible');
             }
           }
         });

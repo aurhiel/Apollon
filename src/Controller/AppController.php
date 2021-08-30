@@ -633,6 +633,7 @@ class AppController extends AbstractController
             'form_advert'     => isset($form_advert) ? $form_advert->createView() : null,
             'adverts'         => $adverts,
             'is_advert_edit'  => $is_edit,
+            'advert_to_edit'  => $advert,
             'total_vinyls'    => $r_vinyl->countAll(),
             'vinyls_to_sale'  => $vinyls_to_sale,
             'nb_vinyls_in_sale' => $nb_vinyls_in_sale,
@@ -659,9 +660,7 @@ class AppController extends AbstractController
             // Remove related images
             $images = $entity->getImages();
             foreach ($images as $key => $image) {
-                // Delete image file
-                unlink($upload_dir . '/adverts/' . $image->getFilename());
-                //  & remove it from database
+                // Delete image (file deleted in ImageListener)
                 $em->remove($image);
             }
 
@@ -700,6 +699,57 @@ class AppController extends AbstractController
 
         // No direct access
         return $this->redirectToRoute('adverts');
+    }
+
+    /**
+     * @Route("/annonces/images/{id}/supprimer", name="advert_image_delete")
+     * @IsGranted("ROLE_ADMIN")
+     */
+    public function advert_image_delete($id, Request $request, AuthorizationCheckerInterface $authChecker)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        // Retrieve advert to update
+        $repo   = $em->getRepository(Image::class);
+        $image  = $repo->findOneById($id);
+        // Set default message as error
+        $return = array(
+            'query_status'    => 0,
+            'slug_status'     => 'error',
+            'message_status'  => 'Un problème est survenu lors de la suppression de l\'image avec pour ID: ' . $id
+        );
+
+        if ($image !== null) {
+            $deleted_img = $image;
+            // Delete image entity
+            $em->remove($image);
+            $em->flush();
+
+            // Set message
+            $return = array(
+                'query_status'    => 1,
+                'slug_status'     => 'success',
+                'message_status'  => 'L\'image a bien été supprimée.',
+                'image_deleted'   => [
+                    'id'        => $id,
+                    'filename'  => $deleted_img->getFilename()
+                ]
+            );
+        } else {
+            // Set message saying that image doesn't exist in DB
+            $return['message_status'] = 'L\'image avec pour ID: ' . $id . ' n\'existe pas en base de données.';
+        }
+
+        // Display return data as JSON when using AJAX or redirect to home
+        if ($request->isXmlHttpRequest()) {
+            return $this->json($return);
+        } else {
+            // Set message in flashbag on direct access
+            $request->getSession()->getFlashBag()->add($return['slug_status'], $return['message_status']);
+
+            // No direct access
+            return $this->redirectToRoute('adverts');
+        }
     }
 
     /**

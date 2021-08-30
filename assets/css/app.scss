@@ -68,7 +68,7 @@
 
 .app-player {
   position: sticky;
-  z-index: $zindex-sticky;
+  z-index: $zindex-modal + 10;
   bottom: 0;
   right: 0;
   width: 100%;
