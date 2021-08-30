@@ -96,7 +96,7 @@ var app = {
         var $library    = $parent.find('.-images-library');
 
         if (files.length > 0) {
-          $library.addClass('-has-images').find('.-item').not('.-in-database').remove();
+          $library.addClass('-has-images').find('.-item, .-text').not('.-in-database').remove();
           for (var i = 0; i < files.length; i++) {
             var reader = new FileReader();
             reader.onload = function(e) {
