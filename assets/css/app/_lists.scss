@@ -109,6 +109,46 @@
 
 .list-adverts {
   .-item {
+    &.-is-sold {
+      &:after {
+        text-shadow: 0 0 1em #000;
+        opacity: 1;
+        transform: rotate(-15deg) scale(1);
+        transition: opacity 400ms ease 300ms,
+          transform 400ms ease 300ms,
+          text-shadow 400ms ease 400ms;
+      }
+      .card {
+        opacity: .5;
+        filter: grayscale(1);
+      }
+    }
+
+    &:after {
+      content: 'vendue';
+      font-size: 3.2em;
+      font-weight: bold;
+      text-shadow: 0 0 .5em #000;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-left: -1.9em;
+      margin-top: -1em;
+      transform: rotate(-15deg) scale(1.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 400ms ease,
+        transform 400ms ease,
+        text-shadow 400ms ease;
+    }
+
+    .card {
+      opacity: 1;
+      filter: grayscale(0);
+      transition: opacity 400ms ease,
+        filter 400ms ease;
+    }
+
     .ratio-bg {
       display: block;
     }

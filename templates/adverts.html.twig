@@ -26,7 +26,8 @@
         {% for in_sale in advert.inSales %}
           {% set advert_total_qty = advert_total_qty + in_sale.quantity %}
         {% endfor %}
-        <div class="-item col-12 col-lg-6 col-xxl-4" data-advert-id="{{ advert.id }}" data-advert-price="{{ advert.price }}" data-advert-total-qty="{{ advert_total_qty }}">
+        <div class="-item col-12 col-lg-6 col-xxl-4{% if advert.isSold is not null and advert.isSold == true %} -is-sold{% endif %}" 
+          data-advert-id="{{ advert.id }}" data-advert-price="{{ advert.price }}" data-advert-total-qty="{{ advert_total_qty }}">
           <div class="card text-dark">
             <div class="card-header">
               <h2 class="h5 mb-0 text-dark row align-items-center">

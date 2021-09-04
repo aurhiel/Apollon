@@ -389,11 +389,15 @@ var app = {
             if (r.query_status == 1) {
               var new_nb_sold   = parseFloat(self.$ads_total_vinyls_sold.html()) + ($advert.data('advert-total-qty') * ($checkbox.is(':checked') ? 1 : -1));
               var new_total_got = parseFloat(self.$ads_total_price_got.html()) + ($advert.data('advert-price') * ($checkbox.is(':checked') ? 1 : -1));
+
               // Update datas
               self.$ads_total_vinyls_sold.html(new_nb_sold);
               self.$ads_total_price_got.html(new_total_got + '€');
               self.$ads_vinyls_avg_price.html((Math.round((new_total_got / new_nb_sold) * 100) / 100) + '€');
               self.$ads_avg_price.html((Math.round(new_total_got / self.$ads_avg_price.data('ads-qty'))) + '€');
+
+              // Update CSS classes
+              $advert.toggleClass('-is-sold', $checkbox.is(':checked'));
             } else {
               alert(r.message_status);
             }
