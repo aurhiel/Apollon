@@ -41,8 +41,11 @@
                 </a>
               </th>
               <th scope="col" class="col-quantity">Qté</th>
+              <th scope="col" class="col-quantity -with-cover">
+                <abbr title="Quantité avec une pochette">P.</abbr>
+              </th>
             {% if is_granted('ROLE_VIEWER') %}
-              <th scope="col" class="col-quantity">Vendu(s)</th>
+              <th scope="col" class="col-quantity -sold">Vendu(s)</th>
             {% endif %}
             {% if is_granted('ROLE_ADMIN') %}
               <th scope="col" class="col-actions"></th>
@@ -81,12 +84,23 @@
                   {{ vinyl.quantity }}
                 {% endif %}
               </td>
-              <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}" data-qty-type="sold">
+              <td class="col-quantity -with-cover" data-vinyl-id="{{ vinyl.id }}" data-qty-type="cover">
                 {% if is_granted('ROLE_ADMIN') %}
-                  <span class="form-control-quantity">
+                  <span class="form-control-quantity" data-qty-max="{{ vinyl.quantity }}">
+                    <span class="btn-qty icon-minus-square{% if vinyl.quantityWithCover < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
+                    <span class="qty-amount">{{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}</span>
+                    <span class="btn-qty icon-plus-square{% if vinyl.quantityWithCover >= vinyl.quantity %} disabled{% endif %}" data-qty-type="+1"></span>
+                  </span>
+                {% else %}
+                  {{ vinyl.quantityWithCover }}
+                {% endif %}
+              </td>
+              <td class="col-quantity -sold" data-vinyl-id="{{ vinyl.id }}" data-qty-type="sold">
+                {% if is_granted('ROLE_ADMIN') %}
+                  <span class="form-control-quantity" data-qty-max="{{ vinyl.quantity }}">
                     <span class="btn-qty icon-minus-square{% if vinyl.quantitySold < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
                     <span class="qty-amount">{{ vinyl.quantitySold }}</span>
-                    <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+                    <span class="btn-qty icon-plus-square{% if vinyl.quantitySold >= vinyl.quantity %} disabled{% endif %}" data-qty-type="+1"></span>
                   </span>
                 {% else %}
                   {{ vinyl.quantitySold }}
@@ -95,6 +109,9 @@
             {% else %}
               <td class="col-quantity">
                 {{ vinyl.quantity - vinyl.quantitySold }}
+              </td>
+              <td class="col-quantity -with-cover">
+                {{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}
               </td>
             {% endif %}
             {% if is_granted('ROLE_ADMIN') %}

@@ -61,6 +61,11 @@ class Vinyl
     private $quantitySold = 0;
 
     /**
+     * @ORM\Column(type="smallint", nullable=true)
+     */
+    private $QuantityWithCover = 0;
+
+    /**
      * @ORM\OneToMany(targetEntity=InSale::class, mappedBy="vinyl")
      */
     private $inSales;
@@ -192,6 +197,18 @@ class Vinyl
         }
 
         return $this->quantity - $qty_in_sale;
+    }
+
+    public function getQuantityWithCover(): ?int
+    {
+        return $this->QuantityWithCover;
+    }
+
+    public function setQuantityWithCover(?int $QuantityWithCover): self
+    {
+        $this->QuantityWithCover = $QuantityWithCover;
+
+        return $this;
     }
 
     /**

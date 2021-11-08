@@ -173,11 +173,16 @@ var app = {
       // Button to update vinyls quantity (total & sold)
       self.$vinyls.on('click', '.btn-qty', function() {
         var $btn      = $(this);
+        var $control  = $btn.parents('.form-control-quantity').first();
         var $col_qty  = $btn.parents('.col-quantity').first();
         var is_quantity_sold  = (typeof $col_qty.data('qty-type') != 'undefined' && $col_qty.data('qty-type') == 'sold');
-        var min_limit         = is_quantity_sold ? 1 : 2;
-        // Add "-sold" to url in order to update vinyl quantity sold
-        var base_url = '/vinyles/' + $col_qty.data('vinyl-id') + '/quantite' + (is_quantity_sold ? '-vendue' : '');
+        var is_quantity_cover = (typeof $col_qty.data('qty-type') != 'undefined' && $col_qty.data('qty-type') == 'cover');
+        var min_limit         = (is_quantity_sold || is_quantity_cover) ? 1 : 2;
+        var max_qty           = (typeof $control.data('qty-max') != 'undefined') ? parseInt($control.data('qty-max')) : null;
+        // Add "-sold" or "-cover" to url in order to update vinyl
+        //  quantity sold or vinyls with a cover
+        var base_url = '/vinyles/' + $col_qty.data('vinyl-id') + '/quantite'
+          + (is_quantity_sold ? '-vendue' : (is_quantity_cover ? '-pochette' : ''));
 
         $.ajax({
           method: 'POST',
@@ -188,6 +193,8 @@ var app = {
             } else {
               $col_qty.find('.qty-amount').html(r.new_quantity);
               $col_qty.find('.btn-qty[data-qty-type="-1"]').toggleClass('disabled', (r.new_quantity < min_limit));
+              if (max_qty != null)
+                $col_qty.find('.btn-qty[data-qty-type="+1"]').toggleClass('disabled', (r.new_quantity >= max_qty))
 
               if (typeof r.total_vinyls != 'undefined')
                 self.$vinyls_total_qty.html(r.total_vinyls);
