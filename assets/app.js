@@ -291,8 +291,9 @@ var app = {
                   }
 
                   // Add artist in desc (only when have selected more than 1 vinyl)
+                  //  and if there is more than 1 artist we add a "- " before each artists
                   if (total_selected > 1)
-                    advert_desc += artist_name + ((nb_tracks > 1) ? ' :': '');
+                    advert_desc += (nb_artists > 1 ? '- ': '') + artist_name + ((nb_tracks > 1) ? ' :': '');
 
                   for (const vinyl_id in tracks) {
                     // Add vinyl track faces in desc
@@ -301,7 +302,7 @@ var app = {
                       // Multi-vinyl selected
                       if (total_selected > 1) {
                         advert_desc += ((nb_tracks > 1) ? '\r\n': ' ') + '- ' + ((vinyl.quantity > 1) ? vinyl.quantity + 'x ' : '') +
-                          vinyl.face_A + ' / ' + vinyl.face_B;
+                          vinyl.face_A + ' / ' + vinyl.face_B + ' : 1,00€';
                       } else {
                         // Only 1 vinyl selected : add track faces in title & description
                         advert_desc += '« ' + vinyl.face_A + ' » et « ' + vinyl.face_B + ' »';
@@ -310,8 +311,9 @@ var app = {
                     }
                   }
 
+                  // Add breakline after each artist
                   if (last == false)
-                    advert_desc += '\r\n\r\n';
+                    advert_desc += '\r\n';
                 }
               }
 
