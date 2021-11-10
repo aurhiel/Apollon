@@ -8,7 +8,10 @@
     </h1>
     <p class="text-muted mb-4">
       {% set vinyls_total_unique = vinyls|length %}
-      <b class="badge bg-primary rounded-pill">{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} - Quantité disponible : <b class="badge bg-primary rounded-pill">{{ total_vinyls - nb_vinyls_sold }}</b> - Qté. vendu : <b class="badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> ({{ (100 * nb_vinyls_sold / total_vinyls)|round(2) }}%)
+      <b class="badge bg-primary rounded-pill">{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} -
+      Quantité disponible : <b class="badge bg-primary rounded-pill">{{ total_vinyls - nb_vinyls_sold }}</b> -
+      dont <b class="badge bg-primary rounded-pill">{{ total_vinyls_cover }}</b> avec une pochette - 
+      Qté. vendu : <b class="badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> ({{ (100 * nb_vinyls_sold / total_vinyls)|round(2) }}%)
     </p>
     {% if vinyls is not empty %}
       <div class="table-responsive">
@@ -92,7 +95,7 @@
                     <span class="btn-qty icon-plus-square{% if vinyl.quantityWithCover >= vinyl.quantity %} disabled{% endif %}" data-qty-type="+1"></span>
                   </span>
                 {% else %}
-                  {{ vinyl.quantityWithCover }}
+                  {{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}
                 {% endif %}
               </td>
               <td class="col-quantity -sold" data-vinyl-id="{{ vinyl.id }}" data-qty-type="sold">

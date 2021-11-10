@@ -68,6 +68,14 @@ class VinylRepository extends ServiceEntityRepository
         ;
     }
 
+    public function countAllWithCover()
+    {
+        return $this->createQueryBuilder('v')
+            ->select('SUM(v.quantityWithCover - v.quantitySold) AS nb_vinyls_cover')
+            ->getQuery()->getSingleScalarResult()
+        ;
+    }
+
     public function countAllByArtist($artist)
     {
         return $this->createQueryBuilder('v')

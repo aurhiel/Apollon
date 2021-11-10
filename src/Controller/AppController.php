@@ -991,8 +991,7 @@ class AppController extends AbstractController
                         $return = array(
                             'query_status'    => 0,
                             'slug_status'     => 'notice',
-                            'message_status'  => 'Le vinyle existe déjà en base de donnée,
-                              sa quantité a donc été augmentée (quantité: ' . $vinyl_existing->getQuantity() . ').',
+                            'message_status'  => 'Le vinyle existe déjà en base de donnée, sa quantité a donc été augmentée (quantité: ' . $vinyl_existing->getQuantity() . ').',
                             'id_entity'       => $vinyl_existing->getId()
                         );
 
@@ -1094,11 +1093,12 @@ class AppController extends AbstractController
             'form_artist'   => isset($form_artist) ? $form_artist->createView() : null,
             'form_vinyl'    => isset($form_vinyl) ? $form_vinyl->createView() : null,
             'vinyls'        => $vinyls,
-            'total_vinyls'      => $r_vinyl->countAll(),
-            'nb_vinyls_sold'    => $nb_vinyls_sold,
-            'vinyls_order_by'   => $order_by,
-            'vinyls_direction'  => $direction,
-            'artist_added'      => $artist_added,
+            'total_vinyls'        => $r_vinyl->countAll(),
+            'total_vinyls_cover'  => $r_vinyl->countAllWithCover(),
+            'nb_vinyls_sold'      => $nb_vinyls_sold,
+            'vinyls_order_by'     => $order_by,
+            'vinyls_direction'    => $direction,
+            'artist_added'        => $artist_added,
         ]);
     }
 

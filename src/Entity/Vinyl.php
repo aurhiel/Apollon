@@ -63,7 +63,7 @@ class Vinyl
     /**
      * @ORM\Column(type="smallint", nullable=true)
      */
-    private $QuantityWithCover = 0;
+    private $quantityWithCover = 0;
 
     /**
      * @ORM\OneToMany(targetEntity=InSale::class, mappedBy="vinyl")
@@ -201,12 +201,12 @@ class Vinyl
 
     public function getQuantityWithCover(): ?int
     {
-        return $this->QuantityWithCover;
+        return $this->quantityWithCover;
     }
 
-    public function setQuantityWithCover(?int $QuantityWithCover): self
+    public function setQuantityWithCover(?int $quantityWithCover): self
     {
-        $this->QuantityWithCover = $QuantityWithCover;
+        $this->quantityWithCover = $quantityWithCover;
 
         return $this;
     }
