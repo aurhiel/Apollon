@@ -544,7 +544,6 @@ class AppController extends AbstractController
 
     /**
      * @Route("/annonces/{id}", name="adverts", defaults={"id"=null})
-     * @IsGranted("ROLE_VIEWER")
      */
     public function adverts($id, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader)
     {

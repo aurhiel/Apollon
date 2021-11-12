@@ -3,22 +3,26 @@
 {% block body %}
   {% set price_vinyls_average = (total_prices_checkout / nb_vinyls_sold) %}
   <div class="container">
-    <h1 class="mb-1">
+    <h1 class="mb-{% if is_granted('ROLE_VIEWER') %}1{% else %}4{% endif %}">
       <span class="icon-file-text text-primary"></span>
       Liste des annonces{% if adverts is not empty %}
       <small class="fw-normal text-muted">({{ adverts|length }})</small>{% endif %}
     </h1>
-    <p class="text-muted mb-2">
-      <b class="-total-vinyls-in-sale badge bg-primary rounded-pill">{{ nb_vinyls_in_sale }}</b> vinyle{% if nb_vinyls_in_sale > 1 %}s{% endif %} en vente -
-      Vendu{% if nb_vinyls_sold > 1 %}s{% endif %} : <b class="-total-vinyls-sold badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> /
-      Total prévu : <b class="-total-price-to-get badge bg-primary rounded-pill">{{ total_prices }}€</b> -
-      Total perçu : <b class="-total-prices-got badge bg-primary rounded-pill">{{ total_prices_checkout }}€</b> -
-      Prix moy. / vinyle : <b class="-price-vinyls-average badge bg-primary rounded-pill">{{ price_vinyls_average|round(2) }}€</b> -
-      Prix moy. / annonce : <b class="-price-ads-average badge bg-primary rounded-pill" data-ads-qty="{{ adverts|length }}">{{ (total_prices_checkout / adverts|length)|round(2) }}€</b>
-    </p>
-    <p class="text-muted mb-4">
-      Prévision total : <b class="-price-total-irma badge bg-warning text-dark rounded-pill">{{ ((price_vinyls_average * (total_vinyls - nb_vinyls_in_sale)) + total_prices)|round(2) }}€</b>
-    </p>
+    {% if is_granted('ROLE_VIEWER') %}
+      <p class="text-muted mb-2">
+        <b class="-total-vinyls-in-sale badge bg-primary rounded-pill">{{ nb_vinyls_in_sale }}</b> vinyle{% if nb_vinyls_in_sale > 1 %}s{% endif %} en vente -
+        Vendu{% if nb_vinyls_sold > 1 %}s{% endif %} : <b class="-total-vinyls-sold badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> /
+        Total prévu : <b class="-total-price-to-get badge bg-primary rounded-pill">{{ total_prices }}€</b> -
+        Total perçu : <b class="-total-prices-got badge bg-primary rounded-pill">{{ total_prices_checkout }}€</b> -
+        Prix moy. / vinyle : <b class="-price-vinyls-average badge bg-primary rounded-pill">{{ price_vinyls_average|round(2) }}€</b> -
+        Prix moy. / annonce : <b class="-price-ads-average badge bg-primary rounded-pill" data-ads-qty="{{ adverts|length }}">{{ (total_prices_checkout / adverts|length)|round(2) }}€</b>
+      </p>
+      <p class="text-muted mb-4">
+        Prévision total : <b class="-price-total-irma badge bg-warning text-dark rounded-pill">{{ ((price_vinyls_average * (total_vinyls - nb_vinyls_in_sale)) + total_prices)|round(2) }}€</b>
+      </p>
+    {% endif %}
+
+    {# Adverts list #}
     {% if adverts is not empty %}
       <div id="advers-entities" class="list-adverts row g-4" data-masonry='{"percentPosition": true }'>
       {% for advert in adverts %}
@@ -26,7 +30,7 @@
         {% for in_sale in advert.inSales %}
           {% set advert_total_qty = advert_total_qty + in_sale.quantity %}
         {% endfor %}
-        <div class="-item col-12 col-lg-6 col-xxl-4{% if advert.isSold is not null and advert.isSold == true %} -is-sold{% endif %}" 
+        <div class="-item col-12 col-lg-6 col-xxl-4{% if advert.isSold is not null and advert.isSold == true %} -is-sold{% if is_granted('ROLE_VIEWER') == false %} d-none{% endif %}{% endif %}"
           data-advert-id="{{ advert.id }}" data-advert-price="{{ advert.price }}" data-advert-total-qty="{{ advert_total_qty }}">
           <div class="card text-dark">
             <div class="card-header">

@@ -27,14 +27,12 @@
                 Artistes
               </a>
             </li>
-          {% if is_granted('ROLE_VIEWER') %}
             <li class="nav-item">
               <a class="nav-link{% if (app.request.attributes.get('_route') == 'adverts') %} active{% endif %}"
                 href="{{ path('adverts') }}">
                 Annonces
               </a>
             </li>
-          {% endif %}
           </ul>
         </div>
       {% endblock %}
