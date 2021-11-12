@@ -25,12 +25,14 @@
     {# Adverts list #}
     {% if adverts is not empty %}
       <div id="advers-entities" class="list-adverts row g-4" data-masonry='{"percentPosition": true }'>
-      {% for advert in adverts %}
+      {# Display ALL ads to users with at least ROLE VIEWER
+          OR only display available ads to not logged users #}
+      {% for advert in adverts|filter(ad => ((is_granted('ROLE_VIEWER') == true) or (is_granted('ROLE_VIEWER') == false and (ad.isSold is null or ad.isSold == false)))) %}
         {% set advert_total_qty = 0 %}
         {% for in_sale in advert.inSales %}
           {% set advert_total_qty = advert_total_qty + in_sale.quantity %}
         {% endfor %}
-        <div class="-item col-12 col-lg-6 col-xxl-4{% if advert.isSold is not null and advert.isSold == true %} -is-sold{% if is_granted('ROLE_VIEWER') == false %} d-none{% endif %}{% endif %}"
+        <div class="-item col-12 col-lg-6 col-xxl-4{% if advert.isSold is not null and advert.isSold == true %} -is-sold{% endif %}"
           data-advert-id="{{ advert.id }}" data-advert-price="{{ advert.price }}" data-advert-total-qty="{{ advert_total_qty }}">
           <div class="card text-dark">
             <div class="card-header">
