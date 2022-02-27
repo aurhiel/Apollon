@@ -9,6 +9,15 @@
     display: none;
   }
 
+  .col-select {
+    text-align: center;
+    vertical-align: middle;
+    position: relative;
+    .stretched-link {
+      cursor: pointer;
+    }
+  }
+
   .col-rpm {
     text-align: center;
   }

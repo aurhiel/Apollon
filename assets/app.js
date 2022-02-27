@@ -10,9 +10,72 @@ require('bootstrap');
 // any CSS you import will output into a single css file (app.css in this case)
 import './css/app.scss';
 
+import { Tooltip } from 'bootstrap';
+
+var ClipboardJS = require('clipboard');
+
 // Not used
 // start the Stimulus application
 // import './bootstrap';
+
+var clipboard = {
+  $body: null,
+  timeoutHideTooltips: {},
+  tooltips: {},
+  // Trigger tooltip clipboard
+  triggerTooltip: function($btn_tooltip, type) {
+    var self = this;
+
+    // Destroy tooltip if already exist
+    if (typeof self.tooltips[$btn_tooltip] != 'undefined')
+      self.tooltips[$btn_tooltip].dispose();
+
+    // Success / Error message (empty or generic error)
+    var tooltip_title = 'Copié !';
+    if (type != 'success')
+      tooltip_title = (self.$body.find($btn_tooltip.data('clipboard-target')).html() == '' ? 'Aucun contenu à copier...' : 'Une erreur est survenue, veuillez ré-essayer.')
+
+
+    // Create related clipboard tooltip if not exist
+    this.tooltips[$btn_tooltip] = new Tooltip($btn_tooltip.get(0), {
+      title     : tooltip_title,
+      placement : 'bottom',
+      trigger   : 'manual'
+    });
+
+    // Show tooltip message
+    this.tooltips[$btn_tooltip].show();
+
+    // Then dispose tooltip after 1000ms
+    clearTimeout(this.timeoutHideTooltips[$btn_tooltip]);
+    this.timeoutHideTooltips[$btn_tooltip] = setTimeout(function() {
+      self.tooltips[$btn_tooltip].hide();
+      delete self.tooltips[$btn_tooltip];
+    }, 1000);
+  },
+  launch: function() {
+    var self = this;
+    var btn_clipboard = new ClipboardJS('.btn-clipboard');
+
+    // Init nodes
+    self.$body = $('body');
+
+    // Init clipboard events to update tooltip, success ...
+    btn_clipboard.on('success', function(e) {
+      var $btn_tooltip = $(e.trigger);
+      $btn_tooltip = (typeof $btn_tooltip.data('clip-tooltip-target') != 'undefined') ? dashboard.$body.find($btn_tooltip.data('clip-tooltip-target')) : $btn_tooltip;
+      self.triggerTooltip($btn_tooltip, 'success');
+    });
+    // ... and error
+    btn_clipboard.on('error', function(e) {
+      if (e.action == 'copy') {
+        var $btn_tooltip = $(e.trigger);
+        $btn_tooltip = (typeof $btn_tooltip.data('clip-tooltip-target') != 'undefined') ? dashboard.$body.find($btn_tooltip.data('clip-tooltip-target')) : $btn_tooltip;
+        self.triggerTooltip($btn_tooltip, 'error');
+      }
+    });
+  }
+}
 
 var app = {
   // Variables
@@ -24,6 +87,10 @@ var app = {
 
   // Functions
   //
+  // Sort object
+  sortObject: function(object) {
+    return Object.keys(object).sort().reduce((r, k) => (r[k] = object[k], r), {});
+  },
   // Page loading
   loading : function() {
     this.$body.addClass('is-loading');
@@ -81,6 +148,11 @@ var app = {
 
       // Remove loading (not used yet...)
       self.unload();
+
+      //
+      // Clipboard JS
+      //
+      clipboard.launch();
 
       // Enable Bootstrap Tooltips
       // self.$body.find('[data-toggle="tooltip"]').tooltip();
@@ -203,9 +275,106 @@ var app = {
         });
       });
 
+      // Vinyls selection managment
+      var $toolbox_selected_vinyls = self.$body.find('.toolbox-selected-vinyls');
+      var $tb_buttons = $toolbox_selected_vinyls.find('.btn-selected-vinyls');
+      var $tb_amount = $toolbox_selected_vinyls.find('.-amount');
+      var $tb_text = $toolbox_selected_vinyls.find('.-text-selected');
+      var user_total_selected = 0;
+      var user_vinyls_selected = {};
+      self.$vinyls.on('change', '.vinyl-checkbox-is-selected', function() {
+        var $checkbox = $(this);
+        var $vinyl    = $checkbox.parents('.-item-vinyl').first();
+        var vinyl_id  = $vinyl.data('vinyl-id');
+        var artists_str = $vinyl.find('.-artists-list-raw').data('value');
+
+        // Add or remove vinyl from selected list
+        if ($checkbox.prop('checked') === true) {
+          if (typeof user_vinyls_selected[artists_str] == 'undefined') {
+            user_vinyls_selected[artists_str] = {
+              artists : artists_str,
+              tracks  : {}
+            };
+          }
+
+          // Push new track
+          user_vinyls_selected[artists_str].tracks[vinyl_id] = {
+            face_A: $vinyl.find('.-vinyl-track-A').html(),
+            face_B: $vinyl.find('.-vinyl-track-B').html(),
+            quantity_with_cover: $vinyl.find('.col-quantity.-with-cover').data('qty-value')
+          };
+          user_total_selected++;
+        } else {
+          delete user_vinyls_selected[artists_str].tracks[vinyl_id];
+          user_total_selected--;
+        }
+
+        // Update some texts in the selected vinyls toolbox
+        $tb_amount.html(user_total_selected);
+        $tb_text.html(user_total_selected > 1 ? $tb_text.data('js-text-plural') : $tb_text.data('js-text-singular'));
+
+        // Sort vinyls selected
+        user_vinyls_selected = self.sortObject(user_vinyls_selected);
+
+        // Update buttons in toolbox
+        if (user_total_selected > 0) {
+          $tb_buttons.removeClass('btn-secondary').addClass('btn-primary').prop('disabled', false);
+        } else {
+          $tb_buttons.removeClass('btn-primary').addClass('btn-secondary').prop('disabled', true);
+        }
+      });
+      // Click on toolbox action buttons (Copy or Book)
+      $tb_buttons.on('click', function() {
+        var $btn = $(this);
+
+        // Copy or Book vinyls selected
+        if ($btn.attr('name') == 'copy') {
+          var $target = self.$body.find($btn.data('clipboard-target'));
+          var text_to_copy = '';
+
+          // Reset target
+          $target.html('');
+
+          var i_artist = 0;
+          var nb_artists = Object.keys(user_vinyls_selected).length;
+          // Loop on each artist to create text to copy
+          for (const artist_name in user_vinyls_selected) {
+            var last = (i_artist === (nb_artists - 1));
+            var vinyls_selected = user_vinyls_selected[artist_name];
+            var tracks = vinyls_selected.tracks;
+            var nb_tracks = Object.keys(tracks).length;
+
+            if (nb_tracks > 0) {
+              // Add artist name
+              text_to_copy += vinyls_selected.artists;
+
+              // Add tracks
+              for (const vinyl_id in tracks) {
+                // Add vinyl track faces in desc
+                if (tracks.hasOwnProperty(vinyl_id)) {
+                  var vinyl = tracks[vinyl_id];
+                  text_to_copy += ((nb_tracks > 1) ? '<br>': ' ') + '- ' +
+                    vinyl.face_A + ' / ' + vinyl.face_B + (vinyl.quantity_with_cover < 1 ? ' (sans pochette)': '');
+                }
+              }
+
+              // Add breakline after each artist
+              if (last == false)
+                text_to_copy += '<br>';
+            }
+            i_artist++;
+          }
+
+          // Update text to copy in $target
+          if (text_to_copy.length > 0)
+            $target.html($('<div>'+text_to_copy+'</div>'));
+        } else {
+          // TODO booking
+        }
+      });
+
       // Advert vinyls quantity update event
       var total_selected = 0;
-      // var vinyls_selected = [];
       var vinyls_selected = {};
       // var artists_selected = {};
       self.$modal_advert.on('click', '.btn-qty', function() {

@@ -10,15 +10,45 @@
       {% set vinyls_total_unique = vinyls|length %}
       <b class="badge bg-primary rounded-pill">{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} -
       Quantité disponible : <b class="badge bg-primary rounded-pill">{{ total_vinyls - nb_vinyls_sold }}</b> -
-      dont <b class="badge bg-primary rounded-pill">{{ total_vinyls_cover }}</b> avec une pochette - 
+      dont <b class="badge bg-primary rounded-pill">{{ total_vinyls_cover }}</b> avec une pochette -
       Qté. vendu : <b class="badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> ({{ (100 * nb_vinyls_sold / total_vinyls)|round(2) }}%)
     </p>
     {% if vinyls is not empty %}
+      {# Vinyls selected toolbar #}
+      <div class="toolbox-selected-vinyls card text-secondary sticky-top -after-header mb-2">
+        <div class="card-body py-2">
+          <div class="small row align-items-center">
+            <div class="col-12 col-lg-7 pe-lg-0 lh-1 d-none d-lg-block">
+              Cochez les vinyles que vous souhaiteriez <b>réserver</b> ou <b>copier la liste</b> pour la transmettre ensuite.
+            </div>
+            <div class="col-12 col-lg-5 text-center text-lg-end">
+              {# Amount of vinyls selected #}
+              <span class="-amount fw-bold">0</span>
+              <span class="-text-selected" data-js-text-singular="sélectionné" data-js-text-plural="sélectionnés">
+                sélectionné
+              </span>
+              {# Actions #}
+              <button class="btn btn-sm btn-secondary btn-selected-vinyls btn-clipboard ms-3"
+                type="button" name="copy" data-clipboard-target="#vinyls-selected-to-copy" disabled>
+                Copier
+              </button>
+              <button class="btn btn-sm btn-secondary btn-selected-vinyls ms-1"
+                type="button" name="book" disabled>
+                Réserver
+              </button>
+              <div class="clipboardJS-hidden-data" id="vinyls-selected-to-copy"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# Vinyls list (table) #}
       <div class="table-responsive">
         <table id="vinyls-entities" class="table table-bordered table-striped table-hover table-dark mb-0">
           <thead>
             <tr>
               <th scope="col" class="col-id">#</th>
+              <th scope="col" class="col-select"></th>
               <th scope="col" class="col-rpm">T.</th>
               <th scope="col" class="col-track">
                 <span class="me-2">Face A</span>
@@ -57,14 +87,21 @@
           </thead>
           <tbody>
           {% for vinyl in vinyls %}
-            <tr {% if vinyl.quantitySold >= vinyl.quantity and is_granted('ROLE_ADMIN') == false %}class="disabled" {% endif %}data-vinyl-id="{{ vinyl.id }}">
+            <tr class="-item-vinyl {% if vinyl.quantitySold >= vinyl.quantity and is_granted('ROLE_ADMIN') == false %} disabled{% endif %}" data-vinyl-id="{{ vinyl.id }}">
               <th scope="row" class="col-id">{{ vinyl.id }}</th>
+              <th class="col-select">
+                <label for="vinyl-{{ vinyl.id }}-selected" class="stretched-link">
+                  <input id="vinyl-{{ vinyl.id }}-selected"
+                    class="form-check-input vinyl-checkbox-is-selected"
+                      type="checkbox" value="{{ vinyl.id }}"{% if vinyl.quantitySold >= vinyl.quantity %} disabled{% endif %}>
+                </label>
+              </th>
               <td class="col-rpm">{{ vinyl.rpm }}</td>
               <td class="col-track" data-track-face="A">
-                {{ vinyl.trackFaceA }}&nbsp;<span class="-icon-play icon-play-circle"></span>
+                <span class="-vinyl-track-A">{{ vinyl.trackFaceA }}</span>&nbsp;<span class="-icon-play icon-play-circle"></span>
               </td>
               <td class="col-track" data-track-face="B">
-                {{ vinyl.trackFaceB }}&nbsp;<span class="-icon-play icon-play-circle"></span>
+                <span class="-vinyl-track-B">{{ vinyl.trackFaceB }}</span>&nbsp;<span class="-icon-play icon-play-circle"></span>
               </td>
               <td class="col-artist">
                 {% set artists_str = null %}
@@ -73,6 +110,7 @@
                     {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
                     <a href="{{ path('artists_infos', { id: artist.id }) }}">{{ artist.name }}</a>{% if loop.last == false %}, {% endif %}
                   {% endfor %}
+                  <span class="-artists-list-raw d-none" data-value="{{ artists_str }}"></span>
                 {% endif %}
               </td>
             {% if is_granted('ROLE_VIEWER') %}
@@ -87,7 +125,7 @@
                   {{ vinyl.quantity }}
                 {% endif %}
               </td>
-              <td class="col-quantity -with-cover" data-vinyl-id="{{ vinyl.id }}" data-qty-type="cover">
+              <td class="col-quantity -with-cover" data-vinyl-id="{{ vinyl.id }}" data-qty-type="cover" data-qty-value="{{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}">
                 {% if is_granted('ROLE_ADMIN') %}
                   <span class="form-control-quantity" data-qty-max="{{ vinyl.quantity }}">
                     <span class="btn-qty icon-minus-square{% if vinyl.quantityWithCover < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
