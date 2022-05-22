@@ -22,7 +22,7 @@
     text-align: center;
   }
 
-  .col-track {
+  td.col-track {
     &:hover {
       cursor: pointer;
 
@@ -56,7 +56,33 @@
   }
 }
 
+.table-sortable {
+  .-sort-icon {
+    color: $text-muted;
+  }
 
+  th {
+    cursor: pointer;
+    &.no-sort { cursor: inherit; }
+    &:hover {
+      .-sort-asc { color: $link-hover-color; }
+    }
+  }
+
+  th.descending {
+    .-sort-desc { color: $link-color; }
+    &:hover {
+      .-sort-asc { color: $link-hover-color; }
+    }
+  }
+
+  th.ascending {
+    .-sort-asc { color: $link-color; }
+    &:hover {
+      .-sort-desc { color: $link-hover-color; }
+    }
+  }
+}
 
 .table-header-sticky {
   display: block;

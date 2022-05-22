@@ -14,6 +14,8 @@ import { Tooltip, Popover } from 'bootstrap';
 
 var ClipboardJS = require('clipboard');
 
+require('jquery-tablesort');
+
 // Not used
 // start the Stimulus application
 // import './bootstrap';
@@ -78,15 +80,15 @@ var clipboard = {
 }
 
 var app = {
-  // Variables
   //
+  // Variables
   $body       : null,
   $html_body  : null,
   $window     : null,
 
 
-  // Functions
   //
+  // Functions
   // Sort object
   sortObject: function(object) {
     return Object.keys(object).sort().reduce((r, k) => (r[k] = object[k], r), {});
@@ -98,81 +100,72 @@ var app = {
   unload : function() {
     this.$body.removeClass('is-loading');
   },
-
   // Rocket launcher ! > code executed immediately (before document ready)
   launch : function() {
     //
     // Variables (private & public)
-    //
-
     // Le viss
     var self = this;
-
     // Set nodes
     self.$body      = $('.app-core');
     self.$html_body = $('html, body')
     self.$window    = $(window);
 
     //
-    // Init functions
-    //
-
     // Set loading
     self.loading();
 
 
     //
     // Doc ready
-    //
-
     (function() {
       console.log('🌱 Radis ! ~');
 
+      //
+      // Variables
       self.$player = self.$body.find('.app-player');
-
       // Header
       self.$header = self.$body.find('.app-header');
-
       // Modals
       self.$modal_artist  = self.$body.find('#modal-manage-artist');
       self.$modal_vinyl   = self.$body.find('#modal-manage-vinyl');
       self.$modal_advert  = self.$body.find('#modal-manage-advert');
       self.$modal_confirm = self.$body.find('#modal-confirm-delete');
-
       // Vinyls list container
       self.$vinyls = self.$body.find('#vinyls-entities');
       self.$vinyls_total_qty = self.$body.find('.-vinyls-total-quantity');
-
       // Adverts list container
       self.$adverts = self.$body.find('#advers-entities');
 
+
+      //
       // Remove loading (not used yet...)
       self.unload();
 
+
       //
       // Clipboard JS
-      //
       clipboard.launch();
 
-      // Enable Bootstrap Tooltips
+
+      //
+      // Bootstrap
+      // BS: Tooltips
       // self.$body.find('[data-bs-toggle="tooltip"]').tooltip();
-
-
-      //
-      // Bootstrap Popovers
-      //
-      // allowList
+      // BS: Popovers - Update allow list
       var myDefaultAllowList = Popover.Default.allowList;
       myDefaultAllowList.span = ['style'];
-      // init popover
+      //     Popovers - init
       var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
       var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
           return new Popover(popoverTriggerEl);
       });
 
+
+      //
+      // Globals / Generics
       // Trigger scroll event after ready to display elements already on screen
       // self.$window.trigger('scroll');
-
       // Images library preview
       self.$body.on('change', '.form-image-lib input', function() {
         var $file_input = $(this);
@@ -194,7 +187,6 @@ var app = {
           $library.removeClass('-has-images').html($library.data('initial-text'));
         }
       });
-
       // Modal: Confirm delete, add link to delete and add custom things (title, body, ...)
       if (self.$modal_confirm.length > 0) {
         var $btn_clicked = null;
@@ -249,12 +241,52 @@ var app = {
           self.$body.find('.modal-backdrop').removeAttr('style');
         });
       }
+      // Event:Delete image
+      self.$body.on('click', '.btn-delete-img', function(e) {
+        var $modal = self.$modal_advert.length > 0 ? self.$modal_advert : self.$modal_vinyl;
 
+        $.ajax({
+          method: 'POST',
+          url: $(this).attr('href'),
+          success: function(r) {
+            if (r.query_status == 1) {
+              if (typeof r.image_deleted != 'undefined') {
+                var $library = $modal.find('.-images-library');
+                var $img_item = $library.find('.-item[data-id-image="' + r.image_deleted.id + '"]')
+
+                // Delete image item in form library
+                $img_item.remove();
+
+                // Reset library if no more items
+                if ($library.find('.-item').length < 1) {
+                  $library.removeClass('-has-images').html($library.data('initial-text'));
+                }
+              }
+            } else {
+              alert(r.message_status);
+            }
+          }
+        });
+
+        // Ultimate-stop smashing
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      });
+      // Auto-select in multi-select TODO multiple selection
+      self.$body.find('.form-multi-select').each(function() {
+        var $container = $(this);
+        if (typeof $container.data('ms-autoselect') != 'undefined')
+          $container.find('input[value="' + $container.data('ms-autoselect') + '"]').prop('checked', true);
+      });
       // Disable every form's buttons after submitting the form
       self.$body.find('.form').on('submit', function() {
         $(this).find('.btn').addClass('disabled');
       });
 
+
+      //
+      // Vinyls
       // Auto open vinyl modal on edit & add event on modal hide
       if (self.$modal_vinyl.hasClass('-is-edit')) {
         self.$header.find('.btn[name="toggle-modal-form-vinyl"]').trigger('click');
@@ -269,7 +301,6 @@ var app = {
           return false;
         });
       }
-
       // Button to update vinyls quantity (total & sold)
       self.$vinyls.on('click', '.btn-qty', function() {
         var $btn      = $(this);
@@ -302,7 +333,6 @@ var app = {
           }
         });
       });
-
       // Vinyls selection managment
       var $toolbox_selected_vinyls = self.$body.find('.toolbox-selected-vinyls');
       var $tb_buttons = $toolbox_selected_vinyls.find('.btn-selected-vinyls');
@@ -401,7 +431,12 @@ var app = {
           console.log('book them !', user_vinyls_selected);
         }
       });
+      // Sort vinyls table
+      self.$vinyls.tablesort();
 
+
+      //
+      // Adverts
       // Advert vinyls quantity update event
       var total_selected = 0;
       var vinyls_selected = {};
@@ -525,7 +560,6 @@ var app = {
           $form.find('#advert_price').val(total_selected > 0 ? total_selected : '');
         }
       });
-
       // Auto open advert modal on edit & add event on modal hide
       if (self.$modal_advert.hasClass('-is-edit')) {
         self.$header.find('.btn[name="toggle-modal-form-advert"]').trigger('click');
@@ -540,7 +574,6 @@ var app = {
           return false;
         });
       }
-
       // Event:Display adverts gallery
       self.$adverts.on('click', '.advert-display-gallery', function() {
         var $btn = $(this);
@@ -554,40 +587,6 @@ var app = {
         // Refresh Masonry items position
         adverts_msnry.layout();
       });
-
-      // Event:Delete image
-      self.$body.on('click', '.btn-delete-img', function(e) {
-        var $modal = self.$modal_advert.length > 0 ? self.$modal_advert : self.$modal_vinyl;
-
-        $.ajax({
-          method: 'POST',
-          url: $(this).attr('href'),
-          success: function(r) {
-            if (r.query_status == 1) {
-              if (typeof r.image_deleted != 'undefined') {
-                var $library = $modal.find('.-images-library');
-                var $img_item = $library.find('.-item[data-id-image="' + r.image_deleted.id + '"]')
-
-                // Delete image item in form library
-                $img_item.remove();
-
-                // Reset library if no more items
-                if ($library.find('.-item').length < 1) {
-                  $library.removeClass('-has-images').html($library.data('initial-text'));
-                }
-              }
-            } else {
-              alert(r.message_status);
-            }
-          }
-        });
-
-        // Ultimate-stop smashing
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      });
-
       // Event:Advert is sold / not sold
       self.$ads_total_vinyls_sold = self.$body.find('.-total-vinyls-sold');
       self.$ads_total_price_got   = self.$body.find('.-total-prices-got');
@@ -626,6 +625,9 @@ var app = {
         return false;
       });
 
+
+      //
+      // YouTube player & fun
       // Create YouTube player (iframe & co) using JS
       var auth_key = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
       self.$vinyls.on('click', 'td.col-track', function() {
@@ -653,7 +655,6 @@ var app = {
           }
         });
       });
-
       // Click on player close button
       self.$player.on('click', '.-close', function() {
         // Hide player
@@ -664,14 +665,6 @@ var app = {
         self.$player.find('.-artist').html('');
         self.$player.find('iframe').attr('src', '');
       });
-
-      // Auto-select in multi-select TODO multiple selection
-      self.$body.find('.form-multi-select').each(function() {
-        var $container = $(this);
-        if (typeof $container.data('ms-autoselect') != 'undefined')
-          $container.find('input[value="' + $container.data('ms-autoselect') + '"]').prop('checked', true);
-      });
-
       // Easter egg:When clicking on heart icon in the footer
       self.$body.on('click', '.app-footer .icon-heart', function() {
         self.$player.find('.-title').html('lofi hip hop radio - beats to study/relax to 🐾');

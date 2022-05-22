@@ -44,48 +44,40 @@
 
       {# Vinyls list (table) #}
       <div class="table-responsive">
-        <table id="vinyls-entities" class="table table-bordered table-striped table-hover table-dark mb-0">
+        <table id="vinyls-entities" class="table table-bordered table-striped table-hover table-dark table-sortable mb-0">
           <thead>
             <tr>
-              <th scope="col" class="col-id">#</th>
-              <th scope="col" class="col-select"></th>
-              <th scope="col" class="col-rpm">T.</th>
+              <th scope="col" class="col-id no-sort">#</th>
+              <th scope="col" class="col-select no-sort"></th>
+              <th scope="col" class="col-rpm no-sort">T.</th>
               <th scope="col" class="col-track">
                 <span class="me-2">Face A</span>
-                <a href="{{ path('home', { order_by: 'track-face-a', direction: 'asc' }) }}"
-                  class="text-decoration-none{% if vinyls_order_by == 'track-face-a' and vinyls_direction == 'asc' %} text-muted pe-none{% endif %}">
-                  <span class="icon-chevron-up"></span>
-                </a>
-                <a href="{{ path('home', { order_by: 'track-face-a', direction: 'desc' }) }}"
-                  class="text-decoration-none{% if vinyls_order_by == 'track-face-a' and vinyls_direction == 'desc' %} text-muted pe-none{% endif %}">
-                  <span class="icon-chevron-down"></span>
-                </a>
+                <span class="-sort-icon -sort-asc icon-chevron-up"></span>
+                <span class="-sort-icon -sort-desc icon-chevron-down"></span>
               </th>
-              <th scope="col" class="col-track">Face B</th>
+              <th scope="col" class="col-track">
+                <span class="me-2">Face B</span>
+                <span class="-sort-icon -sort-asc icon-chevron-up"></span>
+                <span class="-sort-icon -sort-desc icon-chevron-down"></span>
+              </th>
               <th scope="col" class="col-artist">
                 <span class="me-2">Artiste(s)</span>
-                <a href="{{ path('home', { order_by: 'artist', direction: 'asc' }) }}"
-                  class="text-decoration-none{% if vinyls_order_by == 'artist' and vinyls_direction == 'asc' %} text-muted pe-none{% endif %}">
-                  <span class="icon-chevron-up"></span>
-                </a>
-                <a href="{{ path('home', { order_by: 'artist', direction: 'desc' }) }}"
-                  class="text-decoration-none{% if vinyls_order_by == 'artist' and vinyls_direction == 'desc' %} text-muted pe-none{% endif %}">
-                  <span class="icon-chevron-down"></span>
-                </a>
+                <span class="-sort-icon -sort-asc icon-chevron-up"></span>
+                <span class="-sort-icon -sort-desc icon-chevron-down"></span>
               </th>
-              <th scope="col" class="col-quantity">Qté</th>
-              <th scope="col" class="col-quantity -with-cover">
+              <th scope="col" class="col-quantity no-sort">Qté</th>
+              <th scope="col" class="col-quantity -with-cover no-sort">
                 <abbr title="Quantité avec une pochette">P.</abbr>
               </th>
             {% if is_granted('ROLE_VIEWER') %}
               <th scope="col" class="col-quantity -sold">Vendu(s)</th>
             {% endif %}
-              <th scope="col" class="col-actions"></th>
+              <th scope="col" class="col-actions no-sort"></th>
             </tr>
           </thead>
           <tbody>
           {% for vinyl in vinyls %}
-            <tr class="-item-vinyl {% if vinyl.quantitySold >= vinyl.quantity and is_granted('ROLE_ADMIN') == false %} disabled{% endif %}" data-vinyl-id="{{ vinyl.id }}">
+            <tr class="-item-vinyl{% if vinyl.quantitySold >= vinyl.quantity and is_granted('ROLE_ADMIN') == false %} disabled{% endif %}" data-vinyl-id="{{ vinyl.id }}">
               <th scope="row" class="col-id">{{ vinyl.id }}</th>
               <th class="col-select">
                 <label for="vinyl-{{ vinyl.id }}-selected" class="stretched-link">
@@ -101,11 +93,15 @@
               <td class="col-track" data-track-face="B">
                 <span class="-vinyl-track-B">{{ vinyl.trackFaceB }}</span>&nbsp;<span class="-icon-play icon-play-circle"></span>
               </td>
-              <td class="col-artist">
-                {% set artists_str = null %}
+              {% set artists_str = null %}
+              {% if vinyl.artists is not empty %}
+                {% for artist in vinyl.artists %}
+                  {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
+                {% endfor %}
+              {% endif %}
+              <td class="col-artist"{% if artists_str is not null %} data-sort-value="{{ artists_str|remove_accents|lower }}"{% endif %}>
                 {% if vinyl.artists is not empty %}
                   {% for artist in vinyl.artists %}
-                    {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
                     <a href="{{ path('artists_infos', { id: artist.id }) }}">{{ artist.name }}</a>{% if loop.last == false %}, {% endif %}
                   {% endfor %}
                   <span class="-artists-list-raw d-none" data-value="{{ artists_str }}"></span>
@@ -150,7 +146,7 @@
                 {{ vinyl.quantity - vinyl.quantitySold }}
               </td>
               <td class="col-quantity -with-cover" data-qty-value="{{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}">
-                {{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}
+                {{ vinyl.quantityWithCover is null ? 0 : max(vinyl.quantityWithCover - vinyl.quantitySold, 0) }}
               </td>
             {% endif %}
               <td class="col-actions{% if is_granted('ROLE_ADMIN') %} -is-admin{% endif %}">
@@ -173,7 +169,7 @@
                       {% endif %}
                   {% endset %}
 
-                  <button type="button" class="btn btn-sm btn-outline-primary text-white px-2 py-1" data-bs-toggle="popover" data-bs-html="true"
+                  <button type="button" class="btn btn-sm btn-outline-primary text-white px-2 py-1" data-bs-toggle="popover" data-bs-html="true" data-bs-placement="left"
                     title="Infos supplémentaires" data-bs-content="{{ popover_content|spaceless }}">
                      <span class="icon-file-plus"></span>
                    </button>
