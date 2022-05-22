@@ -72,8 +72,14 @@ class FileUploader
         $ratio = $iwidth / $iheight;
         $width = self::MAX_WIDTH;
         $height = self::MAX_HEIGHT;
-        if ($width / $height > $ratio) {
+
+        // Don't resize image if it's smaller than max height and width
+        if ($iwidth < $width && $iheight < $height) {
+            return;
+        // Recalculate $width because $height reached MAX_HEIGHT
+        } elseif ($width / $height > $ratio) {
             $width = $height * $ratio;
+        // Recalculate $height because $width reached MAX_WIDTH
         } else {
             $height = $width / $ratio;
         }
