@@ -10,7 +10,7 @@ require('bootstrap');
 // any CSS you import will output into a single css file (app.css in this case)
 import './css/app.scss';
 
-import { Tooltip } from 'bootstrap';
+import { Tooltip, Popover } from 'bootstrap';
 
 var ClipboardJS = require('clipboard');
 
@@ -155,7 +155,20 @@ var app = {
       clipboard.launch();
 
       // Enable Bootstrap Tooltips
-      // self.$body.find('[data-toggle="tooltip"]').tooltip();
+      // self.$body.find('[data-bs-toggle="tooltip"]').tooltip();
+
+
+      //
+      // Bootstrap Popovers
+      //
+      // allowList
+      var myDefaultAllowList = Popover.Default.allowList;
+      myDefaultAllowList.span = ['style'];
+      // init popover
+      var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+      var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+          return new Popover(popoverTriggerEl);
+      });
 
       // Trigger scroll event after ready to display elements already on screen
       // self.$window.trigger('scroll');
@@ -241,6 +254,21 @@ var app = {
       self.$body.find('.form').on('submit', function() {
         $(this).find('.btn').addClass('disabled');
       });
+
+      // Auto open vinyl modal on edit & add event on modal hide
+      if (self.$modal_vinyl.hasClass('-is-edit')) {
+        self.$header.find('.btn[name="toggle-modal-form-vinyl"]').trigger('click');
+
+        // Redirect on hide (= cancel edit)
+        self.$modal_vinyl.get(0).addEventListener('hide.bs.modal', function(e) {
+          window.location.href = "/";
+
+          // Ultimate-stop smashing
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        });
+      }
 
       // Button to update vinyls quantity (total & sold)
       self.$vinyls.on('click', '.btn-qty', function() {
@@ -370,6 +398,7 @@ var app = {
             $target.html($('<div>'+text_to_copy+'</div>'));
         } else {
           // TODO booking
+          console.log('book them !', user_vinyls_selected);
         }
       });
 
@@ -526,17 +555,26 @@ var app = {
         adverts_msnry.layout();
       });
 
-      // Event: Advert delete image
-      self.$body.on('click', '.btn-advert-delete-img', function(e) {
+      // Event:Delete image
+      self.$body.on('click', '.btn-delete-img', function(e) {
+        var $modal = self.$modal_advert.length > 0 ? self.$modal_advert : self.$modal_vinyl;
+
         $.ajax({
           method: 'POST',
           url: $(this).attr('href'),
           success: function(r) {
             if (r.query_status == 1) {
               if (typeof r.image_deleted != 'undefined') {
-                var $img_item = self.$modal_advert.find('.form-image-lib .-item[data-id-image="' + r.image_deleted.id + '"]')
+                var $library = $modal.find('.-images-library');
+                var $img_item = $library.find('.-item[data-id-image="' + r.image_deleted.id + '"]')
+
                 // Delete image item in form library
                 $img_item.remove();
+
+                // Reset library if no more items
+                if ($library.find('.-item').length < 1) {
+                  $library.removeClass('-has-images').html($library.data('initial-text'));
+                }
               }
             } else {
               alert(r.message_status);
@@ -588,22 +626,13 @@ var app = {
         return false;
       });
 
-
       // Create YouTube player (iframe & co) using JS
-      // var tag = document.createElement('script');
-      // tag.src = "https://www.youtube.com/player_api";
-      // var firstScriptTag = document.getElementsByTagName('script')[0];
-      // firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
       var auth_key = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
       self.$vinyls.on('click', 'td.col-track', function() {
         var $col    = $(this);
         var $row    = $col.parents('tr').first();
         var id_vinyl = $row.data('vinyl-id');
         var track_face  = $col.data('track-face');
-
-        // debug
-        // console.log('vinyles/' + id_vinyl + '/' + track_face + '/youtube-id');
 
         // Get youtube videos
         $.ajax({

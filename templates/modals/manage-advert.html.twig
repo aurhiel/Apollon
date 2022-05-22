@@ -84,8 +84,8 @@
                         <span class="-item -in-database ratio ratio-1x1" style="background-image: url({{ asset('uploads/adverts/' ~ img.filename) }})"
                           data-id-image="{{ img.id }}">
                           <button class="btn btn-danger px-2 pt-2 pb-1" type="button"
-                            data-confirm-href="{{ path('advert_image_delete', { id: img.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer cette image ?"
-                              data-confirm-link-class="btn-advert-delete-img" data-confirm-always-close="true" data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
+                            data-confirm-href="{{ path('image_delete', { id: img.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer cette image ?"
+                              data-confirm-link-class="btn-delete-img" data-confirm-always-close="true" data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
                             <span class="icon-file-minus"></span>
                             <span class="sr-only"></span>
                           </button>

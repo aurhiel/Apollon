@@ -36,6 +36,13 @@
       box-shadow: $input-focus-box-shadow;
     }
   }
+
+  + .form-textarea {
+    > textarea {
+      height: 12rem;
+      max-height: 12rem;
+    }
+  }
 }
 
 
@@ -132,7 +139,14 @@
   // Symfony form's multiple <select> (with checkboxes)
   .form-multi-select {
     > div {
-      max-height: 16rem;
+      max-height: 14rem;
+    }
+
+    + .form-textarea {
+      > textarea {
+        height: 14rem;
+        max-height: 14rem;
+      }
     }
   }
 }
@@ -141,7 +155,14 @@
   // Symfony form's multiple <select> (with checkboxes)
   .form-multi-select {
     > div {
-      max-height: 20rem;
+      max-height: 16rem;
+    }
+
+    + .form-textarea {
+      > textarea {
+        height: 16rem;
+        max-height: 16rem;
+      }
     }
   }
 }

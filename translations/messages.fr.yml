@@ -1,5 +1,8 @@
 ## GENERIC / BASIC FORMS ##
 form_basic:
+  images :
+    label       : "Photo(s)"
+    placeholder : "Photo(s)"
   save:
     label: Sauvegarder
 
@@ -23,9 +26,6 @@ form_advert :
   price :
     label       : "Prix"
     placeholder : "Prix"
-  images :
-    label       : "Photo(s)"
-    placeholder : "Photo(s)"
 
 ## ARTIST FORM ##
 form_vinyl :
@@ -47,3 +47,6 @@ form_vinyl :
   artists :
     label       : "Artistes"
     placeholder : "Artistes"
+  notes :
+    label       : "Notes"
+    placeholder : "Ajoutez ici l'état des faces du vinyle, de la pochette, ..."

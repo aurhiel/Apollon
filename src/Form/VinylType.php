@@ -16,7 +16,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 // Types
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class VinylType extends AbstractType
@@ -80,6 +82,32 @@ class VinylType extends AbstractType
                 'expanded'  => true,
                 // 'attr'      => [
                 //   'class' => 'custom-select'
+                // ],
+            ])
+            ->add('notes', TextareaType::class, [
+                'label'       => 'form_vinyl.notes.label',
+                'label_attr'  => [ 'class' => 'form-label fw-bold'],
+                'attr'        => [
+                    'placeholder' => 'form_vinyl.notes.placeholder',
+                    // 'class' => 'required-giga'
+                ],
+                'required'    => false,
+  					])
+            ->add('images', FileType::class,[
+                'label'       => 'form_basic.images.label',
+                'label_attr'  => [ 'class' => 'col-form-label fw-bold pt-0'],
+                'attr'        => [ 'class' => 'form-control' ],
+                'multiple'    => true,
+                'mapped'      => false,
+                'required'    => false,
+                // unmapped fields can't define their validation using annotations
+                // in the associated entity, so you can use the PHP constraint classes
+                // 'constraints' => [
+                //     new File([
+                //         'maxSize' => '4096k',
+                //         'mimeTypes' => [ 'image/*' ],
+                //         'mimeTypesMessage' => 'Please upload a valid Image file',
+                //     ])
                 // ],
             ])
             ->add('send', SubmitType::class, [

@@ -48,7 +48,7 @@ class AdvertType extends AbstractType
                 ],
             ])
             ->add('images', FileType::class,[
-                'label'       => 'form_advert.images.label',
+                'label'       => 'form_basic.images.label',
                 'label_attr'  => [ 'class' => 'col-form-label fw-bold pt-0'],
                 'attr'        => [ 'class' => 'form-control' ],
                 'multiple'    => true,

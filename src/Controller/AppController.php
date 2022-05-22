@@ -762,10 +762,10 @@ class AppController extends AbstractController
     }
 
     /**
-     * @Route("/annonces/images/{id}/supprimer", name="advert_image_delete")
+     * @Route("/annonces/images/{id}/supprimer", name="image_delete")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function advert_image_delete($id, Request $request, AuthorizationCheckerInterface $authChecker)
+    public function image_delete($id, Request $request, AuthorizationCheckerInterface $authChecker)
     {
         $em = $this->getDoctrine()->getManager();
 
@@ -892,14 +892,21 @@ class AppController extends AbstractController
     public function index($order_by, $direction, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader): Response
     {
         $em     = $this->getDoctrine()->getManager();
-        $vinyl  = new Vinyl();
-        $artist = new Artist();
         $return = array();
         $user   = $security->getUser();
         $artist_added = null;
 
+        // Retrieve vinyl if asked ($is_vinyl_edit = true) or new one
+        $vinyl_id       = (int) $order_by;
+        $r_vinyl        = $em->getRepository(Vinyl::class);
+        $vinyl_edit     = $r_vinyl->findOneById($vinyl_id);
+        $is_vinyl_edit  = null !== $vinyl_edit;
+        $vinyl          = ($is_vinyl_edit === true) ? $vinyl_edit : new Vinyl();
+
         // Only admin user can add vinyls & artists
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
+            $artist = new Artist();
+
             // 1) Build artist forms
             $form_artist = $this->createForm(ArtistType::class, $artist);
 
@@ -972,71 +979,53 @@ class AppController extends AbstractController
 
             // 3) Save vinyl
             if ($form_vinyl->isSubmitted() && $form_vinyl->isValid()) {
-                $r_vinyl = $em->getRepository(Vinyl::class);
-                $vinyl_existing = $r_vinyl->findOneByTrackFaceA($vinyl->getTrackFaceA());
-                $already_exist = (!is_null($vinyl_existing) ? ($vinyl_existing->getTrackFaceB() == $vinyl->getTrackFaceB()) : false);
+                $em->persist($vinyl);
 
-                // Check if vinyl already exist, update his quantity instead
-                //  of duplicating the vinyl
-                if ($already_exist === true) {
-                    // Increment vinyl quantity
-                    $vinyl_existing->setQuantity($vinyl_existing->getQuantity() + 1);
+                // 4) Try to save (flush) or clear
+                try {
+                    // Flush OK !
+                    $em->flush();
 
-                    // 4) Try to update quantity (flush) or clear
-                    try {
-                        // Flush OK !
+                    $return = array(
+                        'query_status'    => 1,
+                        'slug_status'     => 'success',
+                        'message_status'  => 'Sauvegarde du vinyle effectuée avec succès.',
+                        'id_entity'       => $vinyl->getId()
+                    );
+
+                    // Upload advert images
+                    $images = $form_vinyl->get('images')->getData();
+                    foreach ($images as $imgData) {
+                        // Upload new advert image
+                        $imageFileName = $fileUploader->upload($imgData, '/vinyls');
+
+                        // Create & persist new Image entity after upload
+                        $image = new Image();
+                        $image->setFilename($imageFileName);
+
+                        // Add new image to current vinyl
+                        $vinyl->addImage($image);
+
+                        $em->persist($image);
                         $em->flush();
-
-                        $return = array(
-                            'query_status'    => 0,
-                            'slug_status'     => 'notice',
-                            'message_status'  => 'Le vinyle existe déjà en base de donnée, sa quantité a donc été augmentée (quantité: ' . $vinyl_existing->getQuantity() . ').',
-                            'id_entity'       => $vinyl_existing->getId()
-                        );
-
-                        // Clear/reset form
-                        $vinyl      = new Vinyl();
-                        $form_vinyl = $this->createForm(VinylType::class, $vinyl);
-                    } catch (\Exception $e) {
-                        // Something goes wrong
-                        $em->clear();
-
-                        $return = array(
-                            'query_status'    => 0,
-                            'slug_status'     => 'error',
-                            'exception'       => $e->getMessage(),
-                            'message_status'  => 'Un problème est survenu lors de la modification de la quantité du vinyle.'
-                        );
                     }
-                } else {
-                    $em->persist($vinyl);
 
-                    // 4) Try to save (flush) or clear
-                    try {
-                        // Flush OK !
-                        $em->flush();
+                    // Clear/reset form
+                    $vinyl      = new Vinyl();
+                    $form_vinyl = $this->createForm(VinylType::class, $vinyl);
+                } catch (\Exception $e) {
+                    // Something goes wrong
+                    $em->clear();
 
-                        $return = array(
-                            'query_status'    => 1,
-                            'slug_status'     => 'success',
-                            'message_status'  => 'Sauvegarde du vinyle effectuée avec succès.',
-                            'id_entity'       => $vinyl->getId()
-                        );
-
-                        // Clear/reset form
-                        $vinyl      = new Vinyl();
-                        $form_vinyl = $this->createForm(VinylType::class, $vinyl);
-                    } catch (\Exception $e) {
-                        // Something goes wrong
-                        $em->clear();
-
-                        $return = array(
-                            'query_status'    => 0,
-                            'slug_status'     => 'error',
-                            'exception'       => $e->getMessage(),
-                            'message_status'  => 'Un problème est survenu lors de la sauvegarde du vinyle.'
-                        );
-                    }
+                    $return = array(
+                        'query_status'    => 0,
+                        'slug_status'     => 'error',
+                        'exception'       => $e->getMessage() . ', at line: '.$e->getLine(),
+                        'message_status'  => sprintf(
+                          'Un problème est survenu lors de la %s du vinyle.',
+                          ($is_vinyl_edit === true ? 'modification' : 'sauvegarde')
+                        ),
+                    );
                 }
             }
 
@@ -1046,6 +1035,10 @@ class AppController extends AbstractController
                     (isset($return['slug_status']) ? $return['slug_status'] : 'notice'),
                     $return['message_status']
                 );
+
+                // Redirect on home after editing a vinyl
+                if ($is_vinyl_edit === true)
+                    return $this->redirectToRoute('home');
             }
         }
 
@@ -1092,6 +1085,8 @@ class AppController extends AbstractController
             'form_artist'   => isset($form_artist) ? $form_artist->createView() : null,
             'form_vinyl'    => isset($form_vinyl) ? $form_vinyl->createView() : null,
             'vinyls'        => $vinyls,
+            'is_vinyl_edit' => $is_vinyl_edit,
+            'vinyl_to_edit' => $vinyl,
             'total_vinyls'        => $r_vinyl->countAll(),
             'total_vinyls_cover'  => $r_vinyl->countAllWithCover(),
             'nb_vinyls_sold'      => $nb_vinyls_sold,

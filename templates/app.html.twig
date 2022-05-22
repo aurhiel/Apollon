@@ -80,9 +80,7 @@
             {% if is_granted('ROLE_VIEWER') %}
               <th scope="col" class="col-quantity -sold">Vendu(s)</th>
             {% endif %}
-            {% if is_granted('ROLE_ADMIN') %}
               <th scope="col" class="col-actions"></th>
-            {% endif %}
             </tr>
           </thead>
           <tbody>
@@ -151,19 +149,47 @@
               <td class="col-quantity">
                 {{ vinyl.quantity - vinyl.quantitySold }}
               </td>
-              <td class="col-quantity -with-cover">
+              <td class="col-quantity -with-cover" data-qty-value="{{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}">
                 {{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}
               </td>
             {% endif %}
-            {% if is_granted('ROLE_ADMIN') %}
-              <td class="col-actions">
-                <button class="btn btn-sm btn-outline-danger px-2 py-1"
-                  data-confirm-href="{{ path('vinyl_delete', { id: vinyl.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer ce vinyle ?<br>- Face A: <b>{{ vinyl.trackFaceA }}</b><br>- Face B: <b>{{ vinyl.trackFaceB }}</b><br><i>{{ artists_str }}</i>"
-                    data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
-                  <span class="icon-trash"></span>
-                </button>
+              <td class="col-actions{% if is_granted('ROLE_ADMIN') %} -is-admin{% endif %}">
+                {% if vinyl.notes is not empty or vinyl.images is not empty %}
+                  {% set popover_content %}
+                    {% if vinyl.notes is not empty %}{{ vinyl.notes|nl2br }}{% endif %}
+                      {% if vinyl.images is not empty %}
+                        <hr/>
+                        <div class='vinyl-list-imgs row g-2 mt-2'>
+                          <h4 class='h6 text-dark my-0 col-12'>Photo(s)</h4>
+                          {% for img in vinyl.images %}
+                            {% set img_url = asset('uploads/vinyls/' ~ img.filename) %}
+                            <div class='col-3'>
+                              <a class='ratio ratio-1x1 ratio-bg rounded bg-secondary' href='{{ img_url }}' target='_blank'>
+                                <span style='background-image: url({{ img_url }})'></span>
+                              </a>
+                            </div>
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                  {% endset %}
+
+                  <button type="button" class="btn btn-sm btn-outline-primary text-white px-2 py-1" data-bs-toggle="popover" data-bs-html="true"
+                    title="Infos supplémentaires" data-bs-content="{{ popover_content|spaceless }}">
+                     <span class="icon-file-plus"></span>
+                   </button>
+                {% endif %}
+                {% if is_granted('ROLE_ADMIN') %}
+                  <a class="btn btn-sm btn-outline-secondary text-white px-2 py-1"
+                    href="{{ path('home', { order_by: vinyl.id }) }}">
+                    <span class="icon-edit"></span>
+                  </a>
+                  <button class="btn btn-sm btn-outline-danger px-2 py-1"
+                    data-confirm-href="{{ path('vinyl_delete', { id: vinyl.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer ce vinyle ?<br>- Face A: <b>{{ vinyl.trackFaceA }}</b><br>- Face B: <b>{{ vinyl.trackFaceB }}</b><br><i>{{ artists_str }}</i>"
+                      data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
+                    <span class="icon-trash"></span>
+                  </button>
+                {% endif %}
               </td>
-            {% endif %}
             </tr>
           {% endfor %}
           </tbody>

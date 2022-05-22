@@ -47,8 +47,12 @@
   }
 
   .col-actions {
-    text-align: right;
+    text-align: center;
     vertical-align: middle;
+    min-width: 3.4rem;
+    &.-is-admin {
+      min-width: 8.4rem;
+    }
   }
 }
 

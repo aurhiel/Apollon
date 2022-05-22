@@ -25,6 +25,8 @@ class VinylRepository extends ServiceEntityRepository
             // Join relations
             ->leftJoin('v.artists', 'artists')
             ->addSelect('artists')
+            ->leftJoin('v.images', 'images')
+            ->addSelect('images')
             // Order
             ->orderBy('v.id', 'ASC')
             ->getQuery()

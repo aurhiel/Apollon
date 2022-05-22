@@ -27,6 +27,11 @@ class Image
      */
     private $advert;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Vinyl::class, inversedBy="images")
+     */
+    private $vinyl;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -52,6 +57,18 @@ class Image
     public function setAdvert(?Advert $advert): self
     {
         $this->advert = $advert;
+
+        return $this;
+    }
+
+    public function getVinyl(): ?Vinyl
+    {
+        return $this->vinyl;
+    }
+
+    public function setVinyl(?Vinyl $vinyl): self
+    {
+        $this->vinyl = $vinyl;
 
         return $this;
     }

@@ -1,6 +1,7 @@
 {% if form_vinyl is defined and form_vinyl is not empty %}
-  <div class="modal fade" id="modal-manage-vinyl" tabindex="-1" aria-labelledby="modal-manage-vinyl-label" aria-hidden="true">
-    <div class="modal-dialog">
+  <div class="modal fade{% if is_vinyl_edit == true %} -is-edit{% endif %}" id="modal-manage-vinyl" tabindex="-1" aria-labelledby="modal-manage-vinyl-label" aria-hidden="true"
+  {% if is_vinyl_edit == true %}data-bs-backdrop="static"{% endif %}>
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="modal-manage-vinyl-label">Vinyle</h5>
@@ -38,10 +39,38 @@
                   {{ form_errors(form_vinyl.track_face_B) }}
                 </div>
 
-                <div class="col-12 form-group form-multi-select"{% if artist_added is not empty %} data-ms-autoselect="{{ artist_added.id }}"{% endif %}>
+                <div class="col-md-5 col-lg-4 form-group form-multi-select"{% if artist_added is not empty %} data-ms-autoselect="{{ artist_added.id }}"{% endif %}>
                   {{ form_label(form_vinyl.artists) }}
                   {{ form_widget(form_vinyl.artists) }}
                   {{ form_errors(form_vinyl.artists) }}
+                </div>
+                <div class="col-md-7 col-lg-8 form-group form-textarea">
+                  {{ form_label(form_vinyl.notes) }}
+                  {{ form_widget(form_vinyl.notes) }}
+                  {{ form_errors(form_vinyl.notes) }}
+                </div>
+
+                <div class="col-12 form-group form-image-lib">
+                  {{ form_label(form_vinyl.images) }}
+                  {{ form_widget(form_vinyl.images) }}
+                  {{ form_errors(form_vinyl.images) }}
+                  <div class="-images-library{% if vinyl_to_edit is not null and vinyl_to_edit.images is not empty %} -has-images{% endif %}" data-initial-text="Aucune photo sélectionnée">
+                    {% if vinyl_to_edit is not null and vinyl_to_edit.images is not empty %}
+                      {% for img in vinyl_to_edit.images %}
+                        <span class="-item -in-database ratio ratio-1x1" style="background-image: url({{ asset('uploads/vinyls/' ~ img.filename) }})"
+                          data-id-image="{{ img.id }}">
+                          <button class="btn btn-danger px-2 pt-2 pb-1" type="button"
+                            data-confirm-href="{{ path('image_delete', { id: img.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer cette image ?"
+                              data-confirm-link-class="btn-delete-img" data-confirm-always-close="true" data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
+                            <span class="icon-file-minus"></span>
+                            <span class="sr-only"></span>
+                          </button>
+                        </span>
+                      {% endfor %}
+                    {% else %}
+                      <span class="-text">Aucune photo sélectionnée</span>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
             </div>
