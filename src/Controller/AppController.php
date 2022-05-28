@@ -13,11 +13,13 @@ use App\Entity\InSale;
 use App\Form\ArtistType;
 use App\Form\VinylType;
 use App\Form\AdvertType;
+use App\Form\BookingType;
 
 // Services
 use App\Service\FileUploader;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -505,11 +507,12 @@ class AppController extends AbstractController
         }
 
         return $this->render('artist-single.html.twig', [
-            'meta'    => [
+            'meta'        => [
                 'title' => $artist->getName()
             ],
-            'user'    => $user,
-            'artist'  => $artist,
+            'core_class'  => 'app-artist-single',
+            'user'        => $user,
+            'artist'      => $artist,
         ]);
     }
 
@@ -585,9 +588,8 @@ class AppController extends AbstractController
 
                     // Assign vinyls to created advert
                     $r_vinyl    = $em->getRepository(Vinyl::class);
-                    $vinyls_qty = $request->get('advert_vinyl_qty');
+                    $vinyls_qty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
                     $vinyls     = $r_vinyl->findById(array_keys($vinyls_qty));
-
                     foreach ($vinyls as $vinyl) {
                         $vinyl_qty  = ((isset($vinyls_qty[$vinyl->getId()]) && isset($vinyls_qty[$vinyl->getId()][0])) ? (int)$vinyls_qty[$vinyl->getId()][0] : 0);
                         $inSale     = new InSale();
@@ -597,11 +599,11 @@ class AppController extends AbstractController
                             $inSale->setAdvert($advert);
                             $inSale->setQuantity($vinyl_qty);
 
-                            // Persist & flush new vinyl in sale
+                            // Persist new vinyl in sale
                             $em->persist($inSale);
-                            $em->flush();
                         }
                     }
+                    $em->flush();
 
                     // Upload advert images
                     $images = $form_advert->get('images')->getData();
@@ -617,8 +619,8 @@ class AppController extends AbstractController
                         $advert->addImage($image);
 
                         $em->persist($image);
-                        $em->flush();
                     }
+                    $em->flush();
 
                     // Clear/reset form
                     $advert       = new Advert();
@@ -630,8 +632,11 @@ class AppController extends AbstractController
                     $return = array(
                         'query_status'    => 0,
                         'slug_status'     => 'error',
-                        'exception'       => $e->getMessage(),
-                        'message_status'  => 'Un problème est survenu lors de la ' . ($is_edit === true ? 'modification' : 'sauvegarde') . ' de l\'annonce.'
+                        'exception'       => $e->getMessage() . ', at line: '.$e->getLine(),
+                        'message_status'  => sprintf(
+                          'Un problème est survenu lors de la %s de l\'annonce.',
+                          ($is_edit === true ? 'modification' : 'sauvegarde')
+                        ),
                     );
                 }
             }
@@ -887,17 +892,114 @@ class AppController extends AbstractController
     }
 
     /**
-     * @Route("/{order_by}/{direction}", name="home", defaults={"order_by"=null,"direction"=null})
+     * @Route("/reservation", name="booking")
      */
-    public function index($order_by, $direction, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader): Response
+    public function booking(Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader): Response
+    {
+        $em           = $this->getDoctrine()->getManager();
+        $booking      = new Advert();
+        $form_booking = $this->createForm(BookingType::class, $booking);
+
+        $form_booking->handleRequest($request);
+        if ($form_booking->isSubmitted() && $form_booking->isValid()) {
+            $em->persist($booking);
+
+            // Try to save (flush) or clear
+            try {
+                $em->flush();
+
+                $return = [
+                    'query_status'    => 1,
+                    'slug_status'     => 'success',
+                    'message_status'  => 'Réservation effectuée avec succès, vous serez contacté au plus vite !',
+                    'id_entity'       => $booking->getId()
+                ];
+
+                // Assign vinyls to created advert
+                $r_vinyl    = $em->getRepository(Vinyl::class);
+                $vinyls_qty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
+                $vinyls     = $r_vinyl->findById(array_keys($vinyls_qty));
+                foreach ($vinyls as $vinyl) {
+                    $vinyl_qty  = ((isset($vinyls_qty[$vinyl->getId()]) && isset($vinyls_qty[$vinyl->getId()][0])) ? (int)$vinyls_qty[$vinyl->getId()][0] : 0);
+                    $inSale     = new InSale();
+
+                    if ($vinyl_qty > 0) {
+                        $inSale->setVinyl($vinyl);
+                        $inSale->setAdvert($booking);
+                        $inSale->setQuantity($vinyl_qty);
+
+                        // Persist & flush new vinyl in sale
+                        $em->persist($inSale);
+                    }
+                }
+
+                // Flush vinyls in database
+                $em->flush();
+            } catch (\Exception $e) {
+                $em->clear();
+
+                $return = [
+                    'query_status'    => 0,
+                    'slug_status'     => 'error',
+                    'exception'       => $e->getMessage() . ', at line: '.$e->getLine(),
+                    'message_status'  => 'Un problème est survenu lors de la réservation, veuillez ré-essayer ultérieurement ou me contacter.',
+                ];
+            }
+
+            // Set flash message if $return has message_status
+            if (isset($return['message_status']) && !empty($return['message_status'])) {
+                $request->getSession()->getFlashBag()->add(
+                    (isset($return['slug_status']) ? $return['slug_status'] : 'notice'),
+                    $return['message_status']
+                );
+            }
+        }
+
+        return $this->redirectToRoute('home');
+    }
+
+    /**
+     * @Route("/switch-theme/{theme_slug}", name="switch-theme")
+     */
+    public function switchTheme($theme_slug, Request $request): Response
+    {
+        // Try to retrieve route name from `referer`
+        $routeToRedirect = 'home';
+        $routeInfos = [];
+        if (null !== ($referer = $request->headers->get('referer'))) {
+            $refererPathInfo = Request::create($referer)->getPathInfo();
+
+            $routeInfos = $this->get('router')->match($refererPathInfo);
+            $routeToRedirect = $routeInfos['_route'] ?? $routeToRedirect;
+            unset($routeInfos['_route']);
+            unset($routeInfos['_controller']);
+        }
+
+        // Assign theme if available
+        if (in_array($theme_slug, ['light', 'dark'])) {
+            $response = new Response();
+            $response->headers->setCookie(Cookie::create('APP_THEME', $theme_slug));
+            $response->sendHeaders();
+        }
+
+        // Redirect to home or guessed referer
+        return $this->redirectToRoute($routeToRedirect, $routeInfos);
+    }
+
+    /**
+     * @Route("/{vinyl_id}", name="home", defaults={"vinyl_id"=null})
+     */
+    public function index($vinyl_id, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader): Response
     {
         $em     = $this->getDoctrine()->getManager();
         $return = array();
         $user   = $security->getUser();
         $artist_added = null;
+        $form_booking = $this->createForm(BookingType::class, new Advert(), [
+            'action' => $this->generateUrl('booking'),
+        ]);
 
         // Retrieve vinyl if asked ($is_vinyl_edit = true) or new one
-        $vinyl_id       = (int) $order_by;
         $r_vinyl        = $em->getRepository(Vinyl::class);
         $vinyl_edit     = $r_vinyl->findOneById($vinyl_id);
         $is_vinyl_edit  = null !== $vinyl_edit;
@@ -1046,42 +1148,12 @@ class AppController extends AbstractController
         $r_vinyl = $em->getRepository(Vinyl::class);
         $vinyls = $r_vinyl->findAll();
 
-        // Re-order vinyls if asked
-        if(!is_null($order_by) && !is_null($direction)) {
-            usort($vinyls, function($a, $b) use($order_by, $direction) {
-                $a_str = null;
-                $b_str = null;
-                if ($order_by == 'track-face-a') {
-                    $a_str = $a->getTrackFaceA();
-                    $b_str = $b->getTrackFaceA();
-                } elseif ($order_by == 'track-face-b') {
-                    $a_str = $a->getTrackFaceB();
-                    $b_str = $b->getTrackFaceB();
-                } elseif ($order_by == 'artist') {
-                    $a_first_artist = $a->getArtists()->first();
-                    $b_first_artist = $b->getArtists()->first();
-                    // Check if an artist is defined
-                    if (is_object($a_first_artist) && is_object($b_first_artist)) {
-                        $a_str = $a_first_artist->getName();
-                        $b_str = $b_first_artist->getName();
-                    }
-                }
-
-                // Remove accents
-                $this->removeAccents($a_str);
-                $this->removeAccents($b_str);
-
-                // Re-order only if "a" and "b" string are defined
-                if (!is_null($a_str) && !is_null($b_str))
-                    return ($direction == 'asc') ? strcmp($a_str, $b_str) : strcmp($b_str, $a_str);
-            });
-        }
-
         // Get some additionnals data
         $nb_vinyls_sold = $r_vinyl->countVinylsSold();
 
         return $this->render('app.html.twig', [
             'user'          => $user,
+            'form_booking'  => $form_booking->createView(),
             'form_artist'   => isset($form_artist) ? $form_artist->createView() : null,
             'form_vinyl'    => isset($form_vinyl) ? $form_vinyl->createView() : null,
             'vinyls'        => $vinyls,
@@ -1090,12 +1162,9 @@ class AppController extends AbstractController
             'total_vinyls'        => $r_vinyl->countAll(),
             'total_vinyls_cover'  => $r_vinyl->countAllWithCover(),
             'nb_vinyls_sold'      => $nb_vinyls_sold,
-            'vinyls_order_by'     => $order_by,
-            'vinyls_direction'    => $direction,
             'artist_added'        => $artist_added,
         ]);
     }
-
 
 
     private $csvParsingOptions = array(
@@ -1166,5 +1235,13 @@ class AppController extends AbstractController
         }
 
         return $img_url;
+    }
+
+    private function filterVinylsWithQuantity(array $vinylsQty): array
+    {
+        return array_filter($vinylsQty, function($row) {
+          $quantity = (int) $row[0];
+          return $quantity > 0;
+        });
     }
 }

@@ -271,7 +271,7 @@ $btn-border-radius-lg:        1.4rem;
 
 $input-color:                           $dark;
 $input-border-color:                    $white;
-
+$input-padding-x: .8rem;
 
 
 // Popover
@@ -295,7 +295,7 @@ $popover-max-width:                     340px;
 // $modal-title-line-height:           $line-height-base !default;
 //
 // $modal-content-color:               null !default;
-$modal-content-bg:                  transparentize($dark, .15);
+$modal-content-bg:                  transparentize($dark, .15) !default;
 // $modal-content-border-color:        rgba($black, .2) !default;
 $modal-content-border-width:        $border-width;
 $modal-content-border-radius:       1rem;

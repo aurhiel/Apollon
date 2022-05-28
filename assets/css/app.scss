@@ -20,6 +20,7 @@
 @import 'app/tables';
 @import 'app/ratio';
 @import 'app/lists';
+@import 'app/utilities';
 @import 'app/position';
 @import 'app/popover';
 
@@ -100,10 +101,12 @@
     overflow: hidden;
   }
   .-artist {
+    color: $gray-400;
     font-size: .7em;
     margin-bottom: .2em;
   }
   .-title {
+    color: $gray-100;
     font-size: 1em;
     font-weight: bold;
     line-height: 1.2;
@@ -143,6 +146,40 @@
 }
 
 
+.app-artist-single {
+  .-artist-avatar {
+    position: relative;
+    z-index: 1;
+
+    img {
+      width: 100%;
+    }
+
+    &.-is-sold-out {
+      img {
+        opacity: .5;
+        filter: grayscale(1);
+      }
+
+      &:after {
+        content: "sold-out !";
+        color: $white;
+        font-size: 2.4em;
+        font-weight: bold;
+        text-shadow: 0 0 0.5em #000;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-left: -2.3em;
+        margin-top: -.8em;
+        transform: rotate(-15deg) scale(1.2);
+        pointer-events: none;
+      }
+    }
+  }
+}
+
+
 #modal-manage-advert {
   .form-control-quantity {
     font-size: 1.4rem;
@@ -163,6 +200,13 @@
 
   .-vinyl-tracks, .-vinyl-artists {
     line-height: 1.2;
+  }
+}
+
+
+#modal-manage-booking {
+  textarea {
+    min-height: 8rem;
   }
 }
 

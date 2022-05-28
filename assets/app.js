@@ -10,7 +10,7 @@ require('bootstrap');
 // any CSS you import will output into a single css file (app.css in this case)
 import './css/app.scss';
 
-import { Tooltip, Popover } from 'bootstrap';
+import { Tooltip, Popover, Collapse } from 'bootstrap';
 
 var ClipboardJS = require('clipboard');
 
@@ -89,7 +89,9 @@ var app = {
 
   //
   // Functions
-  // Sort object
+  randomInt: function(max, min) {
+    return Math.max((typeof min == 'undefined' ? 0 : min), Math.floor(Math.random() * max));
+  },
   sortObject: function(object) {
     return Object.keys(object).sort().reduce((r, k) => (r[k] = object[k], r), {});
   },
@@ -127,15 +129,25 @@ var app = {
       // Header
       self.$header = self.$body.find('.app-header');
       // Modals
+      self.$modal_booking = self.$body.find('#modal-manage-booking');
       self.$modal_artist  = self.$body.find('#modal-manage-artist');
       self.$modal_vinyl   = self.$body.find('#modal-manage-vinyl');
       self.$modal_advert  = self.$body.find('#modal-manage-advert');
       self.$modal_confirm = self.$body.find('#modal-confirm-delete');
       // Vinyls list container
-      self.$vinyls = self.$body.find('#vinyls-entities');
+      self.$vinyls = self.$body.find('.vinyls-entities');
       self.$vinyls_total_qty = self.$body.find('.-vinyls-total-quantity');
       // Adverts list container
       self.$adverts = self.$body.find('#advers-entities');
+      // Booking nodes
+      self.$booking_form = self.$modal_booking.find('form');
+      self.$booking_input_price = self.$booking_form.find('#booking_price');
+      self.$booking_input_title = self.$booking_form.find('#booking_title');
+      self.$booking_vinyls = self.$booking_form.find('.vinyls-entities');
+      self.$booking_vinyl_row = self.$booking_vinyls.find('tbody > tr').clone();
+      self.$booking_total_selected = self.$booking_form.find('.-vinyls-total-selected > .-amount');
+      // // Reset vinyls table body
+      self.$booking_vinyls.find('tbody').empty();
 
 
       //
@@ -163,31 +175,15 @@ var app = {
 
 
       //
+      // Table sortable
+      self.$body.find('.table-sortable').tablesort();
+
+
+      //
       // Globals / Generics
       // Trigger scroll event after ready to display elements already on screen
       // self.$window.trigger('scroll');
-      // Images library preview
-      self.$body.on('change', '.form-image-lib input', function() {
-        var $file_input = $(this);
-        var files       = $file_input.get(0).files;
-        var $parent     = $file_input.parents('.form-image-lib').first();
-        var $library    = $parent.find('.-images-library');
-
-        if (files.length > 0) {
-          $library.addClass('-has-images').find('.-item, .-text').not('.-in-database').remove();
-          for (var i = 0; i < files.length; i++) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-              $library.append($('<span class="-item ratio ratio-1x1" style="background-image: url(' + e.currentTarget.result + ');"></span>'));
-            };
-            reader.readAsDataURL(files[i]);
-          }
-        } else {
-          // Reset if no files selected
-          $library.removeClass('-has-images').html($library.data('initial-text'));
-        }
-      });
-      // Modal: Confirm delete, add link to delete and add custom things (title, body, ...)
+      // Modal:Confirm delete, add link to delete and add custom things (title, body, ...)
       if (self.$modal_confirm.length > 0) {
         var $btn_clicked = null;
         // Add links & custom things just before modal is showed
@@ -241,6 +237,33 @@ var app = {
           self.$body.find('.modal-backdrop').removeAttr('style');
         });
       }
+      // Auto-select in multi-select TODO multiple selection
+      self.$body.find('.form-multi-select').each(function() {
+        var $container = $(this);
+        if (typeof $container.data('ms-autoselect') != 'undefined')
+          $container.find('input[value="' + $container.data('ms-autoselect') + '"]').prop('checked', true);
+      });
+      // Event:Images library preview
+      self.$body.on('change', '.form-image-lib input', function() {
+        var $file_input = $(this);
+        var files       = $file_input.get(0).files;
+        var $parent     = $file_input.parents('.form-image-lib').first();
+        var $library    = $parent.find('.-images-library');
+
+        if (files.length > 0) {
+          $library.addClass('-has-images').find('.-item, .-text').not('.-in-database').remove();
+          for (var i = 0; i < files.length; i++) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+              $library.append($('<span class="-item ratio ratio-1x1" style="background-image: url(' + e.currentTarget.result + ');"></span>'));
+            };
+            reader.readAsDataURL(files[i]);
+          }
+        } else {
+          // Reset if no files selected
+          $library.removeClass('-has-images').html($library.data('initial-text'));
+        }
+      });
       // Event:Delete image
       self.$body.on('click', '.btn-delete-img', function(e) {
         var $modal = self.$modal_advert.length > 0 ? self.$modal_advert : self.$modal_vinyl;
@@ -273,13 +296,7 @@ var app = {
         e.stopPropagation();
         return false;
       });
-      // Auto-select in multi-select TODO multiple selection
-      self.$body.find('.form-multi-select').each(function() {
-        var $container = $(this);
-        if (typeof $container.data('ms-autoselect') != 'undefined')
-          $container.find('input[value="' + $container.data('ms-autoselect') + '"]').prop('checked', true);
-      });
-      // Disable every form's buttons after submitting the form
+      // Event:Disable every form's buttons after submitting the form
       self.$body.find('.form').on('submit', function() {
         $(this).find('.btn').addClass('disabled');
       });
@@ -357,6 +374,7 @@ var app = {
 
           // Push new track
           user_vinyls_selected[artists_str].tracks[vinyl_id] = {
+            rpm: $vinyl.find('.col-rpm').html(),
             face_A: $vinyl.find('.-vinyl-track-A').html(),
             face_B: $vinyl.find('.-vinyl-track-B').html(),
             quantity_with_cover: $vinyl.find('.col-quantity.-with-cover').data('qty-value')
@@ -427,12 +445,76 @@ var app = {
           if (text_to_copy.length > 0)
             $target.html($('<div>'+text_to_copy+'</div>'));
         } else {
-          // TODO booking
-          console.log('book them !', user_vinyls_selected);
+          var i_artist = 0;
+          var nb_artists = Object.keys(user_vinyls_selected).length;
+          var total_selected = 0;
+          var booking_title = '';
+          var is_rpm_consistent = true;
+          var last_rpm = null;
+
+          // Reset vinyls table
+          self.$booking_vinyls.find('tbody').empty();
+
+          // Loop on each artist to create text to copy
+          for (const artist_name in user_vinyls_selected) {
+            var last = (i_artist === (nb_artists - 1));
+            var vinyls_selected = user_vinyls_selected[artist_name];
+            var tracks = vinyls_selected.tracks;
+            var nb_tracks = Object.keys(tracks).length;
+
+            // Add vinyls to table in booking form
+            if (nb_tracks > 0) {
+              for (const vinyl_id in tracks) {
+                if (tracks.hasOwnProperty(vinyl_id)) {
+                  var vinyl = tracks[vinyl_id];
+                  var $row = self.$booking_vinyl_row.clone();
+                  var $tracks = $row.find('.col-track');
+                  var $input_qty = $row.find('.advert-vinyl-qty');
+                  var input_qty = $input_qty.prop('outerHTML');
+
+                  // Check rpm consistency to add it to title or not
+                  if (last_rpm !== null && last_rpm !== vinyl.rpm) {
+                    is_rpm_consistent = false;
+                  }
+
+                  // Update vinyl data in table row
+                  $row.attr('data-vinyl-id', vinyl_id);
+                  $row.find('.col-rpm').html(vinyl.rpm);
+                  $tracks.filter('[data-track-face="A"]').find('.-text').html(vinyl.face_A);
+                  $tracks.filter('[data-track-face="B"]').find('.-text').html(vinyl.face_B);
+                  $row.find('.col-artist').html(artist_name);
+
+                  // Remove input quantity pattern & replace it by the right one
+                  $input_qty.remove();
+                  $row.find('.col-id').append($(input_qty.replaceAll('#ID#', vinyl_id)));
+
+                  // Append new vinyl row to booking form table
+                  self.$booking_vinyls.find('tbody').append($row);
+
+                  last_rpm = vinyl.rpm;
+                  ++total_selected;
+                }
+              }
+            }
+            i_artist++;
+          }
+
+          // Add total vinyls selected & update min price
+          self.$booking_total_selected.html(total_selected);
+          self.$booking_input_price.attr('min', total_selected).val(total_selected);
+
+          // Create booking title ...
+          if (booking_title == '') {
+            booking_title = ((nb_artists < 2) ? 'Vinyle ' : 'Lot de ' + total_selected + ' vinyles') + ((is_rpm_consistent) ? ' - ' + last_rpm + 'T' : '');
+            // & push artist name if only 1 vinyl selected
+            if (nb_artists < 2)
+              booking_title += (' - ' + artist_name);
+          }
+          // ... then add it to hidden input
+          console.log(is_rpm_consistent, booking_title);
+          self.$booking_input_title.val(booking_title);
         }
       });
-      // Sort vinyls table
-      self.$vinyls.tablesort();
 
 
       //
@@ -491,6 +573,9 @@ var app = {
           }
         }
 
+        // Sort vinyls selected by artists names
+        vinyls_selected = self.sortObject(vinyls_selected);
+
         // Create advert title & description if enough vinyls quantity & not edit
         if (self.$modal_advert.hasClass('-is-edit') == false) {
           var advert_title = '';
@@ -526,7 +611,7 @@ var app = {
                   // Add artist in desc (only when have selected more than 1 vinyl)
                   //  and if there is more than 1 artist we add a "- " before each artists
                   if (total_selected > 1)
-                    advert_desc += (nb_artists > 1 ? '- ': '') + artist_name + ((nb_tracks > 1) ? ' :': '');
+                    advert_desc += ((nb_artists > 1 && nb_tracks < 2) ? '- ': '') + artist_name + ((nb_tracks > 1) ? ' :': '');
 
                   for (const vinyl_id in tracks) {
                     // Add vinyl track faces in desc

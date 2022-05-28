@@ -37,13 +37,24 @@
           <div class="card text-dark">
             <div class="card-header">
               <h2 class="h5 mb-0 text-dark row align-items-center">
-                <div class="-item-title col-9 col-xl-10 pe-0">{{ advert.title }}</div>
-                <div class="-item-price col-3 col-xl-2 text-end"><span class="badge bg-primary">{{ advert.price }}€</span></div>
+                <div class="-item-title col-9 col-xl-10 col-xxl-9 pe-0">
+                  {{ advert.title }}
+                  {% if is_granted('ROLE_ADMIN') and advert.name is not empty %}
+                  <small class="d-inline-block text-muted fw-normal fst-italic">(pour: <b>{{ advert.name }}</b>)</small>
+                  {% endif %}
+                </div>
+                <div class="-item-price col-3 col-xl-2 col-xxl-3 text-end">
+                  <span class="badge bg-primary">{{ advert.price|number_format(2, ',', ' ') }}€</span>
+                </div>
               </h2>
             </div>
             <div class="-item-desc">
               <div class="p-3{% if advert.images is not empty %} pb-0{% endif %}">
-                {{ advert.description|nl2br }}
+                {% if advert.description is not empty %}
+                  {{ advert.description|nl2br }}
+                {% else %}
+                  <div class="text-muted fst-italic text-center my-3"> - Aucune description - </div>
+                {% endif %}
               </div>
             </div>
             {% if advert.images is not empty %}

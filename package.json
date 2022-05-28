@@ -6,7 +6,7 @@
         "@symfony/webpack-encore": "^1.0.0",
         "bootstrap": "^5.0.0-beta3",
         "clipboard": "^2.0.10",
-        "copy-webpack-plugin": "^8.1.1",
+        "copy-webpack-plugin": "^9.0.1",
         "core-js": "^3.0.0",
         "jquery": "^3.6.0",
         "jquery-tablesort": "^0.0.11",

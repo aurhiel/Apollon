@@ -78,6 +78,11 @@
     content: $icon-minus-square;
   }
 }
+.icon-moon {
+  &:before {
+    content: $icon-moon;
+  }
+}
 .icon-pause {
   &:before {
     content: $icon-pause;
@@ -121,6 +126,11 @@
 .icon-power {
   &:before {
     content: $icon-power;
+  }
+}
+.icon-sun {
+  &:before {
+    content: $icon-sun;
   }
 }
 .icon-trash {

@@ -25,9 +25,14 @@ class Advert
     private $title;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", nullable=true)
      */
     private $description;
+
+    /**
+     * @ORM\Column(type="string", length=128, nullable=true)
+     */
+    private $name;
 
     /**
      * @ORM\Column(type="float")
@@ -80,6 +85,18 @@ class Advert
     public function setDescription(string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }

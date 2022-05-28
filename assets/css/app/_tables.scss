@@ -103,16 +103,18 @@
 
 // Specifics tables
 
-#vinyls-entities {
+.vinyls-entities {
   td {
     line-height: 1.25;
     vertical-align: middle;
   }
 
-  tr {
-    &.disabled {
+  .-item-vinyl {
+    &.sold-out {
       --bs-table-accent-bg: #{$gray-800};
       color: $gray-700;
+    }
+    &.disabled {
       pointer-events: none;
       user-select: none;
     }

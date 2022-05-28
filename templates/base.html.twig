@@ -1,5 +1,7 @@
 {# default twig values #}
 {% set domain = app.request.getSchemeAndHttpHost() %}
+{% set app_theme = app.request.cookies.get('APP_THEME') ?? 'light' %}
+{% set app_theme_reversed = app_theme == 'dark' ? 'light' : 'dark' %}
 <!DOCTYPE html>
 <html>
   <head>
@@ -19,7 +21,8 @@
     </title>
 
     {# Base stylesheets #}
-    {{ encore_entry_link_tags('app') }}
+    {% if app_theme == 'dark' %}{{ encore_entry_link_tags('app') }}
+    {% else %}{{ encore_entry_link_tags('app-' ~ app_theme) }}{% endif %}
     <link rel="stylesheet" href="{{ asset('build/google-fonts.css') }}">
     {# Custom stylesheets from twig templates #}
     {% block stylesheets %}{% endblock %}
@@ -72,6 +75,7 @@
     </div>
 
     {# Modals #}
+    {% include 'modals/manage-booking.html.twig' %}
     {% if app.user %}
       {% include 'modals/manage-artist.html.twig' %}
       {% include 'modals/manage-advert.html.twig' %}

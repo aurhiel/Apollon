@@ -1,0 +1,84 @@
+{% if form_booking is defined and form_booking is not empty %}
+  <div class="modal fade" id="modal-manage-booking" tabindex="-1" aria-labelledby="modal-manage-booking-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-manage-booking-label">Faire une réservation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        {{ form_start(form_booking, { 'attr' : { 'class': 'form form-booking' } }) }}
+          <div class="modal-body">
+            {# Form inputs #}
+            <div class="form--inputs">
+              {{ form_widget(form_booking.title) }}
+              <div class="row g-3">
+                <div class="col-12 col-sm-8 col-lg-9 form-group">
+                  {{ form_label(form_booking.name) }}
+                  {{ form_widget(form_booking.name) }}
+                  {{ form_errors(form_booking.name) }}
+                </div>
+                <div class="col-12 col-sm-4 col-lg-3 form-group">
+                  {{ form_label(form_booking.price) }}
+                  <div class="input-group">
+                    {{ form_widget(form_booking.price) }}
+                    <span class="input-group-text fw-bold px-3">€</span>
+                  </div>
+                  {{ form_errors(form_booking.price) }}
+                </div>
+
+                <div class="col-12 form-group">
+                  {{ form_label(form_booking.description) }}
+                  {{ form_widget(form_booking.description) }}
+                  {{ form_errors(form_booking.description) }}
+                </div>
+
+                <div class="col-12 form-group form-vinyls-selected">
+                  <legend class="col-form-label fw-bold pt-0">Vinyle(s) sélectionné(s)</legend>
+                  <div class="table-responsive rounded" style="max-height: 18rem">
+                    <table class="vinyls-entities table table-bordered table-striped table-hover table-light mb-0">
+                      <thead>
+                        <tr>
+                          <th scope="col" class="col-id">#</th>
+                          <th scope="col" class="col-rpm">T.</th>
+                          <th scope="col" class="col-track">Face A</th>
+                          <th scope="col" class="col-track">Face B</th>
+                          <th scope="col" class="col-artist">Artiste(s)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr data-vinyl-id="#ID#">
+                          <th scope="row" class="col-id">
+                            #ID#
+                            <input class="advert-vinyl-qty" type="hidden" name="advert_vinyl_qty[#ID#][]"
+                              id="advert_vinyl_#ID#_qty" value="1">
+                          </th>
+                          <td class="col-rpm">#RPM#</td>
+                          <td class="col-track" data-track-face="A">
+                            <span class="-text">#TRACK_A#</span>&nbsp;<span class="-icon-play icon-play-circle"></span>
+                          </td>
+                          <td class="col-track" data-track-face="B">
+                            <span class="-text">#TRACK_B#</span>&nbsp;<span class="-icon-play icon-play-circle"></span>
+                          </td>
+                          <td class="col-artist">
+                            #ARTIST#
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="-vinyls-total-selected small mt-2 mb-0 text-end text-muted">
+                    Total vinyles: <b class="-amount">0</b>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            {{ form_widget(form_booking.send) }}
+          </div>
+        {{ form_end(form_booking) }}
+      </div>
+    </div>
+  </div>
+{% endif %}

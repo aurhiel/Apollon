@@ -35,6 +35,15 @@ class AdvertType extends AbstractType
                     // 'class' => 'required-giga'
                 ]
   					])
+            ->add('name', TextType::class, [
+                'label'       => 'form_advert.name.label',
+                'label_attr'  => [ 'class' => 'visually-hidden'],
+                'required'    => false,
+                'attr'        => [
+                    'placeholder' => 'form_advert.name.placeholder',
+                    // 'class'       => 'required-giga'
+                ]
+            ])
             ->add('price', NumberType::class, [
                 'label'         => 'form_advert.price.label',
                 'label_attr'    => [ 'class' => 'visually-hidden'],

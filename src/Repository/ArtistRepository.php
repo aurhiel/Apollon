@@ -32,6 +32,21 @@ class ArtistRepository extends ServiceEntityRepository
         ;
     }
 
+    public function findOneById($id): ?Artist
+    {
+        return $this->createQueryBuilder('a')
+            // Join relations
+            ->leftJoin('a.vinyls', 'vinyls')
+            ->addSelect('vinyls')
+            ->leftJoin('vinyls.artists', 'artists')
+            ->addSelect('artists')
+            ->andWhere('a.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
     public function resetDatabase()
     {
         return $this->createQueryBuilder('a')

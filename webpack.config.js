@@ -1,6 +1,7 @@
-const Encore            = require('@symfony/webpack-encore');
+const Encore = require('@symfony/webpack-encore');
 const GoogleFontsPlugin = require("@beyonk/google-fonts-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const { basename } = require('path');
 
 // Manually configure the runtime environment if not already configured yet by the "encore" command.
 // It's useful when you use tools that rely on webpack.config.js file.
@@ -24,9 +25,11 @@ Encore
      */
     // App "main"
     .addEntry('app', './assets/app.js')
+    .addStyleEntry('app-light', './assets/css/app-light.scss')
+
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
-    .enableStimulusBridge('./assets/controllers.json')
+    // .enableStimulusBridge('./assets/controllers.json')
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()
@@ -66,10 +69,12 @@ Encore
     }))
 
     // Copy static files like fonts, images, ...
+    // NOTE: Does not works properly, need to copy/paste files manually...
     .addPlugin(new CopyWebpackPlugin({
       patterns: [
         {
-          from: './assets/static'//, to: './'
+          from: './assets/static',
+          to: './'
         }
       ]
     }))

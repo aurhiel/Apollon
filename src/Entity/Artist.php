@@ -104,4 +104,16 @@ class Artist
 
         return $quantity;
     }
+
+    public function isSoldOut(): bool
+    {
+        $quantity = 0;
+        $quantitySold = 0;
+        foreach ($this->vinyls as $vinyl) {
+            $quantity += $vinyl->getQuantity();
+            $quantitySold += $vinyl->getQuantitySold();
+        }
+
+        return 0 <= ($quantitySold - $quantity);
+    }
 }

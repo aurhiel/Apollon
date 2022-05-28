@@ -1,4 +1,4 @@
-## GENERIC / BASIC FORMS ##
+# Generic / Basic
 form_basic:
   images :
     label       : "Photo(s)"
@@ -6,7 +6,25 @@ form_basic:
   save:
     label: Sauvegarder
 
-## ARTIST FORM ##
+
+## ADVERT FORM ##
+form_booking :
+  name :
+    label       : "Contact"
+    placeholder : "Nom, prénom ou numéro de téléphone"
+  title :
+    label       : "Titre"
+    placeholder : "Titre de la réservation"
+  description :
+    label       : "Informations supplémentaires"
+    placeholder : "Indiquez ici toute information supplémentaire que vous souhaiteriez avoir (photos, état, ...)"
+  price :
+    label       : "Proposition de prix"
+    placeholder : ""
+  save:
+    label: Réserver
+
+# Artist
 form_artist :
   name :
     label       : "Nom / Pseudo"
@@ -15,7 +33,7 @@ form_artist :
     label       : "Photo / Avatar"
     placeholder : "Photo / Avatar"
 
-## ADVERT FORM ##
+# Adverts
 form_advert :
   title :
     label       : "Titre"
@@ -26,8 +44,11 @@ form_advert :
   price :
     label       : "Prix"
     placeholder : "Prix"
+  name :
+    label       : "Nom / Prénom"
+    placeholder : "Nom, prénom ou pseudo"
 
-## ARTIST FORM ##
+# Vinyls
 form_vinyl :
   rpm :
     label       : "Tour"
