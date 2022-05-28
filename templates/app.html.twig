@@ -182,7 +182,7 @@
                 {% endif %}
                 {% if is_granted('ROLE_ADMIN') %}
                   <a class="btn btn-sm btn-outline-secondary{% if app_theme == 'dark' %} text-white{% endif %} px-2 py-1"
-                    href="{{ path('home', { order_by: vinyl.id }) }}">
+                    href="{{ path('home', { vinyl_id: vinyl.id }) }}">
                     <span class="icon-edit"></span>
                   </a>
                   <button class="btn btn-sm btn-outline-danger px-2 py-1"
