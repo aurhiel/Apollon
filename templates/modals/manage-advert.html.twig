@@ -55,7 +55,7 @@
                         {% if is_advert_edit == true and advert_vinyls is not empty and advert_vinyls[vinyl.id] is defined %}
                           {% set vinyl_qty = advert_vinyls[vinyl.id].quantity %}
                         {% endif %}
-                        <li class="list-group-item -item-vinyl" data-vinyl-id="{{ vinyl.id }}">
+                        <li class="list-group-item -item-vinyl{% if vinyl_qty > 0 %} -selected{% endif %}" data-vinyl-id="{{ vinyl.id }}">
                           <div class="row align-items-center">
                             <div class="col-9 col-lg-10">
                               <div class="row align-items-center">

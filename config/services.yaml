@@ -7,6 +7,8 @@ parameters:
     locale: 'fr'
     public_directory: '%kernel.project_dir%/public'
     uploads_directory: '%public_directory%/uploads'
+    g_auth_key: '%env(G_AUTH_KEY)%'
+    g_search_cx: '%env(G_SEARCH_CX)%'
 
 services:
     # default configuration for services in *this* file

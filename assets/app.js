@@ -568,9 +568,12 @@ var app = {
               face_B: $vinyl.find('.-vinyl-track-B').html(),
               quantity: new_qty,
             };
+            $vinyl.addClass('-selected');
           } else {
-            delete vinyls_selected[artists_str].tracks[vinyl_id];
-            // console.log(Object.keys(vinyls_selected[artists_str].tracks).length);
+            if (typeof vinyls_selected[artists_str] != 'undefined') {
+                delete vinyls_selected[artists_str].tracks[vinyl_id];
+            }
+            $vinyl.removeClass('-selected');
           }
         }
 
@@ -715,7 +718,6 @@ var app = {
       //
       // YouTube player & fun
       // Create YouTube player (iframe & co) using JS
-      var auth_key = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
       self.$vinyls.on('click', 'td.col-track', function() {
         var $col    = $(this);
         var $row    = $col.parents('tr').first();

@@ -31,10 +31,6 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class AppController extends AbstractController
 {
-    const G_AUTH_KEY = 'AIzaSyAa0biHVpJuov67kzhKwZo2CANor-Z8H3w';
-
-    const G_SEARCH_CX = 'ac4fe16cc213c6af9';
-
     /**
      * @Route("/connexion", name="login")
      * @IsGranted("ROLE_VIEWER")
@@ -186,7 +182,7 @@ class AppController extends AbstractController
      */
     public function vinyl_get_youtube_id($id, $trackFace, Request $request, HttpClientInterface $client)
     {
-        $base_url     = 'https://youtube.googleapis.com/youtube/v3/search?key='. self::G_AUTH_KEY . '&maxResults=1';
+        $base_url     = 'https://youtube.googleapis.com/youtube/v3/search?key='. $this->getParameter('g_auth_key') . '&maxResults=1';
         $em           = $this->getDoctrine()->getManager();
         $return_data  = [];
 
@@ -1230,7 +1226,7 @@ class AppController extends AbstractController
 
     private function searchArtistPhoto(HttpClientInterface $client, string $artist_name)
     {
-        $base_url = 'https://customsearch.googleapis.com/customsearch/v1?key='. self::G_AUTH_KEY . '&cx=' . self::G_SEARCH_CX . '&searchType=image&imgSize=medium&num=1';
+        $base_url = 'https://customsearch.googleapis.com/customsearch/v1?key='. $this->getParameter('g_auth_key') . '&cx=' . $this->getParameter('g_search_cx') . '&searchType=image&imgSize=medium&num=1';
         $img_url = false;
 
         // Check if $client and $artist_name are correctly defined

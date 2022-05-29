@@ -196,7 +196,14 @@
     }
   }
 
-  .-item-vinyl { /* [...] */ }
+  .-item-vinyl {
+    &.-selected {
+      background-color: lighten($primary, 45%);
+      .qty-amount {
+        color: $primary;
+      }
+    }
+  }
 
   .-vinyl-tracks, .-vinyl-artists {
     line-height: 1.2;
