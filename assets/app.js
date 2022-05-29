@@ -549,8 +549,9 @@ var app = {
           // Update new quantity in HTML content
           $qty_amount.html(new_qty);
 
-          total_selected += parseInt($btn.data('qty-type'));
-          $multi_select.find('.-vinyls-total-selected .-amount').html(total_selected);
+          var $amount = $multi_select.find('.-vinyls-total-selected .-amount');
+          total_selected = parseInt($amount.html()) + parseInt($btn.data('qty-type'));
+          $amount.html(total_selected);
 
           // Create tracks selected by artists if enough quantity
           if (new_qty > 0) {

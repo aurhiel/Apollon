@@ -597,6 +597,10 @@ class AppController extends AbstractController
                     $r_vinyl    = $em->getRepository(Vinyl::class);
                     $vinyls_qty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
                     $vinyls     = $r_vinyl->findById(array_keys($vinyls_qty));
+                    // Remove old vinyls "in sale"
+                    foreach ($advert->getInSales() as $inSale) {
+                        $em->remove($inSale);
+                    }
                     foreach ($vinyls as $vinyl) {
                         $vinyl_qty  = ((isset($vinyls_qty[$vinyl->getId()]) && isset($vinyls_qty[$vinyl->getId()][0])) ? (int)$vinyls_qty[$vinyl->getId()][0] : 0);
                         $inSale     = new InSale();
@@ -697,6 +701,14 @@ class AppController extends AbstractController
         $total_prices       = $r_advert->countTotalPrices();
         $total_checkout     = $r_advert->countTotalPricesCheckout();
 
+        // Get advert's vinyls by ID
+        $advert_vinyls = [];
+        if (null !== $advert->getId()) {
+            foreach ($advert->getInSales() as $key => $inSale) {
+                $advert_vinyls[$inSale->getVinyl()->getId()] = $inSale;
+            }
+        }
+
         return $this->render('adverts.html.twig', [
             'meta'    => [
                 'title' => 'Annonces'
@@ -706,6 +718,7 @@ class AppController extends AbstractController
             'adverts'         => $adverts,
             'is_advert_edit'  => $is_edit,
             'advert_to_edit'  => $advert,
+            'advert_vinyls'   => $advert_vinyls,
             'total_vinyls'    => $r_vinyl->countAll(),
             'vinyls_to_sale'  => $vinyls_to_sale,
             'nb_vinyls_in_sale' => $nb_vinyls_in_sale,

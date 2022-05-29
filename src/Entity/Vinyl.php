@@ -202,12 +202,7 @@ class Vinyl
 
     public function getQuantityAvailable()
     {
-        $qty_in_sale = 0;
-        foreach ($this->getInSales() as $inSale) {
-            $qty_in_sale += $inSale->getQuantity();
-        }
-
-        return $this->quantity - $qty_in_sale;
+        return $this->quantity - $this->quantitySold;
     }
 
     public function getQuantityWithCover(): ?int

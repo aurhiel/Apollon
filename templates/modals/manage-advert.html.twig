@@ -37,10 +37,14 @@
                   {{ form_errors(form_advert.description) }}
                 </div>
 
-                <div class="col-12 form-group form-multi-select{% if is_advert_edit == true %} d-none{% endif %}">
-                  <legend class="col-form-label required">Vinyle(s) à vendre</legend>
+                <div class="col-12 form-group form-multi-select">
+                  <legend class="col-form-label required">
+                    Vinyle(s) à vendre
+                    {% if is_advert_edit == true %}<span class=" text-warning">// TODO ⚠️</span>{% endif %}
+                  </legend>
                   <div class="border-0 p-0">
                     <ul class="list-group">
+                    {% set total_vinyls = 0 %}
                     {% for vinyl in vinyls_to_sale %}
                       {% if vinyl.quantityAvailable > 0 %}
                         {% set artists_str = null %}
@@ -48,6 +52,11 @@
                           {% for artist in vinyl.artists %}
                             {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
                           {% endfor %}
+                        {% endif %}
+                        {# Get vinyls data #}
+                        {% set vinyl_qty = 0 %}
+                        {% if is_advert_edit == true and advert_vinyls is not empty and advert_vinyls[vinyl.id] is defined %}
+                          {% set vinyl_qty = advert_vinyls[vinyl.id].quantity %}
                         {% endif %}
                         <li class="list-group-item -item-vinyl" data-vinyl-id="{{ vinyl.id }}">
                           <div class="row align-items-center">
@@ -64,73 +73,24 @@
                             </div>
                             <div class="col-3 col-lg-2 text-center">
                               <span class="form-control-quantity" data-qty-max="{{ vinyl.quantityAvailable }}">
-                                <span class="btn-qty icon-minus-square disabled" data-qty-type="-1"></span>
-                                <span class="qty-amount">0</span>
-                                <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+                                <span class="btn-qty icon-minus-square{% if vinyl_qty <= 0 %} disabled{% endif %}" data-qty-type="-1"></span>
+                                <span class="qty-amount">{{ vinyl_qty }}</span>
+                                <span class="btn-qty icon-plus-square{% if vinyl_qty >= vinyl.quantityAvailable %} disabled{% endif %}" data-qty-type="+1"></span>
                                 <input class="advert-vinyl-qty" type="hidden" name="advert_vinyl_qty[{{ vinyl.id }}][]"
-                                  id="advert_vinyl_{{ vinyl.id }}_qty" value="0">
+                                  id="advert_vinyl_{{ vinyl.id }}_qty" value="{{ vinyl_qty }}">
                               </span>
                             </div>
                           </div>
                         </li>
+                        {% set total_vinyls = total_vinyls + vinyl_qty %}
                       {% endif %}
                     {% endfor %}
                     </ul>
                   </div>
                   <p class="-vinyls-total-selected small mt-2 mb-0 text-end text-muted">
-                    Total vinyles: <b class="-amount">0</b>
+                    Total vinyles: <b class="-amount">{{ total_vinyls }}</b>
                   </p>
                 </div>
-
-                {% if is_advert_edit == true and advert_to_edit.inSales is not empty %}
-                <div class="col-12 form-group">
-                  <legend class="col-form-label fw-bold pt-0">Vinyle(s) en vente</legend>
-                  <div class="table-responsive rounded" style="max-height: 18rem">
-                    <table class="vinyls-entities table table-bordered table-striped table-hover table-light mb-0">
-                      <thead>
-                        <tr>
-                          <th scope="col" class="col-id">#</th>
-                          <th scope="col" class="col-rpm">T.</th>
-                          <th scope="col" class="col-track">Face A</th>
-                          <th scope="col" class="col-track">Face B</th>
-                          <th scope="col" class="col-artist">Artiste(s)</th>
-                          <th scope="col" class="col-quantity">Qté</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                      {% set total_qty_in_sale = 0 %}
-                      {% for inSale in advert_to_edit.inSales %}
-                        {% set vinyl = inSale.vinyl %}
-                        <tr data-vinyl-id="{{ vinyl.id }}">
-                          <th scope="row" class="col-id">{{ vinyl.id }}</th>
-                          <td class="col-rpm">{{ vinyl.rpm }}</td>
-                          <td class="col-track" data-track-face="A">
-                            {{ vinyl.trackFaceA }}&nbsp;<span class="-icon-play icon-play-circle"></span>
-                          </td>
-                          <td class="col-track" data-track-face="B">
-                            {{ vinyl.trackFaceB }}&nbsp;<span class="-icon-play icon-play-circle"></span>
-                          </td>
-                          <td class="col-artist">
-                            {% set artists_str = null %}
-                            {% if vinyl.artists is not empty %}
-                              {% for artist in vinyl.artists %}
-                                {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
-                                <a href="{{ path('artists_infos', { id: artist.id }) }}">{{ artist.name }}</a>{% if loop.last == false %}, {% endif %}
-                              {% endfor %}
-                            {% endif %}
-                          </td>
-                          <td class="col-quantity">{{ inSale.quantity }}</td>
-                        </tr>
-                        {% set total_qty_in_sale = total_qty_in_sale + inSale.quantity %}
-                      {% endfor %}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p class="-vinyls-total-selected small mt-2 mb-0 text-end text-muted">
-                    Total vinyles: <b class="-amount">{{ total_qty_in_sale }}</b>
-                  </p>
-                </div>
-                {% endif %}
 
                 <div class="col-12 form-group form-image-lib">
                   {{ form_label(form_advert.images) }}
