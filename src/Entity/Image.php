@@ -49,6 +49,24 @@ class Image
         return $this;
     }
 
+    public function getPath(): string
+    {
+        $path = 'uploads/' . ($this->advert ? 'adverts/' . $this->advert->getId() : ($this->vinyl ? 'vinyls/' . $this->vinyl->getId() : ''));
+        $fullpath = $path . '/' . $this->filename;
+        if ($this->advert || $this->vinyl) {
+            if (!file_exists($fullpath)) {
+                $oldPath = 'uploads/' . ($this->advert ? 'adverts' : 'vinyls');
+                if (file_exists($oldPath . '/' . $this->filename)) {
+                    if (!is_dir($path)) {
+                      mkdir($path);
+                    }
+                    rename($oldPath . '/' . $this->filename, $fullpath);
+                }
+            }
+        }
+        return $fullpath;
+    }
+
     public function getAdvert(): ?Advert
     {
         return $this->advert;

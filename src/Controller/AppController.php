@@ -157,6 +157,13 @@ class AppController extends AbstractController
             $entity = $repo->findOneById($id);
 
             if ($entity !== null) {
+                // Remove related images
+                $images = $entity->getImages();
+                foreach ($images as $key => $image) {
+                    // Delete image (file deleted in ImageListener)
+                    $em->remove($image);
+                }
+
                 // Delete entity & flush
                 $em->remove($entity);
                 $em->flush();
@@ -609,7 +616,7 @@ class AppController extends AbstractController
                     $images = $form_advert->get('images')->getData();
                     foreach ($images as $imgData) {
                         // Upload new advert image
-                        $imageFileName = $fileUploader->upload($imgData, '/adverts');
+                        $imageFileName = $fileUploader->upload($imgData, '/adverts/'.$advert->getId());
 
                         // Create & persist new Image entity after upload
                         $image = new Image();
@@ -721,7 +728,6 @@ class AppController extends AbstractController
         $entity = $repo->findOneById($id);
 
         if ($entity !== null) {
-            $upload_dir = $this->getParameter('uploads_directory');
             // Remove related images
             $images = $entity->getImages();
             foreach ($images as $key => $image) {
@@ -1099,7 +1105,7 @@ class AppController extends AbstractController
                     $images = $form_vinyl->get('images')->getData();
                     foreach ($images as $imgData) {
                         // Upload new advert image
-                        $imageFileName = $fileUploader->upload($imgData, '/vinyls');
+                        $imageFileName = $fileUploader->upload($imgData, '/vinyls/' . $vinyl->getId());
 
                         // Create & persist new Image entity after upload
                         $image = new Image();

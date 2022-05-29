@@ -57,7 +57,7 @@
                   <div class="-images-library{% if vinyl_to_edit is not null and vinyl_to_edit.images is not empty %} -has-images{% endif %}" data-initial-text="Aucune photo sélectionnée">
                     {% if vinyl_to_edit is not null and vinyl_to_edit.images is not empty %}
                       {% for img in vinyl_to_edit.images %}
-                        <span class="-item -in-database ratio ratio-1x1" style="background-image: url({{ asset('uploads/vinyls/' ~ img.filename) }})"
+                        <span class="-item -in-database ratio ratio-1x1" style="background-image: url({{ asset(img.path) }})"
                           data-id-image="{{ img.id }}">
                           <button class="btn btn-danger px-2 pt-2 pb-1" type="button"
                             data-confirm-href="{{ path('image_delete', { id: img.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer cette image ?"
