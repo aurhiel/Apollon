@@ -164,7 +164,7 @@
                         <div class='vinyl-list-imgs row g-2 mt-2'>
                           <h4 class='h6 text-dark my-0 col-12'>Photo(s)</h4>
                           {% for img in vinyl.images %}
-                            {% set img_url = asset('uploads/vinyls/' ~ img.filename) %}
+                            {% set img_url = asset(img.path) %}
                             <div class='col-3'>
                               <a class='ratio ratio-1x1 ratio-bg rounded bg-secondary' href='{{ img_url }}' target='_blank'>
                                 <span style='background-image: url({{ img_url }})'></span>

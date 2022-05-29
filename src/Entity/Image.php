@@ -49,6 +49,12 @@ class Image
         return $this;
     }
 
+    public function getPath(): string
+    {
+        $path = 'uploads/' . ($this->advert ? 'adverts/' . $this->advert->getId() : ($this->vinyl ? 'vinyls/' . $this->vinyl->getId() : ''));
+        return $path . '/' . $this->filename;
+    }
+
     public function getAdvert(): ?Advert
     {
         return $this->advert;

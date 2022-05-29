@@ -5,7 +5,8 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     locale: 'fr'
-    uploads_directory: '%kernel.project_dir%/public/uploads'
+    public_directory: '%kernel.project_dir%/public'
+    uploads_directory: '%public_directory%/uploads'
 
 services:
     # default configuration for services in *this* file
@@ -38,7 +39,7 @@ services:
     # Listeners
     App\EventListener\ImageListener:
         arguments:
-            $uploads_directory: "%uploads_directory%"
+            $publicDirectory: "%public_directory%"
         tags:
             - { name: 'doctrine.orm.entity_listener', event: 'postRemove', entity: 'App\Entity\Image' }
 
