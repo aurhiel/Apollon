@@ -204,7 +204,7 @@ class AppController extends AbstractController
           // Search for a YouTube video only if we don't have any yet
           if (is_null($youtubeID)) {
               // Create query (track name + artists names)
-              $query = $entity->{$methodGetTrack}() . ' - ' . implode($artists, ', ');
+              $query = $entity->{$methodGetTrack}() . ' - ' . implode(', ', $artists);
 
               // Execute request to retrieve some YouTube videos
               $response = $client->request(
@@ -248,7 +248,7 @@ class AppController extends AbstractController
                   'youtube_id'    => $youtubeID,
                   'vinyl'         => [
                       'track'   => $entity->{$methodGetTrack}(),
-                      'artists' => implode($artists, ', ')
+                      'artists' => implode(', ', $artists)
                   ],
               );
           } elseif (empty($return_data)) {

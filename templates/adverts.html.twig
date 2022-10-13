@@ -27,7 +27,7 @@
       <div id="advers-entities" class="list-adverts row g-4" data-masonry='{"percentPosition": true }'>
       {# Display ALL ads to users with at least ROLE VIEWER
           OR only display available ads to not logged users #}
-      {% for advert in adverts|filter(ad => ((is_granted('ROLE_VIEWER') == true) or (is_granted('ROLE_VIEWER') == false and (ad.isSold is null or ad.isSold == false)))) %}
+      {% for advert in adverts|filter(ad => ((is_granted('ROLE_VIEWER') == true) or (is_granted('ROLE_VIEWER') == false and (ad.isSold is null or ad.isSold == false) and ad.name is null))) %}
         {% set advert_total_qty = 0 %}
         {% for in_sale in advert.inSales %}
           {% set advert_total_qty = advert_total_qty + in_sale.quantity %}
@@ -54,6 +54,38 @@
                   {{ advert.description|nl2br }}
                 {% else %}
                   <div class="text-muted fst-italic text-center my-3"> - Aucune description - </div>
+                {% endif %}
+                {% if advert.name is not empty and advert.inSales is not empty %}
+                  {% set vinylsByArtists = {} %}
+
+                  {% for inSale in advert.inSales %}
+                    {% set artists_names = [] %}
+                    {% for artist in inSale.vinyl.artists %}
+                      {% set artists_names = artists_names|merge([ artist.name ]) %}
+                    {% endfor %}
+                    {% set artists_names = artists_names|join(', ') %}
+
+                    {% if vinylsByArtists[(artists_names)] is not defined %}
+                      {% set previousVinyls = [] %}
+                    {% else %}
+                      {% set previousVinyls = vinylsByArtists[(artists_names)] %}
+                    {% endif %}
+                    {% set previousVinyls = previousVinyls|merge([inSale.vinyl.trackFaceA ~ ' / ' ~ inSale.vinyl.trackFaceB]) %}
+
+                    {% set vinylsByArtists = vinylsByArtists|merge({ (artists_names): previousVinyls }) %}
+                  {% endfor %}
+
+                  <h6 class="text-dark mt-3 mb-1">Vinyle(s) choisi(s) :</h6>
+                  {% for artists, tracks in vinylsByArtists %}
+                  <div{% if loop.last == false %} class="mb-2"{% endif %}>
+                    {% if tracks|length > 1 %}
+                      {{ artists }} :<br>
+                      - {{ tracks|join('<br>- ')|raw }}
+                    {% else %}
+                      - {{ artists }} - {{ tracks[0] }}<br>
+                    {% endif %}
+                  </div>
+                  {% endfor %}
                 {% endif %}
               </div>
             </div>

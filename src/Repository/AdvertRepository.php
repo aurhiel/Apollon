@@ -27,6 +27,10 @@ class AdvertRepository extends ServiceEntityRepository
             ->addSelect('images')
             ->leftJoin('a.inSales', 'in_sales')
             ->addSelect('in_sales')
+            ->leftJoin('in_sales.vinyl', 'vinyl')
+            ->addSelect('vinyl')
+            ->leftJoin('vinyl.artists', 'artists')
+            ->addSelect('artists')
             // Get query & result
             ->getQuery()
             ->getResult()
