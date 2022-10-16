@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+  <div class="container">
+    <h1 class="mb-4 row align-items-center">
+      <div class="-item-title col-sm-9 col-xl-10 col-xxl-9 pe-0">
+        <span class="icon-file-text text-primary"></span>
+        {{ advert.title }}
+        {% if is_granted('ROLE_ADMIN') and advert.name is not empty %}
+        <small class="d-inline-block text-muted fw-normal fst-italic">(pour: <b>{{ advert.name }}</b>)</small>
+        {% endif %}
+      </div>
+      <div class="-item-price mt-2 col-sm-3 col-xl-2 col-xxl-3 text-center text-sm-end">
+        <span class="badge bg-primary">{{ advert.price|number_format(2, ',', ' ') }}€</span>
+      </div>
+    </h1>
+    
+    <div class="row">
+      <div class="col-md-7 col-lg-8 mb-3 mb-md-0">
+        <div class="card text-dark">
+          <div class="card-header">
+            <h2 class="h5 mb-0 text-dark">
+              Description
+            </h2>
+          </div>
+          <div class="card-body">
+            {{ advert.description|nl2br|raw }}
+
+            {% if advert.name is not empty and advert.inSales is not empty %}
+              {% set vinylsByArtists = advert.vinylsByArtists() %}
+
+              <h6 class="text-dark mt-3 mb-1">Vinyle(s) choisi(s) :</h6>
+              {% for artists, tracks in vinylsByArtists %}
+              <div{% if loop.last == false %} class="mb-2"{% endif %}>
+                {% if tracks|length > 1 %}
+                  {{ artists }} :<br>
+                  - {{ tracks|join('<br>- ')|raw }}
+                {% else %}
+                  - {{ artists }} - {{ tracks[0] }}<br>
+                {% endif %}
+              </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5 col-lg-4">
+        <div class="card text-dark">
+          <div class="card-header">
+            <h2 class="h5 mb-0 text-dark">
+              Photos
+            </h2>
+          </div>
+          <div class="card-body">
+          {% if advert.images is not empty %}
+            <div class="advert-list-imgs row g-2 g-sm-3 g-md-2">
+              {% for img in advert.images %}
+              <div class="col-4 col-sm-3 col-md-4 col-lg-4 col-xxl-3">
+                <a class="ratio ratio-1x1 ratio-bg rounded bg-secondary" href="{{ asset(img.path) }}" target="_blank">
+                  <span style="background-image: url({{ asset(img.path) }})"></span>
+                </a>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="small text-muted">Aucune photo.</div>
+          {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

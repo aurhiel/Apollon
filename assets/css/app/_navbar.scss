@@ -7,8 +7,10 @@
     &:after {
       content: '';
       background-color: $primary;
-      height: .2em;
-      width: .2em;
+      display: inline-block;
+      border-radius: 50%;
+      height: 4px;
+      width: 4px;
     }
   }
 }

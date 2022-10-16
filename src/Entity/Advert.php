@@ -184,4 +184,35 @@ class Advert
 
         return $this;
     }
+
+    public function getKey(): ?string
+    {
+        return null !== $this->name ? substr(md5($this->name), 0, 14) : null ;
+    }
+
+    public function getVinylsByArtists(): array
+    {
+        $vinylsByArtists = [];
+
+        foreach ($this->inSales as $inSale) {
+            $vinyl = $inSale->getVinyl();
+            $artistsNames = [];
+            foreach ($vinyl->getArtists() as $artist) {
+                $artistsNames[] = $artist->getName();
+            }
+            $artistsNames = implode(', ', $artistsNames);
+
+            if (false === array_key_exists($artistsNames, $vinylsByArtists)) {
+                $vinylsByArtists[$artistsNames] = [];
+            }
+
+            $vinylsByArtists[$artistsNames][] = sprintf(
+                '%s / %s', 
+                $vinyl->getTrackFaceA(), 
+                $vinyl->getTrackFaceB()
+            );
+        }
+
+        return $vinylsByArtists;
+    }
 }

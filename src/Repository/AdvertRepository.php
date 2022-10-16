@@ -31,6 +31,7 @@ class AdvertRepository extends ServiceEntityRepository
             ->addSelect('vinyl')
             ->leftJoin('vinyl.artists', 'artists')
             ->addSelect('artists')
+            ->orderBy('a.id', 'ASC')
             // Get query & result
             ->getQuery()
             ->getResult()

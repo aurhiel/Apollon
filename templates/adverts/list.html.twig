@@ -38,10 +38,12 @@
             <div class="card-header">
               <h2 class="h5 mb-0 text-dark row align-items-center">
                 <div class="-item-title col-9 col-xl-10 col-xxl-9 pe-0">
-                  {{ advert.title }}
-                  {% if is_granted('ROLE_ADMIN') and advert.name is not empty %}
-                  <small class="d-inline-block text-muted fw-normal fst-italic">(pour: <b>{{ advert.name }}</b>)</small>
-                  {% endif %}
+                  <a class="link-dark" href="{{ path('advert_infos', { id: advert.id, key: advert.key }) }}">
+                    {{ advert.title }}
+                    {% if is_granted('ROLE_ADMIN') and advert.name is not empty %}
+                    <small class="d-inline-block text-muted fw-normal fst-italic">(pour: <b>{{ advert.name }}</b>)</small>
+                    {% endif %}
+                  </a>
                 </div>
                 <div class="-item-price col-3 col-xl-2 col-xxl-3 text-end">
                   <span class="badge bg-primary">{{ advert.price|number_format(2, ',', ' ') }}€</span>
@@ -56,24 +58,7 @@
                   <div class="text-muted fst-italic text-center my-3"> - Aucune description - </div>
                 {% endif %}
                 {% if advert.name is not empty and advert.inSales is not empty %}
-                  {% set vinylsByArtists = {} %}
-
-                  {% for inSale in advert.inSales %}
-                    {% set artists_names = [] %}
-                    {% for artist in inSale.vinyl.artists %}
-                      {% set artists_names = artists_names|merge([ artist.name ]) %}
-                    {% endfor %}
-                    {% set artists_names = artists_names|join(', ') %}
-
-                    {% if vinylsByArtists[(artists_names)] is not defined %}
-                      {% set previousVinyls = [] %}
-                    {% else %}
-                      {% set previousVinyls = vinylsByArtists[(artists_names)] %}
-                    {% endif %}
-                    {% set previousVinyls = previousVinyls|merge([inSale.vinyl.trackFaceA ~ ' / ' ~ inSale.vinyl.trackFaceB]) %}
-
-                    {% set vinylsByArtists = vinylsByArtists|merge({ (artists_names): previousVinyls }) %}
-                  {% endfor %}
+                  {% set vinylsByArtists = advert.vinylsByArtists() %}
 
                   <h6 class="text-dark mt-3 mb-1">Vinyle(s) choisi(s) :</h6>
                   {% for artists, tracks in vinylsByArtists %}
