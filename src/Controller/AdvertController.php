@@ -10,7 +10,10 @@ use App\Entity\InSale;
 
 // Forms
 use App\Form\AdvertType;
-
+use App\Form\BookingType;
+use App\Repository\AdvertRepository;
+use App\Repository\InSaleRepository;
+use App\Repository\VinylRepository;
 // Services
 use App\Service\FileUploader;
 
@@ -24,6 +27,19 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class AdvertController extends AbstractController
 {
+    private AdvertRepository $advertRepository;
+    private InSaleRepository $inSaleRepository;
+    private VinylRepository $vinylRepository;
+
+    public function __construct(
+        AdvertRepository $advertRepository,
+        InSaleRepository $inSaleRepository,
+        VinylRepository $vinylRepository
+    ) {
+        $this->advertRepository = $advertRepository;
+        $this->inSaleRepository = $inSaleRepository;
+        $this->vinylRepository = $vinylRepository;
+    }
 
     /**
      * @Route("/annonces/{id}", name="adverts", defaults={"id"=null})
@@ -34,9 +50,7 @@ class AdvertController extends AbstractController
         $user = $security->getUser();
 
         // Retrieve advert if asked ($advert_entity != null) or new one
-        /** @var AdvertRepository */
-        $r_advert = $em->getRepository(Advert::class);
-        $advert_edit = $r_advert->findOneById($id);
+        $advert_edit = $this->advertRepository->findOneById($id);
         $is_edit = !is_null($advert_edit);
         $advert = ($is_edit === true) ? $advert_edit : new Advert();
 
@@ -58,19 +72,18 @@ class AdvertController extends AbstractController
                     $em->flush();
 
                     $return = array(
-                        'query_status'    => 1,
-                        'slug_status'     => 'success',
-                        'message_status'  => (($is_edit === true) ? 'Modification' : 'Ajout' ) . ' de l\'annonce effectuée avec succès.',
-                        'id_entity'       => $advert->getId()
+                        'query_status' => 1,
+                        'slug_status' => 'success',
+                        'message_status' => (($is_edit === true) ? 'Modification' : 'Ajout' ) . ' de l\'annonce effectuée avec succès.',
+                        'id_entity' => $advert->getId()
                     );
 
                     // Assign added advert to re-used later
                     $advert_added = $advert;
 
                     // Assign vinyls to created advert
-                    $r_vinyl    = $em->getRepository(Vinyl::class);
                     $vinyls_qty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
-                    $vinyls     = $r_vinyl->findById(array_keys($vinyls_qty));
+                    $vinyls = $this->vinylRepository->findById(array_keys($vinyls_qty));
                     // Remove old vinyls "in sale"
                     foreach ($advert->getInSales() as $inSale) {
                         $em->remove($inSale);
@@ -115,10 +128,10 @@ class AdvertController extends AbstractController
                     $em->clear();
 
                     $return = array(
-                        'query_status'    => 0,
-                        'slug_status'     => 'error',
-                        'exception'       => $e->getMessage() . ', at line: '.$e->getLine(),
-                        'message_status'  => sprintf(
+                        'query_status' => 0,
+                        'slug_status' => 'error',
+                        'exception' => $e->getMessage() . ', at line: '.$e->getLine(),
+                        'message_status' => sprintf(
                           'Un problème est survenu lors de la %s de l\'annonce.',
                           ($is_edit === true ? 'modification' : 'sauvegarde')
                         ),
@@ -139,15 +152,8 @@ class AdvertController extends AbstractController
             }
         }
 
-        // Retrieve adverts
-        $adverts = $r_advert->findAll();
-
-        // Retrieve vinyls to use in advert form and create "InSale" related
-        //  to a new advert
-        /** @var VinylRepository */
-        $r_vinyl = $em->getRepository(Vinyl::class);
-        $vinyls_to_sale = $r_vinyl->findAllAvailableForSale();
-
+        // Retrieve vinyls to use in advert form and create "InSale" related to a new advert
+        $vinyls_to_sale = $this->vinylRepository->findAllAvailableForSale();
         usort($vinyls_to_sale, function($a, $b) {
             $a_str = null;
             $b_str = null;
@@ -168,13 +174,6 @@ class AdvertController extends AbstractController
                 return strcmp($a_str, $b_str);
         });
 
-        // Get some data
-        $r_in_sale          = $em->getRepository(InSale::class);
-        $nb_vinyls_in_sale  = $r_in_sale->countVinylsInSale();
-        $nb_vinyls_sold     = $r_vinyl->countVinylsSold();
-        $total_prices       = $r_advert->countTotalPrices();
-        $total_checkout     = $r_advert->countTotalPricesCheckout();
-
         // Get advert's vinyls by ID
         $advert_vinyls = [];
         if (null !== $advert->getId()) {
@@ -187,18 +186,18 @@ class AdvertController extends AbstractController
             'meta'    => [
                 'title' => 'Annonces'
             ],
-            'user'            => $user,
-            'form_advert'     => isset($form_advert) ? $form_advert->createView() : null,
-            'adverts'         => $adverts,
-            'is_advert_edit'  => $is_edit,
-            'advert_to_edit'  => $advert,
-            'advert_vinyls'   => $advert_vinyls,
-            'total_vinyls'    => $r_vinyl->countAll(),
-            'vinyls_to_sale'  => $vinyls_to_sale,
-            'nb_vinyls_in_sale' => $nb_vinyls_in_sale,
-            'nb_vinyls_sold'    => $nb_vinyls_sold,
-            'total_prices'      => (float)$total_prices,
-            'total_prices_checkout' => (float)$total_checkout,
+            'user'              => $user,
+            'form_advert'       => isset($form_advert) ? $form_advert->createView() : null,
+            'adverts'           => $this->advertRepository->findAll(),
+            'is_advert_edit'    => $is_edit,
+            'advert_to_edit'    => $advert,
+            'advert_vinyls'     => $advert_vinyls,
+            'total_vinyls'      => $this->vinylRepository->countAll(),
+            'vinyls_to_sale'    => $vinyls_to_sale,
+            'nb_vinyls_in_sale' => $this->inSaleRepository->countVinylsInSale(),
+            'nb_vinyls_sold'    => $this->vinylRepository->countVinylsSold(),
+            'total_prices'      => (float) $this->advertRepository->countTotalPrices(),
+            'total_prices_checkout' => (float) $this->advertRepository->countTotalPricesCheckout(),
         ]);
     }
 
@@ -207,12 +206,8 @@ class AdvertController extends AbstractController
      */
     public function advert_info(int $id, ?string $key, Security $security)
     {
-        $em = $this->getDoctrine()->getManager();
         $user = $security->getUser();
-
-        /** @var AdvertRepository */
-        $r_advert = $em->getRepository(Advert::class);
-        $advert = $r_advert->findOneById($id);
+        $advert = $this->advertRepository->findOneById($id);
 
         if (null !== $advert->getKey() && $advert->getKey() !== $key) {
           return $this->redirectToRoute('adverts');
@@ -234,15 +229,12 @@ class AdvertController extends AbstractController
     public function advert_delete($id, Request $request)
     {
         $em = $this->getDoctrine()->getManager();
-
-        /** @var AdvertRepository */
-        $repo = $em->getRepository(Advert::class);
-        $entity = $repo->findOneById($id);
+        $entity = $this->advertRepository->findOneById($id);
 
         if ($entity !== null) {
             // Remove related images
             $images = $entity->getImages();
-            foreach ($images as $key => $image) {
+            foreach ($images as $image) {
                 // Delete image (file deleted in ImageListener)
                 $em->remove($image);
             }
@@ -259,16 +251,16 @@ class AdvertController extends AbstractController
 
             // Set $return success message
             $return = array(
-                'query_status'    => 1,
-                'slug_status'     => 'success',
-                'message_status'  => 'L\'annonce a bien été supprimée.'
+                'query_status' => 1,
+                'slug_status' => 'success',
+                'message_status' => 'L\'annonce a bien été supprimée.'
             );
 
         } else {
             $return = array(
-                'query_status'    => 0,
-                'slug_status'     => 'error',
-                'message_status'  => 'L\'annonce avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.'
+                'query_status' => 0,
+                'slug_status' => 'error',
+                'message_status' => 'L\'annonce avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.'
             );
         }
 
@@ -291,10 +283,7 @@ class AdvertController extends AbstractController
     public function advert_update_is_sold($id, $isSold, Request $request)
     {
         $em = $this->getDoctrine()->getManager();
-
-        /** @var AdvertRepository */
-        $repo   = $em->getRepository(Advert::class);
-        $advert = $repo->findOneById($id);
+        $advert = $this->advertRepository->findOneById($id);
 
         if ($advert !== null) {
             try {
@@ -325,24 +314,24 @@ class AdvertController extends AbstractController
 
                 // Set $return success message
                 $return = array(
-                    'query_status'    => 1,
-                    'slug_status'     => 'success',
-                    'message_status'  => (($advert_is_sold) ? 'L\'annonce a bien été passée à l\'état vendue.' : 'L\'annonce est de nouveau en vente.')
+                    'query_status' => 1,
+                    'slug_status' => 'success',
+                    'message_status' => (($advert_is_sold) ? 'L\'annonce a bien été passée à l\'état vendue.' : 'L\'annonce est de nouveau en vente.')
                 );
             } catch (\Exception $e) {
                 $return = array(
-                    'query_status'    => 0,
-                    'slug_status'     => 'error',
-                    'exception'       => $e->getMessage(),
-                    'message_status'  => 'Un problème est survenu lors du changement de l\'état est vendu de l\'annonce.'
+                    'query_status' => 0,
+                    'slug_status' => 'error',
+                    'exception' => $e->getMessage(),
+                    'message_status' => 'Un problème est survenu lors du changement de l\'état est vendu de l\'annonce.'
                 );
             }
 
         } else {
             $return = array(
-                'query_status'    => 0,
-                'slug_status'     => 'error',
-                'message_status'  => 'L\'annonce avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.'
+                'query_status' => 0,
+                'slug_status' => 'error',
+                'message_status' => 'L\'annonce avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.'
             );
         }
 
@@ -376,16 +365,15 @@ class AdvertController extends AbstractController
                 $em->flush();
 
                 $return = [
-                    'query_status'    => 1,
-                    'slug_status'     => 'success',
-                    'message_status'  => 'Réservation effectuée avec succès, vous serez contacté au plus vite !',
-                    'id_entity'       => $booking->getId()
+                    'query_status' => 1,
+                    'slug_status' => 'success',
+                    'message_status' => 'Réservation effectuée avec succès, vous serez contacté au plus vite !',
+                    'id_entity' => $booking->getId()
                 ];
 
                 // Assign vinyls to created advert
-                $r_vinyl    = $em->getRepository(Vinyl::class);
                 $vinyls_qty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
-                $vinyls     = $r_vinyl->findById(array_keys($vinyls_qty));
+                $vinyls = $this->vinylRepository->findById(array_keys($vinyls_qty));
                 foreach ($vinyls as $vinyl) {
                     $vinyl_qty  = ((isset($vinyls_qty[$vinyl->getId()]) && isset($vinyls_qty[$vinyl->getId()][0])) ? (int)$vinyls_qty[$vinyl->getId()][0] : 0);
                     $inSale     = new InSale();
@@ -406,10 +394,10 @@ class AdvertController extends AbstractController
                 $em->clear();
 
                 $return = [
-                    'query_status'    => 0,
-                    'slug_status'     => 'error',
-                    'exception'       => $e->getMessage() . ', at line: '.$e->getLine(),
-                    'message_status'  => 'Un problème est survenu lors de la réservation, veuillez ré-essayer ultérieurement ou me contacter.',
+                    'query_status' => 0,
+                    'slug_status' => 'error',
+                    'exception' => $e->getMessage() . ', at line: '.$e->getLine(),
+                    'message_status' => 'Un problème est survenu lors de la réservation, veuillez ré-essayer ultérieurement ou me contacter.',
                 ];
             }
 

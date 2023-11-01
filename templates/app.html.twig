@@ -11,7 +11,7 @@
       <b class="badge bg-primary rounded-pill">{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} -
       Quantité disponible : <b class="badge bg-primary rounded-pill">{{ total_vinyls - nb_vinyls_sold }}</b> -
       dont <b class="badge bg-primary rounded-pill">{{ total_vinyls_cover }}</b> avec une pochette -
-      Qté. vendu : <b class="badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> ({{ (100 * nb_vinyls_sold / total_vinyls)|round(2) }}%)
+      Qté. vendu : <b class="badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b>{% if total_vinyls > 0 %} ({{ (100 * nb_vinyls_sold / total_vinyls)|round(2) }}%){% endif %}
     </p>
     {% if vinyls is not empty %}
       {# Vinyls selected toolbar #}

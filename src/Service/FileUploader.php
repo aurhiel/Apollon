@@ -18,13 +18,15 @@ class FileUploader
 
     public function __construct($targetDirectory)
     {
-        $this->targetDirectory  = $targetDirectory;
-        $this->imagine          = new Imagine();
+        $this->targetDirectory = $targetDirectory;
+        $this->imagine = new Imagine();
     }
 
-    public function upload($file, string $additionnalPath = '', string $newFilename = '')
+    public function upload($file, string $additionnalPath = '', string $newFilename = ''): ?string
     {
         $finalPath = $this->getTargetDirectory() . (!empty($additionnalPath) ? $additionnalPath : '');
+        $fileName = null;
+
         if (gettype($file) == 'string') {
             $newFilenamePI = pathinfo($newFilename);
             $fileName = $this->slugify($newFilenamePI['filename']) . '-' . uniqid() . '.' . $newFilenamePI['extension'];
@@ -32,9 +34,11 @@ class FileUploader
             try {
                 // Copy file from URL (type string = external URL)
                 copy($file, $finalPath . '/' . $fileName);
-            } catch (FileException $e) {
+            } catch (\Exception $e) {
                 // ... handle exception if something happens during file upload
-                dump($e);
+                // dump($file, $finalPath . '/' . $fileName, $e);
+                // exit;
+                $fileName = null;
             }
         } else {
             $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
@@ -48,8 +52,9 @@ class FileUploader
                 }
             } catch (FileException $e) {
                 // ... handle exception if something happens during file upload
-                dump($e);
-                exit;
+                // dump($e);
+                // exit;
+                $fileName = null;
             }
         }
 
@@ -86,5 +91,27 @@ class FileUploader
 
         $photo = $this->imagine->open($filename);
         $photo->resize(new Box($width, $height))->save($filename);
+    }
+
+    private function grabImageWithCurl($url, $saveto){
+        $ch = curl_init ($url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+
+        $raw=curl_exec($ch);
+        curl_close ($ch);
+
+        dump($url, $saveto, $raw);
+        exit;
+
+        if(file_exists($saveto)) {
+            unlink($saveto);
+        }
+
+        $fp = fopen($saveto, 'x');
+
+        fwrite($fp, $raw);
+        fclose($fp);
     }
 }

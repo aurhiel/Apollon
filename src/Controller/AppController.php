@@ -12,7 +12,9 @@ use App\Entity\Advert;
 use App\Form\ArtistType;
 use App\Form\VinylType;
 use App\Form\BookingType;
-
+use App\Repository\ArtistRepository;
+use App\Repository\ImageRepository;
+use App\Repository\VinylRepository;
 // Services
 use App\Service\FileUploader;
 
@@ -29,6 +31,20 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class AppController extends AbstractController
 {
+    private ArtistRepository $artistRepository;
+    private ImageRepository $imageRepository;
+    private VinylRepository $vinylRepository;
+
+    public function __construct(
+        ArtistRepository $artistRepository,
+        ImageRepository $imageRepository,
+        VinylRepository $vinylRepository
+    ) {
+        $this->artistRepository = $artistRepository;
+        $this->imageRepository = $imageRepository;
+        $this->vinylRepository = $vinylRepository;
+    }
+
     /**
      * @Route("/connexion", name="login")
      * @IsGranted("ROLE_VIEWER")
@@ -47,35 +63,30 @@ class AppController extends AbstractController
      */
     public function import_csv(Request $request, Security $security, AuthorizationCheckerInterface $authChecker)
     {
-        $user = $security->getUser();
         $flashbag = $request->getSession()->getFlashBag();
 
         // If asked > launch import
         if ($request->request->get('import-launch') !== null) {
             if (false) {
                 $em = $this->getDoctrine()->getManager();
-                /** @var ArtistRepository */
-                $r_artist = $em->getRepository(Artist::class);
-                /** @var VinylRepository */
-                $r_vinyl = $em->getRepository(Vinyl::class);
                 $vinyls_csv = $this->parseCSV();
-    
+
                 // Clear database (vinyls & artists)
                 if ($request->request->get('import-clear-db') === 'on') {
-                    $r_vinyl->resetDatabase();
-                    $r_artist->resetDatabase();
+                    $this->vinylRepository->resetDatabase();
+                    $this->artistRepository->resetDatabase();
                 }
-    
+
                 // Import vinyls from CSV file if not empty
                 if (!empty($vinyls_csv)) {
-    
+
                     // Loop on CSV vinyls
                     foreach ($vinyls_csv as $data) {
                         $vinyl = new Vinyl();
-    
+
                         // Set new vinyl fields
                         // // Quantity
-                        $vinyl->setQuantity((int)$data[0]);
+                        $vinyl->setQuantity((int) $data[0]);
                         // // Tracks
                         $vinyl->setTrackFaceA($data[1]);
                         $vinyl->setTrackFaceB($data[2]);
@@ -83,48 +94,48 @@ class AppController extends AbstractController
                         $d_artists = explode('/', $data[3]);
                         foreach ($d_artists as $artist_name) {
                             // If artist already exist, retrieve it, or create a new one
-                            $artist = $r_artist->findOneByName(trim($artist_name));
+                            $artist = $this->artistRepository->findOneByName(trim($artist_name));
                             if (is_null($artist)) {
                                 $artist = new Artist();
                                 $artist->setName(trim($artist_name));
-    
+
                                 // Persist artist & flush (in order to retrieve --
                                 //  -- later with findOneByName())
                                 $em->persist($artist);
                                 $em->flush();
                             }
-    
+
                             // Add artist to current vinyl
                             $vinyl->addArtist($artist);
                         }
-    
+
                         // Persist vinyl
                         $em->persist($vinyl);
                     }
-    
+
                     // Try to save all new artists & vinyls into database
                     try {
                         // Flush OK !
                         $em->flush();
-    
+
                         $return = array(
-                            'query_status'    => 1,
-                            'slug_status'     => 'success',
-                            'message_status'  => 'Importation des vinyles effectuée avec succès.',
-                            'id_entity'       => $vinyl->getId()
+                            'query_status' => 1,
+                            'slug_status' => 'success',
+                            'message_status' => 'Importation des vinyles effectuée avec succès.',
+                            'id_entity' => $vinyl->getId()
                         );
                     } catch (\Exception $e) {
                         // Something goes wrong
                         $em->clear();
-    
+
                         $return = array(
-                            'query_status'    => 0,
-                            'slug_status'     => 'error',
-                            'exception'       => $e->getMessage(),
-                            'message_status'  => 'Un problème est survenu lors de l\'importation des vinyles.'
+                            'query_status' => 0,
+                            'slug_status' => 'error',
+                            'exception' => $e->getMessage(),
+                            'message_status' => 'Un problème est survenu lors de l\'importation des vinyles.'
                         );
                     }
-    
+
                     // Set $return message
                     $flashbag->add($return['slug_status'], $return['message_status']);
                 } else {
@@ -133,12 +144,12 @@ class AppController extends AbstractController
                       'Le fichier CSV est vide ou n\'a pas été trouvé (localisation: "' . $this->csvParsingOptions['finder_in'] . '' . $this->csvParsingOptions['finder_name'] . '").');
                 }
             } else {
-              $flashbag->add('notice', 'Importation du CSV désactivé par sécurité.');
-          }
+                $flashbag->add('notice', 'Importation du CSV désactivé par sécurité.');
+            }
         }
 
         return $this->render('import-csv.html.twig', [
-            'user' => $user,
+            'user' => $security->getUser(),
         ]);
     }
 
@@ -152,13 +163,12 @@ class AppController extends AbstractController
             $em = $this->getDoctrine()->getManager();
 
             // Retrieve item to delete
-            $repo   = $em->getRepository(Vinyl::class);
-            $entity = $repo->findOneById($id);
+            $entity = $this->vinylRepository->findOneById($id);
 
             if ($entity !== null) {
                 // Remove related images
                 $images = $entity->getImages();
-                foreach ($images as $key => $image) {
+                foreach ($images as $image) {
                     // Delete image (file deleted in ImageListener)
                     $em->remove($image);
                 }
@@ -185,13 +195,10 @@ class AppController extends AbstractController
      */
     public function vinyl_get_youtube_id($id, $trackFace, Request $request, HttpClientInterface $client)
     {
-        $base_url     = 'https://youtube.googleapis.com/youtube/v3/search?key='. $this->getParameter('g_auth_key') . '&maxResults=1';
-        $em           = $this->getDoctrine()->getManager();
-        $return_data  = [];
-
-        // Retrieve item to update quantity
-        $repo   = $em->getRepository(Vinyl::class);
-        $entity = $repo->findOneById($id);
+        $base_url = 'https://youtube.googleapis.com/youtube/v3/search?key='. $this->getParameter('g_auth_key') . '&maxResults=1';
+        $em = $this->getDoctrine()->getManager();
+        $return_data = [];
+        $entity = $this->vinylRepository->findOneById($id);
 
         if ($entity !== null && ($trackFace == 'A' || $trackFace == 'B')) {
           $methodGetYTID = "getTrackFace{$trackFace}YoutubeID";
@@ -217,7 +224,7 @@ class AppController extends AbstractController
               $r_array = $response->toArray();
 
               // Check if there is some results > store YouTube ID in database (for later use)
-              if (!empty($r_array) && isset($r_array['items']) && isset($r_array['items'][0])) {
+              if (!empty($r_array) && isset($r_array['items']) && isset($r_array['items'][0]) && isset($r_array['items'][0]['id']['videoId'])) {
                   $youtubeID = $r_array['items'][0]['id']['videoId'];
                   $methodSetYTID = "setTrackFace{$trackFace}YoutubeID";
                   // Set YouTube ID found
@@ -291,8 +298,7 @@ class AppController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         // Retrieve item to update quantity
-        $repo   = $em->getRepository(Vinyl::class);
-        $entity = $repo->findOneById($id);
+        $entity = $this->vinylRepository->findOneById($id);
 
         if ($entity !== null) {
             // Update new vinyl quantity & persist it
@@ -309,7 +315,7 @@ class AppController extends AbstractController
                     'message_status'  => 'Modification de la quantité effectuée avec succès.',
                     'id_entity'       => $entity->getId(),
                     'new_quantity'    => $entity->getQuantity(),
-                    'total_vinyls'    => $repo->countAll()
+                    'total_vinyls'    => $this->vinylRepository->countAll()
                 );
             } catch (\Exception $e) {
                 // Something goes wrong
@@ -351,8 +357,7 @@ class AppController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         // Retrieve item to update quantity
-        $repo   = $em->getRepository(Vinyl::class);
-        $entity = $repo->findOneById($id);
+        $entity = $this->vinylRepository->findOneById($id);
 
         if ($entity !== null) {
             // Update new vinyl quantity sold & persist it
@@ -369,7 +374,7 @@ class AppController extends AbstractController
                     'message_status'  => 'Modification de la quantité vendue effectuée avec succès.',
                     'id_entity'       => $entity->getId(),
                     'new_quantity'    => $entity->getQuantitySold(),
-                    'total_vinyls'    => $repo->countAll()
+                    'total_vinyls'    => $this->vinylRepository->countAll()
                 );
             } catch (\Exception $e) {
                 // Something goes wrong
@@ -412,8 +417,7 @@ class AppController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         // Retrieve item to update quantity
-        $repo   = $em->getRepository(Vinyl::class);
-        $entity = $repo->findOneById($id);
+        $entity = $this->vinylRepository->findOneById($id);
 
         if ($entity !== null) {
             // Update new vinyl quantity sold & persist it
@@ -430,7 +434,7 @@ class AppController extends AbstractController
                     'message_status'  => 'Modification de la quantité des vinyles avec une pochette effectuée avec succès.',
                     'id_entity'       => $entity->getId(),
                     'new_quantity'    => $entity->getQuantityWithCover(),
-                    'total_vinyls'    => $repo->countAll()
+                    'total_vinyls'    => $this->vinylRepository->countAll()
                 );
             } catch (\Exception $e) {
                 // Something goes wrong
@@ -468,19 +472,10 @@ class AppController extends AbstractController
      */
     public function artists(Security $security)
     {
-        $em   = $this->getDoctrine()->getManager();
-        $user = $security->getUser();
-
-        // Retrieve artists
-        $r_artist = $em->getRepository(Artist::class);
-        $artists  = $r_artist->findAll();
-
         return $this->render('artists.html.twig', [
-            'meta'    => [
-                'title' => 'Artistes'
-            ],
-            'user'    => $user,
-            'artists' => $artists,
+            'meta' => [ 'title' => 'Artistes' ],
+            'user' => $security->getUser(),
+            'artists' => $this->artistRepository->findAll(),
         ]);
     }
 
@@ -489,36 +484,29 @@ class AppController extends AbstractController
      */
     public function artists_infos($id, Security $security, HttpClientInterface $client, FileUploader $fileUploader)
     {
-        $em = $this->getDoctrine()->getManager();
-        $user = $security->getUser();
-
-        // Retrieve item to delete
-        $r_artist = $em->getRepository(Artist::class);
-        $artist   = $r_artist->findOneById($id);
-
-        // Retrieve total vinyls quantity (with duplicate vinyls)
-        // $r_vinyl = $em->getRepository(Vinyl::class);
+        $artist = $this->artistRepository->findOneById($id);
 
         // Check if artist has a photo, if not > search and download it
         if (is_null($artist->getAvatarFilename())) {
-            $img_googled = $this->searchArtistPhoto($client, $artist->getName());
-            if ($img_googled) {
+            $em = $this->getDoctrine()->getManager();
+            $imgGoogled = $this->searchArtistPhoto($client, $artist->getName());
+
+            if ($imgGoogled) {
                 $artist_slug = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $artist->getName());
-                $avatarFileName = $fileUploader->upload($img_googled, '/avatars', $artist_slug . '.' . pathinfo($img_googled, PATHINFO_EXTENSION));
+                $avatarFileName = $fileUploader->upload($imgGoogled, '/avatars', $artist_slug . '.' . pathinfo($imgGoogled, PATHINFO_EXTENSION));
                 $artist->setAvatarFilename($avatarFileName);
+
+                // Persist & flush new artist's avatar
+                $em->persist($artist);
+                $em->flush();
             }
-            // Persist & flush new artist's avatar
-            $em->persist($artist);
-            $em->flush();
         }
 
         return $this->render('artist-single.html.twig', [
-            'meta'        => [
-                'title' => $artist->getName()
-            ],
-            'core_class'  => 'app-artist-single',
-            'user'        => $user,
-            'artist'      => $artist,
+            'meta' => [ 'title' => $artist->getName() ],
+            'core_class' => 'app-artist-single',
+            'user' => $security->getUser(),
+            'artist' => $artist,
         ]);
     }
 
@@ -531,8 +519,7 @@ class AppController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         // Retrieve item to delete
-        $repo   = $em->getRepository(Artist::class);
-        $entity = $repo->findOneById($id);
+        $entity = $this->artistRepository->findOneById($id);
 
         if ($entity !== null) {
             // Delete entity & flush
@@ -560,15 +547,13 @@ class AppController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         // Retrieve advert to update
-        /** @var ImageRepository */
-        $repo   = $em->getRepository(Image::class);
-        $image  = $repo->findOneById($id);
+        $image  = $this->imageRepository->findOneById($id);
         // Set default message as error
-        $return = array(
-            'query_status'    => 0,
-            'slug_status'     => 'error',
-            'message_status'  => 'Un problème est survenu lors de la suppression de l\'image avec pour ID: ' . $id
-        );
+        $return = [
+            'query_status' => 0,
+            'slug_status' => 'error',
+            'message_status' => 'Un problème est survenu lors de la suppression de l\'image avec pour ID: ' . $id
+        ];
 
         if ($image !== null) {
             $deleted_img = $image;
@@ -577,15 +562,15 @@ class AppController extends AbstractController
             $em->flush();
 
             // Set message
-            $return = array(
-                'query_status'    => 1,
-                'slug_status'     => 'success',
-                'message_status'  => 'L\'image a bien été supprimée.',
-                'image_deleted'   => [
-                    'id'        => $id,
-                    'filename'  => $deleted_img->getFilename()
+            $return = [
+                'query_status' => 1,
+                'slug_status' => 'success',
+                'message_status' => 'L\'image a bien été supprimée.',
+                'image_deleted' => [
+                    'id' => $id,
+                    'filename' => $deleted_img->getFilename()
                 ]
-            );
+            ];
         } else {
             // Set message saying that image doesn't exist in DB
             $return['message_status'] = 'L\'image avec pour ID: ' . $id . ' n\'existe pas en base de données.';
@@ -636,22 +621,20 @@ class AppController extends AbstractController
      */
     public function index($vinyl_id, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader): Response
     {
-        $em     = $this->getDoctrine()->getManager();
-        $return = array();
-        $user   = $security->getUser();
+        $return = [];
         $artist_added = null;
         $form_booking = $this->createForm(BookingType::class, new Advert(), [
             'action' => $this->generateUrl('booking'),
         ]);
 
         // Retrieve vinyl if asked ($is_vinyl_edit = true) or new one
-        $r_vinyl        = $em->getRepository(Vinyl::class);
-        $vinyl_edit     = $r_vinyl->findOneById($vinyl_id);
+        $vinyl_edit     = $this->vinylRepository->findOneById($vinyl_id);
         $is_vinyl_edit  = null !== $vinyl_edit;
         $vinyl          = ($is_vinyl_edit === true) ? $vinyl_edit : new Vinyl();
 
         // Only admin user can add vinyls & artists
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
+            $em = $this->getDoctrine()->getManager();
             $artist = new Artist();
 
             // 1) Build artist forms
@@ -662,10 +645,8 @@ class AppController extends AbstractController
 
             // 3) Save artist
             if ($form_artist->isSubmitted() && $form_artist->isValid()) {
-                $r_artist = $em->getRepository(Artist::class);
-
                 // Check if artist is already in database
-                if (is_null($r_artist->findOneByName($artist->getName()))) {
+                if (is_null($this->artistRepository->findOneByName($artist->getName()))) {
                     /** @var UploadedFile $documentFile */
                     $avatarFile = $form_artist->get('avatar')->getData();
 
@@ -699,19 +680,19 @@ class AppController extends AbstractController
                         $em->clear();
 
                         $return = array(
-                            'query_status'    => 0,
-                            'slug_status'     => 'error',
-                            'exception'       => $e->getMessage(),
-                            'message_status'  => 'Un problème est survenu lors de la sauvegarde de l\'artiste.'
+                            'query_status' => 0,
+                            'slug_status' => 'error',
+                            'exception' => $e->getMessage(),
+                            'message_status' => 'Un problème est survenu lors de la sauvegarde de l\'artiste.'
                         );
                     }
                 } else {
                     // If artist already exist > add message status & clear/reset form
                     $return = array(
-                        'query_status'    => 0,
-                        'slug_status'     => 'notice',
-                        'message_status'  => 'L\'artiste "' . $artist->getName() . '" est déjà présent dans la base de données et n\'a donc pas été ajouté.',
-                        'id_entity'       => $artist->getId()
+                        'query_status' => 0,
+                        'slug_status' => 'notice',
+                        'message_status' => 'L\'artiste "' . $artist->getName() . '" est déjà présent dans la base de données et n\'a donc pas été ajouté.',
+                        'id_entity' => $artist->getId()
                     );
                     $artist       = new Artist();
                     $form_artist  = $this->createForm(ArtistType::class, $artist);
@@ -734,10 +715,10 @@ class AppController extends AbstractController
                     $em->flush();
 
                     $return = array(
-                        'query_status'    => 1,
-                        'slug_status'     => 'success',
-                        'message_status'  => 'Sauvegarde du vinyle effectuée avec succès.',
-                        'id_entity'       => $vinyl->getId()
+                        'query_status' => 1,
+                        'slug_status' => 'success',
+                        'message_status' => 'Sauvegarde du vinyle effectuée avec succès.',
+                        'id_entity' => $vinyl->getId()
                     );
 
                     // Upload advert images
@@ -765,10 +746,10 @@ class AppController extends AbstractController
                     $em->clear();
 
                     $return = array(
-                        'query_status'    => 0,
-                        'slug_status'     => 'error',
-                        'exception'       => $e->getMessage() . ', at line: '.$e->getLine(),
-                        'message_status'  => sprintf(
+                        'query_status' => 0,
+                        'slug_status' => 'error',
+                        'exception' => $e->getMessage() . ', at line: '.$e->getLine(),
+                        'message_status' => sprintf(
                           'Un problème est survenu lors de la %s du vinyle.',
                           ($is_vinyl_edit === true ? 'modification' : 'sauvegarde')
                         ),
@@ -789,33 +770,26 @@ class AppController extends AbstractController
             }
         }
 
-        // Retrieve vinyls
-        $r_vinyl = $em->getRepository(Vinyl::class);
-        $vinyls = $r_vinyl->findAll();
-
-        // Get some additionnals data
-        $nb_vinyls_sold = $r_vinyl->countVinylsSold();
-
         return $this->render('app.html.twig', [
-            'user'          => $user,
-            'form_booking'  => $form_booking->createView(),
-            'form_artist'   => isset($form_artist) ? $form_artist->createView() : null,
-            'form_vinyl'    => isset($form_vinyl) ? $form_vinyl->createView() : null,
-            'vinyls'        => $vinyls,
+            'user' => $security->getUser(),
+            'form_booking' => $form_booking->createView(),
+            'form_artist' => isset($form_artist) ? $form_artist->createView() : null,
+            'form_vinyl' => isset($form_vinyl) ? $form_vinyl->createView() : null,
+            'vinyls' => $this->vinylRepository->findAll(),
             'is_vinyl_edit' => $is_vinyl_edit,
             'vinyl_to_edit' => $vinyl,
-            'total_vinyls'        => $r_vinyl->countAll(),
-            'total_vinyls_cover'  => $r_vinyl->countAllWithCover(),
-            'nb_vinyls_sold'      => $nb_vinyls_sold,
-            'artist_added'        => $artist_added,
+            'total_vinyls' => $this->vinylRepository->countAll(),
+            'total_vinyls_cover' => $this->vinylRepository->countAllWithCover(),
+            'nb_vinyls_sold' => $this->vinylRepository->countVinylsSold(),
+            'artist_added' => $artist_added,
         ]);
     }
 
     private $csvParsingOptions = array(
-        'finder_in'       => '../public/uploads/',
-        'finder_name'     => 'vinyls.csv',
+        'finder_in' => '../public/uploads/',
+        'finder_name' => 'vinyls.csv',
         'ignoreFirstLine' => true,
-        'delimiter'       => ','
+        'delimiter' => ','
     );
     /**
      * Parse a csv file
