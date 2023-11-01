@@ -55,6 +55,7 @@ Encore
      */
     // Google Fonts
     .addPlugin(new GoogleFontsPlugin({
+      apiUrl: 'https://gwfh.mranftl.com/api/fonts',
       fonts: [
         // { family: "Roboto Mono", variants: [ "400", "700" ] },
         // { family: "PT Mono", variants: [ "400", "700" ] },
@@ -73,8 +74,7 @@ Encore
     .addPlugin(new CopyWebpackPlugin({
       patterns: [
         {
-          from: './assets/static',
-          to: './'
+          from: './assets/static'//, to: './'
         }
       ]
     }))
