@@ -2,17 +2,14 @@
 
 {% block body %}
   <div class="container">
+    {% include 'components/statistics.html.twig' %}
+
+    <hr>
+
     <h1 class="mb-1">
       <span class="icon-disc text-primary"></span>
       Liste des vinyles{% if vinyls is not empty %} <small class="fw-normal text-muted">(<span class="-vinyls-total-quantity">{{ total_vinyls }}</span>)</small>{% endif %}
     </h1>
-    <p class="text-muted mb-4">
-      {% set vinyls_total_unique = vinyls|length %}
-      <b class="badge bg-primary rounded-pill">{{ vinyls_total_unique }}</b> {% if vinyls_total_unique > 1 %}vinyles uniques{% else %}vinyle unique{% endif %} -
-      Quantité disponible : <b class="badge bg-primary rounded-pill">{{ total_vinyls - nb_vinyls_sold }}</b> -
-      dont <b class="badge bg-primary rounded-pill">{{ total_vinyls_cover }}</b> avec une pochette -
-      Qté. vendu : <b class="badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b>{% if total_vinyls > 0 %} ({{ (100 * nb_vinyls_sold / total_vinyls)|round(2) }}%){% endif %}
-    </p>
     {% if vinyls is not empty %}
       {# Vinyls selected toolbar #}
       <div class="toolbox-selected-vinyls card text-secondary sticky-top -after-header mb-2">
@@ -62,7 +59,7 @@
                 <span class="-sort-icon -sort-asc icon-chevron-up"></span>
                 <span class="-sort-icon -sort-desc icon-chevron-down"></span>
               </th>
-              <th scope="col" class="col-artist">
+              <th scope="col" class="col-artist default-sort">
                 Artiste(s)
                 <span class="-sort-icon -sort-asc icon-chevron-up"></span>
                 <span class="-sort-icon -sort-desc icon-chevron-down"></span>
@@ -160,8 +157,8 @@
                   {% set popover_content %}
                     {% if vinyl.notes is not empty %}{{ vinyl.notes|nl2br }}{% endif %}
                       {% if vinyl.images is not empty %}
-                        <hr/>
-                        <div class='vinyl-list-imgs row g-2 mt-2'>
+                        {% if vinyl.notes is not empty %}<hr/>{% endif %}
+                        <div class='vinyl-list-imgs row g-2{% if vinyl.notes is not empty %} mt-2{% endif %}'>
                           <h4 class='h6 text-dark my-0 col-12'>Photo(s)</h4>
                           {% for img in vinyl.images %}
                             {% set img_url = asset(img.path) %}

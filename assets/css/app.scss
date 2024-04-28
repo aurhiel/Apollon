@@ -18,6 +18,7 @@
 @import 'app/type';
 @import 'app/form';
 @import 'app/tables';
+@import 'app/card';
 @import 'app/ratio';
 @import 'app/link';
 @import 'app/lists';
@@ -36,6 +37,11 @@
 .app-logo {
   font-family: "Space Mono";
   font-weight: 700;
+
+  span {
+    display: inline-block;
+    vertical-align: bottom;
+  }
 }
 
 

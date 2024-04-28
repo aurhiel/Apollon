@@ -1,0 +1,60 @@
+{% set quantity_available = total_vinyls - nb_vinyls_sold %}
+
+{% set statistics = [
+  {
+    'label': 'Quantité disponible',
+    'amount': quantity_available,
+    'total': total_vinyls,
+    'total_css_class': '-vinyls-total-quantity',
+    'progress_bar': true
+  },
+  {
+    'label': 'Nb. vinyle avec pochette',
+    'amount': total_vinyls_cover - nb_vinyls_cover_sold,
+    'total': total_vinyls_cover,
+    'progress_bar': true
+  },
+  {
+    'label': 'Nombre de vinyle unique',
+    'amount': vinyls|length,
+    'total': quantity_available
+  },
+  {
+    'label': 'Nombre d\'artistes',
+    'amount': artists|length
+  }
+] %}
+
+<div class="row row-cols-2 row-cols-lg-4 g-2 g-md-3">
+{% for stats in statistics %}
+  {% set total_css_class = stats.total_css_class is defined ? ' class='~ stats.total_css_class : '' %}
+  <div class="col">
+    <div class="card card-stats h-100">
+      <div class="card-body">
+        <div class="card-text text-dark">{{ stats.label }}</div>
+        <h5 class="card-title text-dark ff-monospace">
+          <span>{{ stats.amount }}</span>{% if stats.total is defined %}<small>/<span{{ total_css_class }}>{{ stats.total }}</span></small>{% endif %}
+        </h5>
+      {% if stats.progress_bar is defined %}
+        {% set percent = (100 * stats.amount / stats.total)|round(2) %}
+        {% set progressCSSClass = ' fw-bold' %}
+        {% if percent < 25 %}
+          {% set progressCSSClass = progressCSSClass ~ ' bg-danger' %}
+          {% set percent = percent|round(1) %}
+        {% elseif percent < 60 %}
+          {% set progressCSSClass = progressCSSClass ~ ' bg-warning text-dark' %}
+        {% elseif percent < 80 %}
+          {% set progressCSSClass = progressCSSClass ~ ' bg-primary' %}
+        {% else %}
+          {% set progressCSSClass = progressCSSClass ~ ' bg-info text-dark' %}
+        {% endif %}
+
+        <div class="progress">
+          <div class="progress-bar{{ progressCSSClass }} ff-monospace" role="progressbar" style="width: {{ percent }}%;" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">{% if percent > 19 %}{{ percent }}%{% endif %}</div>
+        </div>
+      {% endif %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>

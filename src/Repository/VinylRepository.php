@@ -62,6 +62,15 @@ class VinylRepository extends ServiceEntityRepository
         ;
     }
 
+    public function countVinylsWithCoverSold()
+    {
+        return $this->createQueryBuilder('v')
+            ->select('SUM(CASE WHEN v.quantityWithCover > 0 AND v.quantityWithCover < v.quantitySold THEN v.quantityWithCover ELSE v.quantitySold END) AS nb_vinyls_cover_sold')
+            ->where('v.quantityWithCover > 0')
+            ->getQuery()->getSingleScalarResult()
+        ;
+    }
+
     public function countAll()
     {
         return $this->createQueryBuilder('v')
@@ -73,7 +82,7 @@ class VinylRepository extends ServiceEntityRepository
     public function countAllWithCover()
     {
         return $this->createQueryBuilder('v')
-            ->select('SUM(v.quantityWithCover - v.quantitySold) AS nb_vinyls_cover')
+            ->select('SUM(v.quantityWithCover) AS nb_vinyls_cover')
             ->getQuery()->getSingleScalarResult()
         ;
     }

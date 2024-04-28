@@ -176,7 +176,10 @@ var app = {
 
       //
       // Table sortable
-      self.$body.find('.table-sortable').tablesort();
+      var $sortable = self.$body.find('.table-sortable');
+      if ($sortable.length > 0) {
+        $sortable.tablesort().data('tablesort').sort($("th.default-sort"));
+      }
 
 
       //
@@ -738,7 +741,7 @@ var app = {
               self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/' + r.youtube_id + '?autoplay=1&fs=0&rel=0&showinfo=0');
 
               // Display player
-              self.$player.removeClass('invisible');
+              self.$player.removeClass('d-none');
             }
           }
         });
@@ -746,7 +749,7 @@ var app = {
       // Click on player close button
       self.$player.on('click', '.-close', function() {
         // Hide player
-        self.$player.addClass('invisible');
+        self.$player.addClass('d-none');
 
         // Reset artist & track title & iframe source
         self.$player.find('.-title').html('');
@@ -758,7 +761,7 @@ var app = {
         self.$player.find('.-title').html('lofi hip hop radio - beats to study/relax to 🐾');
         self.$player.find('.-artist').html('Chillhop Music');
         self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/7NOSDKb0HlU');
-        self.$player.removeClass('invisible');
+        self.$player.removeClass('d-none');
       });
     })();
   }

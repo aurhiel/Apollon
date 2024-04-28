@@ -1,0 +1,26 @@
+// Card
+//
+
+
+.card-stats {
+  user-select: none;
+
+  .card-text {
+    font-size: .8rem;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: .4em;
+    opacity: .5;
+  }
+
+  .card-title {
+    font-size: 2rem;
+    line-height: .9;
+    margin-bottom: .3em;
+
+    small {
+      font-size: .5em;
+      opacity: .3;
+    }
+  }
+}

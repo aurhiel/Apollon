@@ -776,11 +776,13 @@ class AppController extends AbstractController
             'form_artist' => isset($form_artist) ? $form_artist->createView() : null,
             'form_vinyl' => isset($form_vinyl) ? $form_vinyl->createView() : null,
             'vinyls' => $this->vinylRepository->findAll(),
+            'artists' => $this->artistRepository->findAll(),
             'is_vinyl_edit' => $is_vinyl_edit,
             'vinyl_to_edit' => $vinyl,
-            'total_vinyls' => $this->vinylRepository->countAll(),
-            'total_vinyls_cover' => $this->vinylRepository->countAllWithCover(),
-            'nb_vinyls_sold' => $this->vinylRepository->countVinylsSold(),
+            'total_vinyls' => (int) $this->vinylRepository->countAll(),
+            'nb_vinyls_sold' => (int) $this->vinylRepository->countVinylsSold(),
+            'total_vinyls_cover' => (int) $this->vinylRepository->countAllWithCover(),
+            'nb_vinyls_cover_sold' => (int) $this->vinylRepository->countVinylsWithCoverSold(),
             'artist_added' => $artist_added,
         ]);
     }
@@ -806,6 +808,10 @@ class AppController extends AbstractController
             ->name($this->csvParsingOptions['finder_name'])
         ;
         foreach ($finder as $file) { $csv = $file; }
+
+        if (!isset($csv)) {
+            throw new \RuntimeException(sprintf('Cannot find CSV file to import (in: %s, name: %s)', $this->csvParsingOptions['finder_in'], $this->csvParsingOptions['finder_name']));
+        }
 
         $rows = array();
         if (($handle = fopen($csv->getRealPath(), "r")) !== FALSE) {
