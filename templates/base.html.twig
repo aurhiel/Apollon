@@ -2,12 +2,16 @@
 {% set domain = app.request.getSchemeAndHttpHost() %}
 {% set app_theme = app.request.cookies.get('APP_THEME') ?? 'light' %}
 {% set app_theme_reversed = app_theme == 'dark' ? 'light' : 'dark' %}
+{% set favicon = (app_theme == 'dark') ? 'favicon-dark.png' : 'favicon.png' %}
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="apple-touch-icon" href="/build/images/{{ favicon }}">
+    <link rel="icon" sizes="260x260" href="/build/images/{{ favicon }}">
+    <link rel="image_src" type="image/png" href="/build/images/{{ favicon }}">
 
     {# meta.title #}
     <title>
