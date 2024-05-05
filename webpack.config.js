@@ -24,8 +24,8 @@ Encore
      * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
      */
     // App "main"
-    .addEntry('app', './assets/app.js')
-    .addStyleEntry('app-light', './assets/css/app-light.scss')
+    .addEntry('app', './assets/js/app.js')
+    // .addStyleEntry('app-light', './assets/css/app-light.scss')
 
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
@@ -46,7 +46,6 @@ Encore
      * https://symfony.com/doc/current/frontend.html#adding-more-features
      */
     .cleanupOutputBeforeBuild()
-
     .enableBuildNotifications()
 
     /*
@@ -84,14 +83,14 @@ Encore
     // enables hashed filenames (e.g. app.abc123.css)
     .enableVersioning(Encore.isProduction())
 
-    .configureBabel((config) => {
-        config.plugins.push('@babel/plugin-proposal-class-properties');
-    })
+    // .configureBabel((config) => {
+    //     config.plugins.push('@babel/plugin-proposal-class-properties');
+    // })
 
     // enables @babel/preset-env polyfills
     .configureBabelPresetEnv((config) => {
         config.useBuiltIns = 'usage';
-        config.corejs = 3;
+        config.corejs = '3.23';
     })
 
     // enables Sass/SCSS support

@@ -1,42 +1,25 @@
-{% set quantity_available = total_vinyls - nb_vinyls_sold %}
-
-{% set statistics = [
-  {
-    'label': 'Quantité disponible',
-    'amount': quantity_available,
-    'total': total_vinyls,
-    'total_css_class': '-vinyls-total-quantity',
-    'progress_bar': true
-  },
-  {
-    'label': 'Nb. vinyle avec pochette',
-    'amount': total_vinyls_cover - nb_vinyls_cover_sold,
-    'total': total_vinyls_cover,
-    'progress_bar': true
-  },
-  {
-    'label': 'Nombre de vinyle unique',
-    'amount': vinyls|length,
-    'total': quantity_available
-  },
-  {
-    'label': 'Nombre d\'artistes',
-    'amount': artists|length
-  }
-] %}
-
-<div class="row row-cols-2 row-cols-lg-4 g-2 g-md-3">
+{% set grid_size = grid_size is defined ? grid_size : 'row-cols-2 row-cols-lg-4' %}
+<div class="row {{ grid_size }} g-2 g-md-3">
 {% for stats in statistics %}
-  {% set total_css_class = stats.total_css_class is defined ? ' class='~ stats.total_css_class : '' %}
+  {% set currency = stats.currency is defined ? stats.currency : null %}
+  {% set total_css_class = stats.total_css_class is defined ? ' class=' ~ stats.total_css_class : '' %}
+  {% set amount_css_class = stats.amount_css_class is defined ? ' class=' ~ stats.amount_css_class : '' %}
+  {% set amount_attr = stats.amount_attr is defined ? ' ' ~ stats.amount_attr : '' %}
+  {% set amount = currency is not empty ? stats.amount ~ stats.currency : stats.amount %}
+  {% set total = null %}
+  {% if stats.total is defined %}
+    {% set total = currency is not empty ? stats.total ~ stats.currency : stats.total  %}
+  {% endif %}
+
   <div class="col">
-    <div class="card card-stats h-100">
+    <div class="card card-stats h-100 overflow-hidden{{ stats.class is defined ? ' ' ~ stats.class : '' }}" data-bs-theme="light">
       <div class="card-body">
-        <div class="card-text text-dark">{{ stats.label }}</div>
-        <h5 class="card-title text-dark ff-monospace">
-          <span>{{ stats.amount }}</span>{% if stats.total is defined %}<small>/<span{{ total_css_class }}>{{ stats.total }}</span></small>{% endif %}
+        <div class="card-text">{{ stats.label }}</div>
+        <h5 class="card-title ff-monospace text-nowrap">
+          <span{{ amount_css_class }}{{ amount_attr }}>{{ amount }}</span>{% if total is not empty %}<small>/<span{{ total_css_class }}>{{ total }}</span></small>{% endif %}
         </h5>
       {% if stats.progress_bar is defined %}
-        {% set percent = (100 * stats.amount / stats.total)|round(2) %}
+        {% set percent = stats.total > 0 ? (100 * stats.amount / stats.total)|round(2) : 0 %}
         {% set progressCSSClass = ' fw-bold' %}
         {% if percent < 25 %}
           {% set progressCSSClass = progressCSSClass ~ ' bg-danger' %}

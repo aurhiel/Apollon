@@ -1,6 +1,10 @@
 // Navbar
 //
 
+.navbar {
+  background-color: $light;
+}
+
 .nav-link {
   &.active {
     position: relative;
@@ -12,5 +16,11 @@
       height: 4px;
       width: 4px;
     }
+  }
+}
+
+@include color-mode(dark) {
+  .navbar {
+    background-color: $dark;
   }
 }

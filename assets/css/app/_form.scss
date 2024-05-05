@@ -21,8 +21,8 @@
   }
 
   > div {
-    background-color: $white;
-    color: $dark;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
     border: $input-border-width solid $input-border-color;
     @include border-radius($input-border-radius, 0);
     padding: .4rem .6rem;

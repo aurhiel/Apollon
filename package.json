@@ -1,21 +1,23 @@
 {
     "devDependencies": {
-        "@beyonk/google-fonts-webpack-plugin": "^1.5.0",
+        "@babel/core": "^7.17.0",
+        "@babel/preset-env": "^7.16.0",
+        "@beyonk/google-fonts-webpack-plugin": "^1.7.0",
         "@popperjs/core": "^2.9.2",
         "@symfony/stimulus-bridge": "^2.0.0",
         "@symfony/webpack-encore": "^1.0.0",
-        "bootstrap": "^5.0.0-beta3",
+        "bootstrap": "^5.3.3",
         "clipboard": "^2.0.10",
         "copy-webpack-plugin": "^9.0.1",
-        "core-js": "^3.0.0",
+        "core-js": "^3.23.0",
         "jquery": "^3.6.0",
         "jquery-tablesort": "^0.0.11",
         "popper.js": "^1.16.1",
-        "regenerator-runtime": "^0.13.2",
-        "sass": "^1.32.8",
-        "sass-loader": "^11.0.0",
+        "regenerator-runtime": "^0.13.9",
+        "sass": "^1.66.1",
+        "sass-loader": "^13.3.2",
         "stimulus": "^2.0.0",
-        "webpack-notifier": "^1.6.0"
+        "webpack-notifier": "^1.15.0"
     },
     "license": "UNLICENSED",
     "private": true,
@@ -25,5 +27,7 @@
         "watch": "encore dev --watch",
         "build": "encore production --progress"
     },
-    "dependencies": {}
+    "dependencies": {
+        "bootstrap-icons": "^1.11.3"
+    }
 }

@@ -6,9 +6,10 @@
  */
 
 require('bootstrap');
+require('bootstrap-icons/font/bootstrap-icons.css');
 
 // any CSS you import will output into a single css file (app.css in this case)
-import './css/app.scss';
+import '../css/app.scss';
 
 import { Tooltip, Popover, Collapse } from 'bootstrap';
 
@@ -16,9 +17,87 @@ var ClipboardJS = require('clipboard');
 
 require('jquery-tablesort');
 
-// Not used
-// start the Stimulus application
-// import './bootstrap';
+var colorMode = {
+  init: function() {
+    const storedTheme = localStorage.getItem('theme')
+
+    const getPreferredTheme = () => {
+      if (storedTheme) {
+        return storedTheme
+      }
+
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
+
+    const setTheme = function (theme) {
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-bs-theme', 'dark')
+        metaThemeColor.setAttribute("content", metaThemeColor.getAttribute('theme-color-dark'))
+      } else {
+        document.documentElement.setAttribute('data-bs-theme', theme)
+        metaThemeColor.setAttribute("content", metaThemeColor.getAttribute('theme-color-' + theme))
+      }
+    }
+
+    setTheme(getPreferredTheme())
+
+    const showActiveTheme = (theme, focus = false) => {
+      //const themeSwitcherText = document.querySelector('#bd-theme-text')
+      const activeIcon = document.querySelector('.theme-icon-active')
+      const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`)
+
+      if (!btnToActive) {
+        return
+      }
+
+      if (activeIcon) {
+        const svgOfActiveBtn = btnToActive.querySelector('span use').getAttribute('href')
+        activeIcon.classList.remove('bi-circle-half', 'bi-moon-stars-fill', 'bi-sun-fill');
+        activeIcon.classList.add('bi-'+svgOfActiveBtn.replace('#', ''));
+        activeIcon.querySelector('use').setAttribute('href', svgOfActiveBtn);
+      }
+
+      document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
+        element.classList.remove('active')
+        element.setAttribute('aria-pressed', 'false')
+      })
+
+      btnToActive.classList.add('active')
+      btnToActive.setAttribute('aria-pressed', 'true')
+
+      /*const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`
+      themeSwitcher.setAttribute('aria-label', themeSwitcherLabel)*/
+
+      const styles = document.querySelectorAll('link')
+      styles.forEach(function(link) {
+        if (null !== link.getAttribute('href-dark') && null !== link.getAttribute('href-light') && null !== link.getAttribute('href-auto')) {
+          link.setAttribute('href', link.getAttribute('href-'+theme))
+        }
+      })
+    }
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (storedTheme !== 'light' || storedTheme !== 'dark') {
+        setTheme(getPreferredTheme())
+      }
+    })
+
+    window.addEventListener('DOMContentLoaded', () => {
+      showActiveTheme(getPreferredTheme())
+
+      document.querySelectorAll('[data-bs-theme-value]')
+        .forEach(toggle => {
+          toggle.addEventListener('click', () => {
+            const theme = toggle.getAttribute('data-bs-theme-value')
+            localStorage.setItem('theme', theme)
+            setTheme(theme)
+            showActiveTheme(theme, true)
+          })
+        })
+    })
+  }
+};
 
 var clipboard = {
   $body: null,
@@ -104,6 +183,8 @@ var app = {
   },
   // Rocket launcher ! > code executed immediately (before document ready)
   launch : function() {
+    colorMode.init();
+
     //
     // Variables (private & public)
     // Le viss
@@ -700,7 +781,7 @@ var app = {
               // Update datas
               self.$ads_total_vinyls_sold.html(new_nb_sold);
               self.$ads_total_price_got.html(new_total_got + '€');
-              self.$ads_vinyls_avg_price.html((Math.round((new_total_got / new_nb_sold) * 100) / 100) + '€');
+              self.$ads_vinyls_avg_price.html((new_nb_sold > 0 ? (Math.round((new_total_got / new_nb_sold) * 100) / 100) : 0) + '€');
               self.$ads_avg_price.html((Math.round(new_total_got / self.$ads_avg_price.data('ads-qty'))) + '€');
 
               // Update CSS classes
@@ -757,7 +838,7 @@ var app = {
         self.$player.find('iframe').attr('src', '');
       });
       // Easter egg:When clicking on heart icon in the footer
-      self.$body.on('click', '.app-footer .icon-heart', function() {
+      self.$body.on('click', '.app-footer .bi-heart', function() {
         self.$player.find('.-title').html('lofi hip hop radio - beats to study/relax to 🐾');
         self.$player.find('.-artist').html('Chillhop Music');
         self.$player.find('iframe').attr('src', 'https://www.youtube.com/embed/7NOSDKb0HlU');

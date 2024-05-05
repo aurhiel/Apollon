@@ -62,7 +62,7 @@
       color: darken($white, 25%);
       font-size: 2em;
       position: relative;
-      bottom: -.125em;
+      bottom: .05em;
     }
 
     .-picture-delete-user {
@@ -158,6 +158,19 @@
       display: block;
     }
   }
+
+  .-item-title {
+    a {
+      color: inherit;
+      text-decoration: none;
+      opacity: .8;
+
+      &:hover, &:active {
+        opacity: 1;
+      }
+    }
+  }
+
   .-item-desc {
     font-size: .9rem;
     max-height: 10rem;

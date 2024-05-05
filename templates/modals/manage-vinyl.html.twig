@@ -12,45 +12,45 @@
             {# Form inputs #}
             <div class="form--inputs">
               <div class="row g-3">
-                <div class="col-md-6 form-group">
+                <div class="col-md-6 form-group" data-bs-theme="light">
                   {{ form_label(form_vinyl.rpm) }}
                   {{ form_widget(form_vinyl.rpm) }}
                   {{ form_errors(form_vinyl.rpm) }}
                 </div>
-                <div class="col-md-3 form-group">
+                <div class="col-md-3 form-group" data-bs-theme="light">
                   {{ form_label(form_vinyl.quantity) }}
                   {{ form_widget(form_vinyl.quantity) }}
                   {{ form_errors(form_vinyl.quantity) }}
                 </div>
-                <div class="col-md-3 form-group">
+                <div class="col-md-3 form-group" data-bs-theme="light">
                   {{ form_label(form_vinyl.quantity_sold) }}
                   {{ form_widget(form_vinyl.quantity_sold) }}
                   {{ form_errors(form_vinyl.quantity_sold) }}
                 </div>
 
-                <div class="col-md-6 form-group">
+                <div class="col-md-6 form-group" data-bs-theme="light">
                   {{ form_label(form_vinyl.track_face_A) }}
                   {{ form_widget(form_vinyl.track_face_A) }}
                   {{ form_errors(form_vinyl.track_face_A) }}
                 </div>
-                <div class="col-md-6 form-group">
+                <div class="col-md-6 form-group" data-bs-theme="light">
                   {{ form_label(form_vinyl.track_face_B) }}
                   {{ form_widget(form_vinyl.track_face_B) }}
                   {{ form_errors(form_vinyl.track_face_B) }}
                 </div>
 
-                <div class="col-md-5 col-lg-4 form-group form-multi-select"{% if artist_added is not empty %} data-ms-autoselect="{{ artist_added.id }}"{% endif %}>
+                <div class="col-md-5 col-lg-4 form-group form-multi-select" data-bs-theme="light"{% if artist_added is not empty %} data-ms-autoselect="{{ artist_added.id }}"{% endif %}>
                   {{ form_label(form_vinyl.artists) }}
                   {{ form_widget(form_vinyl.artists) }}
                   {{ form_errors(form_vinyl.artists) }}
                 </div>
-                <div class="col-md-7 col-lg-8 form-group form-textarea">
+                <div class="col-md-7 col-lg-8 form-group form-textarea" data-bs-theme="light">
                   {{ form_label(form_vinyl.notes) }}
                   {{ form_widget(form_vinyl.notes) }}
                   {{ form_errors(form_vinyl.notes) }}
                 </div>
 
-                <div class="col-12 form-group form-image-lib">
+                <div class="col-12 form-group form-image-lib" data-bs-theme="light">
                   {{ form_label(form_vinyl.images) }}
                   {{ form_widget(form_vinyl.images) }}
                   {{ form_errors(form_vinyl.images) }}

@@ -5,7 +5,7 @@
 {% set has_actions = (has_form_artist == true or has_form_vinyl == true or has_form_advert == true) %}
 
 <header class="app-header sticky-top">
-  <nav class="navbar navbar-expand-md navbar-{{ app_theme }} bg-{{ app_theme }} pb-0">
+  <nav class="navbar navbar-expand-md pb-0">
     <div class="container pb-2 -border-bottom -border-secondary">
       <button class="navbar-toggler mr-auto" type="button" data-bs-toggle="collapse"
         data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -43,32 +43,56 @@
       {# Navbar actions #}
       {% block actions %}
         <div class="navbar-actions">
-          <a href="{{ path('switch-theme', { theme_slug: app_theme_reversed }) }}"
-            class="btn btn-sm btn-outline-secondary{% if app_theme == 'dark' %} text-white{% endif %} px-2">
-            <span class="icon-{{ (app_theme == 'dark') ? 'sun' : 'moon' }}"></span>
-          </a>
+          <div class="d-inline-block position-relative">
+            <button class="btn btn-sm btn-outline-secondary px-2 dropdown-toggle" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static" aria-label="Toggle theme (light)">
+              <span class="bi-circle-half my-1 theme-icon-active"><use href="#sun-fill"></use></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme-text">
+              <li>
+                <button type="button" class="dropdown-item" data-bs-theme-value="light" aria-pressed="false">
+                  <span class="bi-sun-fill me-md-2 opacity-50 theme-icon"><use href="#sun-fill"></use></span>
+                  <span class="d-none d-md-inline">Clair</span>
+                  <span class="bi-check2 ms-auto d-none"><use href="#check2"></use></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item" data-bs-theme-value="dark" aria-pressed="false">
+                  <span class="bi-moon-stars-fill me-md-2 opacity-50 theme-icon"><use href="#moon-stars-fill"></use></span>
+                  <span class="d-none d-md-inline">Sombre</span>
+                  <span class="bi-check2 ms-auto d-none"><use href="#check2"></use></span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item active" data-bs-theme-value="auto" aria-pressed="false">
+                  <span class="bi-circle-half me-md-2 opacity-50 theme-icon"><use href="#circle-half"></use></span>
+                  <span class="d-none d-md-inline">Auto</span>
+                  <span class="bi-check2 ms-auto d-none"><use href="#check2"></use></span>
+                </button>
+              </li>
+            </ul>
+          </div>
         {% if is_granted('ROLE_ADMIN') %}
           {% if has_form_artist == true %}
-            <button class="btn btn-sm btn-outline-primary{% if app_theme == 'dark' %} text-white{% endif %} px-2 px-md-4 ms-2 ms-md-3" type="button"
+            <button class="btn btn-sm btn-outline-primary px-2 px-md-4 ms-2 ms-md-3" type="button"
               name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-artist">
-              <span class="icon-user-plus me-md-1"></span><span class="d-none d-md-inline"> artiste</span>
+              <span class="bi-person-add me-md-1"></span><span class="d-none d-md-inline"> artiste</span>
             </button>
           {% endif %}
           {% if has_form_vinyl == true %}
-            <button class="btn btn-sm btn-outline-primary{% if app_theme == 'dark' %} text-white{% endif %} px-2 px-md-4 ms-2 ms-md-3" type="button"
+            <button class="btn btn-sm btn-outline-primary px-2 px-md-4 ms-2 ms-md-3" type="button"
               name="toggle-modal-form-vinyl" data-bs-toggle="modal" data-bs-target="#modal-manage-vinyl">
-              <span class="icon-plus-circle me-md-1"></span><span class="d-none d-md-inline"> vinyle</span>
+              <span class="bi-plus-circle me-md-1"></span><span class="d-none d-md-inline"> vinyle</span>
             </button>
           {% endif %}
           {% if has_form_advert == true %}
-            <button class="btn btn-sm btn-outline-primary{% if app_theme == 'dark' %} text-white{% endif %} px-2 px-md-4 ms-2 ms-md-3" type="button"
+            <button class="btn btn-sm btn-outline-primary px-2 px-md-4 ms-2 ms-md-3" type="button"
               name="toggle-modal-form-advert" data-bs-toggle="modal" data-bs-target="#modal-manage-advert">
-              <span class="icon-file-plus me-md-1"></span><span class="d-none d-md-inline"> annonce</span>
+              <span class="bi-file-earmark-plus me-md-1"></span><span class="d-none d-md-inline"> annonce</span>
             </button>
           {% endif %}
         {% else %}
-          <a class="btn btn-sm btn-outline-primary{% if app_theme == 'dark' %} text-white{% endif %} px-3 px-md-4 ms-2 ms-md-3" href="tel:0695064091">
-            <span class="icon-phone me-1"></span> 06 95 06 40 91
+          <a class="btn btn-sm btn-outline-primary px-3 px-md-4 ms-2 ms-md-3" href="tel:0695064091">
+            <span class="bi-telephone me-1"></span> 06 95 06 40 91
           </a>
         {% endif %}
         </div>

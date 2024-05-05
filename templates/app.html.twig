@@ -2,17 +2,42 @@
 
 {% block body %}
   <div class="container">
-    {% include 'components/statistics.html.twig' %}
+    {% include 'components/statistics.html.twig' with {
+      statistics : [
+        {
+          'label': 'Quantité disponible',
+          'amount': quantity_available,
+          'total': total_vinyls,
+          'total_css_class': '-vinyls-total-quantity',
+          'progress_bar': true
+        },
+        {
+          'label': 'Nb. vinyle avec pochette',
+          'amount': total_vinyls_cover - nb_vinyls_cover_sold,
+          'total': total_vinyls_cover,
+          'progress_bar': true
+        },
+        {
+          'label': 'Nombre de vinyle unique',
+          'amount': vinyls|length,
+          'total': quantity_available
+        },
+        {
+          'label': 'Nombre d\'artistes',
+          'amount': artists|length
+        }
+      ]
+    } %}
 
     <hr>
 
     <h1 class="mb-1">
-      <span class="icon-disc text-primary"></span>
+      <span class="bi-disc text-primary"></span>
       Liste des vinyles{% if vinyls is not empty %} <small class="fw-normal text-muted">(<span class="-vinyls-total-quantity">{{ total_vinyls }}</span>)</small>{% endif %}
     </h1>
     {% if vinyls is not empty %}
       {# Vinyls selected toolbar #}
-      <div class="toolbox-selected-vinyls card text-secondary sticky-top -after-header mb-2">
+      <div class="toolbox-selected-vinyls card text-secondary sticky-top -after-header mb-2" data-bs-theme="light">
         <div class="card-body py-1 py-lg-2">
           <div class="small row align-items-center">
             <div class="col-12 col-lg-7 pe-lg-0 lh-1 d-none d-lg-block">
@@ -43,7 +68,7 @@
 
       {# Vinyls list (table) #}
       <div class="table-responsive">
-        <table class="vinyls-entities table table-bordered table-striped table-hover table-{{ app_theme }} table-sortable mb-0">
+        <table class="vinyls-entities table table-bordered table-striped table-hover table-sortable mb-0">
           <thead>
             <tr>
               <th scope="col" class="col-id no-sort">#</th>
@@ -51,18 +76,18 @@
               <th scope="col" class="col-rpm no-sort">T.</th>
               <th scope="col" class="col-track">
                 Face A
-                <span class="-sort-icon -sort-asc icon-chevron-up"></span>
-                <span class="-sort-icon -sort-desc icon-chevron-down"></span>
+                <span class="-sort-icon -sort-asc bi-chevron-up"></span>
+                <span class="-sort-icon -sort-desc bi-chevron-down"></span>
               </th>
               <th scope="col" class="col-track">
                 Face B
-                <span class="-sort-icon -sort-asc icon-chevron-up"></span>
-                <span class="-sort-icon -sort-desc icon-chevron-down"></span>
+                <span class="-sort-icon -sort-asc bi-chevron-up"></span>
+                <span class="-sort-icon -sort-desc bi-chevron-down"></span>
               </th>
               <th scope="col" class="col-artist default-sort">
                 Artiste(s)
-                <span class="-sort-icon -sort-asc icon-chevron-up"></span>
-                <span class="-sort-icon -sort-desc icon-chevron-down"></span>
+                <span class="-sort-icon -sort-asc bi-chevron-up"></span>
+                <span class="-sort-icon -sort-desc bi-chevron-down"></span>
               </th>
               <th scope="col" class="col-quantity no-sort">Qté</th>
               <th scope="col" class="col-quantity -with-cover no-sort">
@@ -71,8 +96,8 @@
             {% if is_granted('ROLE_VIEWER') %}
               <th scope="col" class="col-quantity -sold">
                 Vendu(s)
-                <span class="-sort-icon -sort-asc icon-chevron-up"></span>
-                <span class="-sort-icon -sort-desc icon-chevron-down"></span>
+                <span class="-sort-icon -sort-asc bi-chevron-up"></span>
+                <span class="-sort-icon -sort-desc bi-chevron-down"></span>
               </th>
             {% endif %}
               <th scope="col" class="col-actions no-sort"></th>
@@ -82,7 +107,7 @@
           {% for vinyl in vinyls %}
             <tr class="-item-vinyl{% if vinyl.quantitySold >= vinyl.quantity %} sold-out{% if is_granted('ROLE_ADMIN') == false %} disabled{% endif %}{% endif %}" data-vinyl-id="{{ vinyl.id }}">
               <th scope="row" class="col-id">{{ vinyl.id }}</th>
-              <th class="col-select">
+              <th class="col-select" data-bs-theme="light">
                 <label for="vinyl-{{ vinyl.id }}-selected" class="stretched-link">
                   <input id="vinyl-{{ vinyl.id }}-selected"
                     class="form-check-input vinyl-checkbox-is-selected"
@@ -91,10 +116,10 @@
               </th>
               <td class="col-rpm">{{ vinyl.rpm }}</td>
               <td class="col-track" data-track-face="A" data-sort-value="{{ vinyl.trackFaceA|remove_accents|lower }}">
-                <span class="-vinyl-track-A">{{ vinyl.trackFaceA }}</span>&nbsp;<span class="-icon-play icon-play-circle"></span>
+                <span class="-vinyl-track-A">{{ vinyl.trackFaceA }}</span>&nbsp;<span class="-icon-play bi-play-circle"></span>
               </td>
               <td class="col-track" data-track-face="B" data-sort-value="{{ vinyl.trackFaceB|remove_accents|lower }}">
-                <span class="-vinyl-track-B">{{ vinyl.trackFaceB }}</span>&nbsp;<span class="-icon-play icon-play-circle"></span>
+                <span class="-vinyl-track-B">{{ vinyl.trackFaceB }}</span>&nbsp;<span class="-icon-play bi-play-circle"></span>
               </td>
               {% set artists_str = null %}
               {% if vinyl.artists is not empty %}
@@ -114,9 +139,9 @@
               <td class="col-quantity" data-vinyl-id="{{ vinyl.id }}">
                 {% if is_granted('ROLE_ADMIN') %}
                   <span class="form-control-quantity">
-                    <span class="btn-qty icon-minus-square{% if vinyl.quantity < 2 %} disabled{% endif %}" data-qty-type="-1"></span>
+                    <span class="btn-qty bi-dash-square{% if vinyl.quantity < 2 %} disabled{% endif %}" data-qty-type="-1"></span>
                     <span class="qty-amount">{{ vinyl.quantity }}</span>
-                    <span class="btn-qty icon-plus-square" data-qty-type="+1"></span>
+                    <span class="btn-qty bi-plus-square" data-qty-type="+1"></span>
                   </span>
                 {% else %}
                   {{ vinyl.quantity }}
@@ -125,9 +150,9 @@
               <td class="col-quantity -with-cover" data-vinyl-id="{{ vinyl.id }}" data-qty-type="cover" data-qty-value="{{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}">
                 {% if is_granted('ROLE_ADMIN') %}
                   <span class="form-control-quantity" data-qty-max="{{ vinyl.quantity }}">
-                    <span class="btn-qty icon-minus-square{% if vinyl.quantityWithCover < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
+                    <span class="btn-qty bi-dash-square{% if vinyl.quantityWithCover < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
                     <span class="qty-amount">{{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}</span>
-                    <span class="btn-qty icon-plus-square{% if vinyl.quantityWithCover >= vinyl.quantity %} disabled{% endif %}" data-qty-type="+1"></span>
+                    <span class="btn-qty bi-plus-square{% if vinyl.quantityWithCover >= vinyl.quantity %} disabled{% endif %}" data-qty-type="+1"></span>
                   </span>
                 {% else %}
                   {{ vinyl.quantityWithCover is null ? 0 : vinyl.quantityWithCover }}
@@ -136,9 +161,9 @@
               <td class="col-quantity -sold" data-vinyl-id="{{ vinyl.id }}" data-qty-type="sold">
                 {% if is_granted('ROLE_ADMIN') %}
                   <span class="form-control-quantity" data-qty-max="{{ vinyl.quantity }}">
-                    <span class="btn-qty icon-minus-square{% if vinyl.quantitySold < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
+                    <span class="btn-qty bi-dash-square{% if vinyl.quantitySold < 1 %} disabled{% endif %}" data-qty-type="-1"></span>
                     <span class="qty-amount">{{ vinyl.quantitySold }}</span>
-                    <span class="btn-qty icon-plus-square{% if vinyl.quantitySold >= vinyl.quantity %} disabled{% endif %}" data-qty-type="+1"></span>
+                    <span class="btn-qty bi-plus-square{% if vinyl.quantitySold >= vinyl.quantity %} disabled{% endif %}" data-qty-type="+1"></span>
                   </span>
                 {% else %}
                   {{ vinyl.quantitySold }}
@@ -159,7 +184,7 @@
                       {% if vinyl.images is not empty %}
                         {% if vinyl.notes is not empty %}<hr/>{% endif %}
                         <div class='vinyl-list-imgs row g-2{% if vinyl.notes is not empty %} mt-2{% endif %}'>
-                          <h4 class='h6 text-dark my-0 col-12'>Photo(s)</h4>
+                          <h4 class='h6 my-0 col-12'>Photo(s)</h4>
                           {% for img in vinyl.images %}
                             {% set img_url = asset(img.path) %}
                             <div class='col-3'>
@@ -172,20 +197,20 @@
                       {% endif %}
                   {% endset %}
 
-                  <button type="button" class="btn btn-sm btn-outline-primary{% if app_theme == 'dark' %} text-white{% endif %} px-2 py-1" data-bs-toggle="popover" data-bs-html="true" data-bs-placement="left"
+                  <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1" data-bs-toggle="popover" data-bs-html="true" data-bs-placement="left"
                     title="Infos supplémentaires" data-bs-content="{{ popover_content|spaceless }}">
-                     <span class="icon-file-plus"></span>
+                     <span class="bi-file-plus"></span>
                    </button>
                 {% endif %}
                 {% if is_granted('ROLE_ADMIN') %}
-                  <a class="btn btn-sm btn-outline-secondary{% if app_theme == 'dark' %} text-white{% endif %} px-2 py-1"
+                  <a class="btn btn-sm btn-outline-secondary px-2 py-1"
                     href="{{ path('home', { vinyl_id: vinyl.id }) }}">
-                    <span class="icon-edit"></span>
+                    <span class="bi-pencil-square"></span>
                   </a>
                   <button class="btn btn-sm btn-outline-danger px-2 py-1"
                     data-confirm-href="{{ path('vinyl_delete', { id: vinyl.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer ce vinyle ?<br>- Face A: <b>{{ vinyl.trackFaceA }}</b><br>- Face B: <b>{{ vinyl.trackFaceB }}</b><br><i>{{ artists_str }}</i>"
                       data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
-                    <span class="icon-trash"></span>
+                    <span class="bi-trash"></span>
                   </button>
                 {% endif %}
               </td>

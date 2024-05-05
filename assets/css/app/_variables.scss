@@ -6,7 +6,7 @@
 
 // // scss-docs-start gray-color-variables
 $white:    #fff;
-// $gray-100: #f8f9fa !default;
+$gray-100: #f8f9fa;
 $gray-200: #e9ecef;
 $gray-300: #dee2e6;
 $gray-400: #ced4da;
@@ -15,7 +15,7 @@ $gray-600: #6c757d;
 $gray-700: #495057;
 $gray-800: #343a40;
 $gray-900: #212529;
-// $black:    #000 !default;
+$black:    #000;
 // // scss-docs-end gray-color-variables
 //
 // // fusv-disable
@@ -72,7 +72,7 @@ $gray-900: #212529;
 // $info:          $cyan !default;
 // $warning:       $yellow !default;
 // $danger:        $red !default;
-// $light:         $gray-100 !default;
+$light:         $gray-100;
 $dark:          $gray-900;
 // // scss-docs-end theme-color-variables
 //
@@ -105,7 +105,8 @@ $border-width:                1px;
 //   5: 5px
 // ) !default;
 //
-// $border-color:                $gray-300 !default;
+// $border-color:                $gray-300;
+$border-color-translucent:    rgba($black, .125);
 // scss-docs-end border-variables
 
 // scss-docs-start border-radius-variables
@@ -154,9 +155,8 @@ $border-width:                1px;
 //
 // Settings for the `<body>` element.
 
-$body-bg:                   $dark !default;
-$body-color:                $gray-200 !default;
-
+$body-bg:                  $light;
+$body-color:               $gray-800;
 
 
 // Typography
@@ -269,15 +269,11 @@ $btn-border-radius-lg:        1.4rem;
 
 // Forms
 
-$input-color:                           $dark;
-$input-border-color:                    $white;
 $input-padding-x: .8rem;
 
 
 // Popover
 
-$popover-header-color:                  $gray-800;
-$popover-body-color:                    $dark;
 $popover-max-width:                     340px;
 
 
@@ -295,7 +291,7 @@ $popover-max-width:                     340px;
 // $modal-title-line-height:           $line-height-base !default;
 //
 // $modal-content-color:               null !default;
-$modal-content-bg:                  transparentize($dark, .15) !default;
+// $modal-content-bg:                  transparentize($dark, .15) !default;
 // $modal-content-border-color:        rgba($black, .2) !default;
 $modal-content-border-width:        $border-width;
 $modal-content-border-radius:       1rem;
@@ -360,7 +356,7 @@ $card-border-radius: .625rem;
 // $card-cap-color:                    null !default;
 // $card-height:                       null !default;
 // $card-color:                        null !default;
-// $card-bg:                           $white !default;
+// $card-bg:                           $white;
 // $card-img-overlay-padding:          $spacer !default;
 // $card-group-margin:                 $grid-gutter-width / 2 !default;
 

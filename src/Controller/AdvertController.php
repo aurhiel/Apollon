@@ -2,19 +2,14 @@
 
 namespace App\Controller;
 
-// Entities
-use App\Entity\Vinyl;
 use App\Entity\Image;
 use App\Entity\Advert;
 use App\Entity\InSale;
-
-// Forms
 use App\Form\AdvertType;
 use App\Form\BookingType;
 use App\Repository\AdvertRepository;
 use App\Repository\InSaleRepository;
 use App\Repository\VinylRepository;
-// Services
 use App\Service\FileUploader;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -78,7 +73,7 @@ class AdvertController extends AbstractController
                         'id_entity' => $advert->getId()
                     );
 
-                    // Assign added advert to re-used later
+                    // Assign added advert to re-use later
                     $advert_added = $advert;
 
                     // Assign vinyls to created advert
@@ -177,7 +172,7 @@ class AdvertController extends AbstractController
         // Get advert's vinyls by ID
         $advert_vinyls = [];
         if (null !== $advert->getId()) {
-            foreach ($advert->getInSales() as $key => $inSale) {
+            foreach ($advert->getInSales() as $inSale) {
                 $advert_vinyls[$inSale->getVinyl()->getId()] = $inSale;
             }
         }
@@ -189,6 +184,7 @@ class AdvertController extends AbstractController
             'user'              => $user,
             'form_advert'       => isset($form_advert) ? $form_advert->createView() : null,
             'adverts'           => $this->advertRepository->findAll(),
+            'nb_adverts_sold'   => $this->advertRepository->countAllSold(),
             'is_advert_edit'    => $is_edit,
             'advert_to_edit'    => $advert,
             'advert_vinyls'     => $advert_vinyls,

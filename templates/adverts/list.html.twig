@@ -3,24 +3,63 @@
 {% block body %}
   {% set price_vinyls_average = nb_vinyls_sold > 0 ? (total_prices_checkout / nb_vinyls_sold) : 0 %}
   <div class="container">
-    <h1 class="mb-{% if is_granted('ROLE_VIEWER') %}1{% else %}4{% endif %}">
-      <span class="icon-file-text text-primary"></span>
-      Liste des annonces{% if adverts is not empty %}
-      <small class="fw-normal text-muted">({{ adverts|length }})</small>{% endif %}
-    </h1>
     {% if is_granted('ROLE_VIEWER') %}
-      <p class="text-muted mb-2">
-        <b class="-total-vinyls-in-sale badge bg-primary rounded-pill">{{ nb_vinyls_in_sale }}</b> vinyle{% if nb_vinyls_in_sale > 1 %}s{% endif %} en vente -
-        Vendu{% if nb_vinyls_sold > 1 %}s{% endif %} : <b class="-total-vinyls-sold badge bg-primary rounded-pill">{{ nb_vinyls_sold }}</b> /
-        Total prévu : <b class="-total-price-to-get badge bg-primary rounded-pill">{{ total_prices }}€</b> -
-        Total perçu : <b class="-total-prices-got badge bg-primary rounded-pill">{{ total_prices_checkout }}€</b> -
-        Prix moy. / vinyle : <b class="-price-vinyls-average badge bg-primary rounded-pill">{{ price_vinyls_average|round(2) }}€</b> -
-        Prix moy. / annonce : <b class="-price-ads-average badge bg-primary rounded-pill" data-ads-qty="{{ adverts|length }}">{{ adverts|length > 0 ? (total_prices_checkout / adverts|length)|round(2) : 0 }}€</b>
-      </p>
-      <p class="text-muted mb-4">
-        Prévision total : <b class="-price-total-irma badge bg-warning text-dark rounded-pill">{{ ((price_vinyls_average * (total_vinyls - nb_vinyls_in_sale)) + total_prices)|round(2) }}€</b>
-      </p>
+      {% include 'components/statistics.html.twig' with {
+        grid_size : 'row-cols-sm-2 row-cols-md-3 row-cols-xl-6',
+        statistics : [
+          {
+            'label': nb_adverts_sold > 1 ? 'Annonces vendues' : 'Annonce vendue',
+            'amount': nb_adverts_sold,
+            'total': adverts|length,
+            'progress_bar': true
+          },
+          {
+            'label': 'Nb. vinyle vendu',
+            'amount': nb_vinyls_sold,
+            'total': nb_vinyls_in_sale,
+            'amount_css_class': '-total-vinyls-sold',
+            'total_css_class': '-total-vinyls-in-sale',
+            'progress_bar': true
+          },
+          {
+            'label': 'Total perçu / prévu',
+            'amount': total_prices_checkout,
+            'total': total_prices,
+            'amount_css_class': '-total-prices-got',
+            'total_css_class': '-total-price-to-get',
+            'progress_bar': true,
+            'currency': '€'
+          },
+          {
+            'label': 'Prix moyen / vinyle',
+            'amount': price_vinyls_average|round(2),
+            'amount_css_class': '-price-vinyls-average',
+            'currency': '€'
+          },
+          {
+            'label': 'Prix moyen / annonce',
+            'amount': (adverts|length > 0 ? (total_prices_checkout / adverts|length)|round(2) : 0),
+            'amount_attr': 'data-ads-qty=' ~ adverts|length,
+            'amount_css_class': '-price-ads-average',
+            'currency': '€'
+          },
+          {
+            'label': 'Prévision totale',
+            'amount': ((price_vinyls_average * (total_vinyls - nb_vinyls_in_sale)) + total_prices)|round(2),
+            'amount_css_class': '-price-total-irma',
+            'currency': '€',
+            'class': 'bg-warning'
+          }
+        ]
+      } %}
+      <hr>
     {% endif %}
+
+    <h1 class="mb-{% if is_granted('ROLE_VIEWER') %}1{% else %}4{% endif %}">
+      <span class="bi-file-earmark-text text-primary"></span>
+      Liste des annonces{% if adverts is not empty %}
+      <small class="fw-normal text-muted">({{ adverts|length - nb_adverts_sold }})</small>{% endif %}
+    </h1>
 
     {# Adverts list #}
     {% if adverts is not empty %}
@@ -34,11 +73,11 @@
         {% endfor %}
         <div class="-item col-12 col-lg-6 col-xxl-4{% if advert.isSold is not null and advert.isSold == true %} -is-sold{% endif %}"
           data-advert-id="{{ advert.id }}" data-advert-price="{{ advert.price }}" data-advert-total-qty="{{ advert_total_qty }}">
-          <div class="card text-dark">
+          <div class="card" data-bs-theme="light">
             <div class="card-header">
-              <h2 class="h5 mb-0 text-dark row align-items-center">
+              <h2 class="h5 mb-0 row align-items-center">
                 <div class="-item-title col-9 col-xl-10 col-xxl-9 pe-0">
-                  <a class="link-dark" href="{{ path('advert_infos', { id: advert.id, key: advert.key }) }}">
+                  <a href="{{ path('advert_infos', { id: advert.id, key: advert.key }) }}">
                     {{ advert.title }}
                     {% if is_granted('ROLE_ADMIN') and advert.name is not empty %}
                     <small class="d-inline-block text-muted fw-normal fst-italic">(pour: <b>{{ advert.name }}</b>)</small>
@@ -60,7 +99,7 @@
                 {% if advert.name is not empty and advert.inSales is not empty %}
                   {% set vinylsByArtists = advert.vinylsByArtists() %}
 
-                  <h6 class="text-dark mt-3 mb-1">Vinyle(s) choisi(s) :</h6>
+                  <h6 class="mt-3 mb-1">Vinyle(s) choisi(s) :</h6>
                   {% for artists, tracks in vinylsByArtists %}
                   <div{% if loop.last == false %} class="mb-2"{% endif %}>
                     {% if tracks|length > 1 %}
@@ -106,12 +145,12 @@
                 </div>
                 <div class="col-6 text-end">
                   <a href="{{ path('adverts', { id: advert.id }) }}" class="btn btn-sm btn-outline-secondary px-2 me-1">
-                    <span class="icon-edit"></span>
+                    <span class="bi-pencil-square"></span>
                   </a>
                   <button class="btn btn-sm btn-outline-danger" type="button"
                     data-confirm-href="{{ path('advert_delete', { id: advert.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer l'annonce <b>{{ advert.title }}</b> ?"
                       data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
-                    <span class="icon-file-minus me-1"></span>
+                    <span class="bi-file-earmark-minus me-1"></span>
                     Supprimer
                   </button>
                 </div>

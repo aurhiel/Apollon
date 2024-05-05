@@ -111,8 +111,8 @@
 
   .-item-vinyl {
     &.sold-out {
-      --bs-table-accent-bg: #{$gray-800};
-      color: $gray-700;
+      filter: grayscale(1);
+      opacity: .25;
     }
     &.disabled {
       pointer-events: none;

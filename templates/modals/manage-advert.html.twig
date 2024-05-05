@@ -12,17 +12,17 @@
             {# Form inputs #}
             <div class="form--inputs">
               <div class="row g-3">
-                <div class="col-12 col-md-5 col-lg-6 form-group">
+                <div class="col-12 col-md-5 col-lg-6 form-group" data-bs-theme="light">
                   {{ form_label(form_advert.title) }}
                   {{ form_widget(form_advert.title) }}
                   {{ form_errors(form_advert.title) }}
                 </div>
-                <div class="col-12 col-md-4 col-lg-3 form-group">
+                <div class="col-12 col-md-4 col-lg-3 form-group" data-bs-theme="light">
                   {{ form_label(form_advert.name) }}
                   {{ form_widget(form_advert.name) }}
                   {{ form_errors(form_advert.name) }}
                 </div>
-                <div class="col-12 col-md-3 col-lg-3 form-group">
+                <div class="col-12 col-md-3 col-lg-3 form-group" data-bs-theme="light">
                   {{ form_label(form_advert.price) }}
                   <div class="input-group">
                     {{ form_widget(form_advert.price) }}
@@ -31,13 +31,13 @@
                   {{ form_errors(form_advert.price) }}
                 </div>
 
-                <div class="col-12 form-group">
+                <div class="col-12 form-group" data-bs-theme="light">
                   {{ form_label(form_advert.description) }}
                   {{ form_widget(form_advert.description) }}
                   {{ form_errors(form_advert.description) }}
                 </div>
 
-                <div class="col-12 form-group form-multi-select">
+                <div class="col-12 form-group form-multi-select" data-bs-theme="light">
                   <legend class="col-form-label required">Vinyle(s) à vendre</legend>
                   <div class="border-0 p-0">
                     <ul class="list-group">
@@ -70,9 +70,9 @@
                             </div>
                             <div class="col-3 col-lg-2 text-center">
                               <span class="form-control-quantity" data-qty-max="{{ vinyl.quantityAvailable }}">
-                                <span class="btn-qty icon-minus-square{% if vinyl_qty <= 0 %} disabled{% endif %}" data-qty-type="-1"></span>
+                                <span class="btn-qty bi-dash-square{% if vinyl_qty <= 0 %} disabled{% endif %}" data-qty-type="-1"></span>
                                 <span class="qty-amount">{{ vinyl_qty }}</span>
-                                <span class="btn-qty icon-plus-square{% if vinyl_qty >= vinyl.quantityAvailable %} disabled{% endif %}" data-qty-type="+1"></span>
+                                <span class="btn-qty bi-plus-square{% if vinyl_qty >= vinyl.quantityAvailable %} disabled{% endif %}" data-qty-type="+1"></span>
                                 <input class="advert-vinyl-qty" type="hidden" name="advert_vinyl_qty[{{ vinyl.id }}][]"
                                   id="advert_vinyl_{{ vinyl.id }}_qty" value="{{ vinyl_qty }}">
                               </span>
@@ -89,7 +89,7 @@
                   </p>
                 </div>
 
-                <div class="col-12 form-group form-image-lib">
+                <div class="col-12 form-group form-image-lib" data-bs-theme="light">
                   {{ form_label(form_advert.images) }}
                   {{ form_widget(form_advert.images) }}
                   {{ form_errors(form_advert.images) }}

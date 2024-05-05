@@ -38,7 +38,17 @@ class AdvertRepository extends ServiceEntityRepository
         ;
     }
 
-    public function countTotalPrices($value='')
+    public function countAllSold()
+    {
+        return $this->createQueryBuilder('a')
+            ->select('COUNT(a)')
+            ->where('a.is_sold = true')
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
+    }
+
+    public function countTotalPrices()
     {
         return $this->createQueryBuilder('a')
             ->select('SUM(a.price) AS total_price')
@@ -47,7 +57,7 @@ class AdvertRepository extends ServiceEntityRepository
         ;
     }
 
-    public function countTotalPricesCheckout($value='')
+    public function countTotalPricesCheckout()
     {
         return $this->createQueryBuilder('a')
             ->select('SUM(a.price) AS total_price')

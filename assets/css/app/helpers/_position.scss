@@ -1,4 +1,12 @@
 // Positions
+//
+
+
+.sticky-top {
+  &.-after-header {
+    top: 3.8rem;
+  }
+}
 
 .sticky-bottom {
   position: sticky;

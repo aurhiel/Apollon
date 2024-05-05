@@ -4,7 +4,7 @@
   <div class="container">
     <h1 class="mb-4 row align-items-center">
       <div class="-item-title col-sm-9 col-xl-10 col-xxl-9 pe-0">
-        <span class="icon-file-text text-primary"></span>
+        <span class="bi-file-earmark-text text-primary"></span>
         {{ advert.title }}
         {% if is_granted('ROLE_ADMIN') and advert.name is not empty %}
         <small class="d-inline-block text-muted fw-normal fst-italic">(pour: <b>{{ advert.name }}</b>)</small>
@@ -17,9 +17,9 @@
     
     <div class="row">
       <div class="col-md-7 col-lg-8 mb-3 mb-md-0">
-        <div class="card text-dark">
+        <div class="card" data-bs-theme="light">
           <div class="card-header">
-            <h2 class="h5 mb-0 text-dark">
+            <h2 class="h5 mb-0">
               Description
             </h2>
           </div>
@@ -29,7 +29,7 @@
             {% if advert.name is not empty and advert.inSales is not empty %}
               {% set vinylsByArtists = advert.vinylsByArtists() %}
 
-              <h6 class="text-dark mt-3 mb-1">Vinyle(s) choisi(s) :</h6>
+              <h6 class="mt-3 mb-1">Vinyle(s) choisi(s) :</h6>
               {% for artists, tracks in vinylsByArtists %}
               <div{% if loop.last == false %} class="mb-2"{% endif %}>
                 {% if tracks|length > 1 %}
@@ -45,9 +45,9 @@
         </div>
       </div>
       <div class="col-md-5 col-lg-4">
-        <div class="card text-dark">
+        <div class="card" data-bs-theme="light">
           <div class="card-header">
-            <h2 class="h5 mb-0 text-dark">
+            <h2 class="h5 mb-0">
               Photos
             </h2>
           </div>

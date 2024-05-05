@@ -1,9 +1,16 @@
 // Bootstrap Libs
 //
 // Retrieve Bootstrap CSS libraries to use
+@import "~bootstrap/scss/mixins/banner";
+@include bsBanner("");
 
-// aka. Configuration
-@import "required";
+// Configuration
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/variables-dark";
+@import "~bootstrap/scss/maps";
+@import "~bootstrap/scss/mixins";
+@import "~bootstrap/scss/utilities";
 
 // Layout & components
 @import "~bootstrap/scss/root";
@@ -21,7 +28,7 @@
 @import "~bootstrap/scss/nav";
 @import "~bootstrap/scss/navbar";
 @import "~bootstrap/scss/card";
-@import "~bootstrap/scss/accordion";
+// @import "~bootstrap/scss/accordion";
 // @import "~bootstrap/scss/breadcrumb";
 // @import "~bootstrap/scss/pagination";
 @import "~bootstrap/scss/badge";
@@ -29,13 +36,14 @@
 @import "~bootstrap/scss/progress";
 @import "~bootstrap/scss/list-group";
 @import "~bootstrap/scss/close";
-@import "~bootstrap/scss/toasts";
+// @import "~bootstrap/scss/toasts";
 @import "~bootstrap/scss/modal";
 @import "~bootstrap/scss/tooltip";
 @import "~bootstrap/scss/popover";
 // @import "~bootstrap/scss/carousel";
-@import "~bootstrap/scss/spinners";
+// @import "~bootstrap/scss/spinners";
 @import "~bootstrap/scss/offcanvas";
+@import "~bootstrap/scss/placeholders";
 
 // Helpers
 @import "~bootstrap/scss/helpers";

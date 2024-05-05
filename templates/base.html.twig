@@ -2,16 +2,17 @@
 {% set domain = app.request.getSchemeAndHttpHost() %}
 {% set app_theme = app.request.cookies.get('APP_THEME') ?? 'light' %}
 {% set app_theme_reversed = app_theme == 'dark' ? 'light' : 'dark' %}
-{% set favicon = (app_theme == 'dark') ? 'favicon-dark.png' : 'favicon.png' %}
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="apple-touch-icon" href="/build/images/{{ favicon }}">
-    <link rel="icon" sizes="260x260" href="/build/images/{{ favicon }}">
-    <link rel="image_src" type="image/png" href="/build/images/{{ favicon }}">
+    <link rel="apple-touch-icon" href="/build/images/favicon.png" href-auto="/build/images/favicon.png" href-light="/build/images/favicon.png" href-dark="/build/images/favicon-dark.png">
+    <link rel="icon" sizes="260x260" href="/build/images/favicon.png" href-auto="/build/images/favicon.png" href-light="/build/images/favicon.png" href-dark="/build/images/favicon-dark.png">
+    <link rel="image_src" type="image/png" href="/build/images/favicon.png" href-auto="/build/images/favicon.png" href-light="/build/images/favicon.png" href-dark="/build/images/favicon-dark.png">
+    <meta name="theme-color" content="#f8f9fa" theme-color-dark="#212529" theme-color-light="#f8f9fa">
+    <meta name="apple-touch-fullscreen" content="yes">
 
     {# meta.title #}
     <title>
@@ -25,8 +26,7 @@
     </title>
 
     {# Base stylesheets #}
-    {% if app_theme == 'dark' %}{{ encore_entry_link_tags('app') }}
-    {% else %}{{ encore_entry_link_tags('app-' ~ app_theme) }}{% endif %}
+    {{ encore_entry_link_tags('app') }}
     <link rel="stylesheet" href="{{ asset('build/google-fonts.css') }}">
     {# Custom stylesheets from twig templates #}
     {% block stylesheets %}{% endblock %}
@@ -70,7 +70,7 @@
         <div class="-infos">
           <div class="-artist"></div>
           <div class="-title"></div>
-          <span class="-close icon-close"></span>
+          <span class="-close bi-x"></span>
         </div>
         <div class="-player ratio ratio-1x1">
           <iframe src="" frameborder="0"></iframe>

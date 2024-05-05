@@ -9,7 +9,6 @@
 // Libraries
 
 @import 'bootstrap/bootstrap';
-@import 'icomoon/icomoon';
 @import 'clipboardJS/clipboardJS';
 
 
@@ -20,18 +19,14 @@
 @import 'app/tables';
 @import 'app/card';
 @import 'app/ratio';
-@import 'app/link';
 @import 'app/lists';
 @import 'app/navbar';
-@import 'app/utilities';
-@import 'app/position';
 @import 'app/popover';
 
 
 // App helpers (position, ...)
 
 @import 'app/helpers';
-
 
 
 .app-logo {
@@ -44,13 +39,6 @@
   }
 }
 
-
-.app-body {
-  min-height: 80vh;
-}
-
-
-
 .bg-pattern {
   > * {
     position: relative;
@@ -59,13 +47,26 @@
 
   &:after {
     content: '';
+    background:
+      radial-gradient(50% 50% at 100% 0,#ffffff 0%  5% ,#000000 6%  15%,#ffffff 16% 25%,#000000 26% 35%,#ffffff 36% 45%,
+       #000000 46% 55%,#ffffff 56% 65%,#000000 66% 75%,#ffffff 76% 85%,#000000 86% 95%,
+       #0000 96%),
+      radial-gradient(50% 50% at 0 100%,#ffffff 0%  5% ,#000000 6%  15%,#ffffff 16% 25%,#000000 26% 35%,#ffffff 36% 45%,
+       #000000 46% 55%,#ffffff 56% 65%,#000000 66% 75%,#ffffff 76% 85%,#000000 86% 95%,
+       #0000 96%),
+      radial-gradient(50% 50%,#ffffff 0%  5% ,#000000 6%  15%,#ffffff 16% 25%,#000000 26% 35%,#ffffff 36% 45%,
+       #000000 46% 55%,#ffffff 56% 65%,#000000 66% 75%,#ffffff 76% 85%,#000000 86% 95%,
+       #0000 96%),
+      radial-gradient(50% 50%,#ffffff 0%  5% ,#000000 6%  15%,#ffffff 16% 25%,#000000 26% 35%,#ffffff 36% 45%,
+       #000000 46% 55%,#ffffff 56% 65%,#000000 66% 75%,#ffffff 76% 85%,#000000 86% 95%,
+       #0000 96%) 24px 24px;
+    background-size: 48px 48px;
     position: absolute;
-    background: url('../../public#{$theme-root-images}/bg/webb-dark.png');
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: .1;
+    opacity: .015;
     pointer-events: none;
   }
 
@@ -76,7 +77,17 @@
   }
 }
 
+.app-body {
+  min-height: 80vh;
+}
 
+.app-header {
+  z-index: 10;
+}
+
+.app-footer {
+  background-color: $light;
+}
 
 .app-player {
   position: sticky;
@@ -153,7 +164,6 @@
   }
 }
 
-
 .app-artist-single {
   .-artist-avatar {
     position: relative;
@@ -187,6 +197,9 @@
   }
 }
 
+.toolbox-selected-vinyls {
+  z-index: 1;
+}
 
 #modal-manage-advert {
   .form-control-quantity {
@@ -225,6 +238,19 @@
   }
 }
 
+
+//
+// Color modes
+
+@include color-mode(dark) {
+  .app-footer {
+    background-color: $dark;
+  }
+}
+
+
+//
+// Reponsive 
 
 @include media-breakpoint-up(md) {
   .app-player {
