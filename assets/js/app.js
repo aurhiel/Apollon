@@ -244,7 +244,7 @@ var app = {
       //
       // Bootstrap
       // BS: Tooltips
-      // self.$body.find('[data-bs-toggle="tooltip"]').tooltip();
+      self.$body.find('[data-bs-toggle="tooltip"]').tooltip();
       // BS: Popovers - Update allow list
       var myDefaultAllowList = Popover.Default.allowList;
       myDefaultAllowList.span = ['style'];
@@ -585,7 +585,7 @@ var app = {
 
           // Add total vinyls selected & update min price
           self.$booking_total_selected.html(total_selected);
-          self.$booking_input_price.attr('min', total_selected).val(total_selected);
+          self.$booking_input_price.attr('min', total_selected); // .val(total_selected);
 
           // Create booking title ...
           if (booking_title == '') {

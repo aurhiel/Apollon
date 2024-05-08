@@ -21,6 +21,7 @@ form_booking :
   price :
     label       : "Proposition de prix"
     placeholder : ""
+    help_text   : "Vous pouvez me faire une proposition pour le vinyle ou le lot que vous avez sélectionné, une fois la réservation faite je vérifierai l'état du ou des vinyles ainsi que leur côte à l'aide du site discogs.com"
   save:
     label: Réserver
 

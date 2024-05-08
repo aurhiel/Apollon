@@ -172,7 +172,10 @@ class AppController extends AbstractController
 
             if ($imgGoogled) {
                 $artist_slug = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $artist->getName());
-                $avatarFileName = $fileUploader->upload($imgGoogled, '/avatars', $artist_slug . '.' . pathinfo($imgGoogled, PATHINFO_EXTENSION));
+                $avatarFileName = $fileUploader->upload(
+                    $imgGoogled, 
+                    '/avatars', $artist_slug . '.' . pathinfo(parse_url($imgGoogled, PHP_URL_PATH), PATHINFO_EXTENSION),
+                );
                 $artist->setAvatarFilename($avatarFileName);
 
                 // Persist & flush new artist's avatar
@@ -366,7 +369,7 @@ class AppController extends AbstractController
 
     private function searchArtistPhoto(HttpClientInterface $client, string $artist_name)
     {
-        $base_url = 'https://customsearch.googleapis.com/customsearch/v1?key='. $this->getParameter('g_auth_key') . '&cx=' . $this->getParameter('g_search_cx') . '&searchType=image&imgSize=medium&num=1';
+        $base_url = 'https://customsearch.googleapis.com/customsearch/v1?key='. $this->getParameter('g_auth_key') . '&cx=' . $this->getParameter('g_search_cx') . '&searchType=image&imgSize=medium';
         $img_url = false;
 
         // Check if $client and $artist_name are correctly defined
@@ -374,18 +377,26 @@ class AppController extends AbstractController
             // Search for an artist photo on Google
             $response = $client->request(
                 'GET',
-                $base_url . '&q=' . $artist_name
+                $base_url . '&q=music%20artist%20"' . $artist_name . '"'
             );
 
             if ($response->getStatusCode() == 200) {
                 $r_array = $response->toArray();
-
                 $img_url = null;
+
                 // Check if there is some results > retrieve & download artist photo
-                if (!empty($r_array) && isset($r_array['items']) && isset($r_array['items'][0]))
-                    $img_url = $r_array['items'][0]['link'];
+                if (!empty($r_array) && isset($r_array['items']) && count($r_array['items']) > 0) {
+                    // TODO: Loop on items to avoid wikimedia.org ! (or when 403 ? But need to ping...)
+                    foreach ($r_array['items'] as $item) {
+                        if (false === str_contains($item['link'], 'wikimedia.org')) {
+                            $img_url = $item['link'];
+                            break;
+                        }
+                    }
+                }
             } else {
-                dump($response->getStatusCode(), $response->getInfo());
+                // dump($response->getStatusCode(), $response->getInfo());
+                // exit;
             }
         }
 

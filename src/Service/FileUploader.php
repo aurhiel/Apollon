@@ -35,7 +35,7 @@ class FileUploader
                 // Copy file from URL (type string = external URL)
                 copy($file, $finalPath . '/' . $fileName);
             } catch (\Exception $e) {
-                // ... handle exception if something happens during file upload
+                // ... handle exception if something happens during file upload (file KO, 403 forbidden, ...)
                 // dump($file, $finalPath . '/' . $fileName, $e);
                 // exit;
                 $fileName = null;

@@ -12,13 +12,15 @@
             <div class="form--inputs">
               {{ form_widget(form_booking.title) }}
               <div class="row g-3">
-                <div class="col-12 col-sm-8 col-lg-9 form-group" data-bs-theme="light">
+                <div class="col-12 col-sm-7 col-lg-9 form-group" data-bs-theme="light">
                   {{ form_label(form_booking.name) }}
                   {{ form_widget(form_booking.name) }}
                   {{ form_errors(form_booking.name) }}
                 </div>
-                <div class="col-12 col-sm-4 col-lg-3 form-group" data-bs-theme="light">
+                <div class="col-12 col-sm-5 col-lg-3 form-group" data-bs-theme="light">
                   {{ form_label(form_booking.price) }}
+                  <span title="{{ 'form_booking.price.help_text'|trans }}" 
+                    class="icon bi-info-circle text-warning ms-1" data-bs-toggle="tooltip"></span>
                   <div class="input-group">
                     {{ form_widget(form_booking.price) }}
                     <span class="input-group-text fw-bold px-3">€</span>

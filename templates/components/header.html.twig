@@ -51,21 +51,21 @@
               <li>
                 <button type="button" class="dropdown-item" data-bs-theme-value="light" aria-pressed="false">
                   <span class="bi-sun-fill me-md-2 opacity-50 theme-icon"><use href="#sun-fill"></use></span>
-                  <span class="d-none d-md-inline">Clair</span>
+                  Clair
                   <span class="bi-check2 ms-auto d-none"><use href="#check2"></use></span>
                 </button>
               </li>
               <li>
                 <button type="button" class="dropdown-item" data-bs-theme-value="dark" aria-pressed="false">
                   <span class="bi-moon-stars-fill me-md-2 opacity-50 theme-icon"><use href="#moon-stars-fill"></use></span>
-                  <span class="d-none d-md-inline">Sombre</span>
+                  Sombre
                   <span class="bi-check2 ms-auto d-none"><use href="#check2"></use></span>
                 </button>
               </li>
               <li>
                 <button type="button" class="dropdown-item active" data-bs-theme-value="auto" aria-pressed="false">
                   <span class="bi-circle-half me-md-2 opacity-50 theme-icon"><use href="#circle-half"></use></span>
-                  <span class="d-none d-md-inline">Auto</span>
+                  Auto
                   <span class="bi-check2 ms-auto d-none"><use href="#check2"></use></span>
                 </button>
               </li>
@@ -73,25 +73,25 @@
           </div>
         {% if is_granted('ROLE_ADMIN') %}
           {% if has_form_artist == true %}
-            <button class="btn btn-sm btn-outline-primary px-2 px-md-4 ms-2 ms-md-3" type="button"
+            <button class="btn btn-sm btn-outline-primary px-2 px-md-4 ms-sm-2 ms-md-3" type="button"
               name="toggle-modal-form-artist" data-bs-toggle="modal" data-bs-target="#modal-manage-artist">
               <span class="bi-person-add me-md-1"></span><span class="d-none d-md-inline"> artiste</span>
             </button>
           {% endif %}
           {% if has_form_vinyl == true %}
-            <button class="btn btn-sm btn-outline-primary px-2 px-md-4 ms-2 ms-md-3" type="button"
+            <button class="btn btn-sm btn-outline-primary px-2 px-md-4 ms-sm-2 ms-md-3" type="button"
               name="toggle-modal-form-vinyl" data-bs-toggle="modal" data-bs-target="#modal-manage-vinyl">
               <span class="bi-plus-circle me-md-1"></span><span class="d-none d-md-inline"> vinyle</span>
             </button>
           {% endif %}
           {% if has_form_advert == true %}
-            <button class="btn btn-sm btn-outline-primary px-2 px-md-4 ms-2 ms-md-3" type="button"
+            <button class="btn btn-sm btn-outline-primary px-2 px-md-4 ms-sm-2 ms-md-3" type="button"
               name="toggle-modal-form-advert" data-bs-toggle="modal" data-bs-target="#modal-manage-advert">
               <span class="bi-file-earmark-plus me-md-1"></span><span class="d-none d-md-inline"> annonce</span>
             </button>
           {% endif %}
         {% else %}
-          <a class="btn btn-sm btn-outline-primary px-3 px-md-4 ms-2 ms-md-3" href="tel:0695064091">
+          <a class="btn btn-sm btn-outline-primary px-3 px-md-4 ms-sm-2 ms-md-3" href="tel:0695064091">
             <span class="bi-telephone me-1"></span> 06 95 06 40 91
           </a>
         {% endif %}
@@ -100,7 +100,7 @@
 
       {% block user %}
         {% if user is defined and user.username is defined %}
-          <div class="navbar-user small border-start border-secondary ps-1 ms-2 ps-md-3 ms-md-4">
+          <div class="navbar-user small border-start border-secondary ps-1 ps-md-3 ms-1 ms-sm-2 ms-md-4">
             <span class="-hello text-muted">Hi, </span>
             <span class="-name text-capitalize">{{ user.username }}{% if user.username == 'losovia' %} 💕{% elseif user.username == 'anderson' %} 🌱{% endif %}</span>
           </div>
