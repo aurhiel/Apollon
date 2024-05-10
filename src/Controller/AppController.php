@@ -386,7 +386,7 @@ class AppController extends AbstractController
 
                 // Check if there is some results > retrieve & download artist photo
                 if (!empty($r_array) && isset($r_array['items']) && count($r_array['items']) > 0) {
-                    // TODO: Loop on items to avoid wikimedia.org ! (or when 403 ? But need to ping...)
+                    // Loop on items to avoid wikimedia.org ! (or when 403 ? But need to ping...)
                     foreach ($r_array['items'] as $item) {
                         if (false === str_contains($item['link'], 'wikimedia.org')) {
                             $img_url = $item['link'];

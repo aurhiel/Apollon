@@ -1,0 +1,5 @@
+parameters:
+  app.admin.name: '%env(ADMIN_NAME)%'
+  app.admin.email: '%env(ADMIN_EMAIL)%'
+  app.contact.name: '%env(MAILER_CONTACT_NAME)%'
+  app.contact.email: '%env(MAILER_CONTACT_EMAIL)%'

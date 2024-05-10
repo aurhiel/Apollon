@@ -18,47 +18,63 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Bridge\Twig\Mime\BodyRenderer;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Twig\Environment;
 
 class AdvertController extends AbstractController
 {
     private AdvertRepository $advertRepository;
     private InSaleRepository $inSaleRepository;
     private VinylRepository $vinylRepository;
+    private MailerInterface $mailer;
+    private Environment $twig;
+    private KernelInterface $kernel;
 
     public function __construct(
         AdvertRepository $advertRepository,
         InSaleRepository $inSaleRepository,
-        VinylRepository $vinylRepository
+        VinylRepository $vinylRepository,
+        MailerInterface $mailer,
+        Environment $twig,
+        KernelInterface $kernel
     ) {
         $this->advertRepository = $advertRepository;
         $this->inSaleRepository = $inSaleRepository;
         $this->vinylRepository = $vinylRepository;
+        $this->mailer = $mailer;
+        $this->twig = $twig;
+        $this->kernel = $kernel;
     }
 
     /**
      * @Route("/annonces/{id}", name="adverts", defaults={"id"=null})
      */
-    public function adverts($id, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader)
+    public function adverts(?int $id, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader)
     {
         $em = $this->getDoctrine()->getManager();
         $user = $security->getUser();
 
         // Retrieve advert if asked ($advert_entity != null) or new one
-        $advert_edit = $this->advertRepository->findOneById($id);
-        $is_edit = !is_null($advert_edit);
-        $advert = ($is_edit === true) ? $advert_edit : new Advert();
+        $advertEdit = $this->advertRepository->findOneById($id);
+        $isEdit = !is_null($advertEdit);
+        $advert = ($isEdit === true) ? $advertEdit : new Advert();
 
         // Only admin user can add vinyls & artists
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
             // 1) Build advert forms
-            $form_advert = $this->createForm(AdvertType::class, $advert);
+            $formAdvert = $this->createForm(AdvertType::class, $advert);
 
             // 2) Handle advert forms
-            $form_advert->handleRequest($request);
+            $formAdvert->handleRequest($request);
 
             // 3) Save advert
-            if ($form_advert->isSubmitted() && $form_advert->isValid()) {
+            if ($formAdvert->isSubmitted() && $formAdvert->isValid()) {
                 $em->persist($advert);
 
                 // 4) Try to save (flush) or clear
@@ -69,28 +85,28 @@ class AdvertController extends AbstractController
                     $return = array(
                         'query_status' => 1,
                         'slug_status' => 'success',
-                        'message_status' => (($is_edit === true) ? 'Modification' : 'Ajout' ) . ' de l\'annonce effectuée avec succès.',
+                        'message_status' => (($isEdit === true) ? 'Modification' : 'Ajout' ) . ' de l\'annonce effectuée avec succès.',
                         'id_entity' => $advert->getId()
                     );
 
                     // Assign added advert to re-use later
-                    $advert_added = $advert;
+                    // $advertAdded = $advert;
 
                     // Assign vinyls to created advert
-                    $vinyls_qty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
-                    $vinyls = $this->vinylRepository->findById(array_keys($vinyls_qty));
+                    $vinylsQty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
+                    $vinyls = $this->vinylRepository->findById(array_keys($vinylsQty));
                     // Remove old vinyls "in sale"
                     foreach ($advert->getInSales() as $inSale) {
                         $em->remove($inSale);
                     }
                     foreach ($vinyls as $vinyl) {
-                        $vinyl_qty  = ((isset($vinyls_qty[$vinyl->getId()]) && isset($vinyls_qty[$vinyl->getId()][0])) ? (int)$vinyls_qty[$vinyl->getId()][0] : 0);
-                        $inSale     = new InSale();
+                        $quantity = ((isset($vinylsQty[$vinyl->getId()]) && isset($vinylsQty[$vinyl->getId()][0])) ? (int) $vinylsQty[$vinyl->getId()][0] : 0);
+                        $inSale = new InSale();
 
-                        if ($vinyl_qty > 0) {
+                        if ($quantity > 0) {
                             $inSale->setVinyl($vinyl);
                             $inSale->setAdvert($advert);
-                            $inSale->setQuantity($vinyl_qty);
+                            $inSale->setQuantity($quantity);
 
                             // Persist new vinyl in sale
                             $em->persist($inSale);
@@ -99,7 +115,7 @@ class AdvertController extends AbstractController
                     $em->flush();
 
                     // Upload advert images
-                    $images = $form_advert->get('images')->getData();
+                    $images = $formAdvert->get('images')->getData();
                     foreach ($images as $imgData) {
                         // Upload new advert image
                         $imageFileName = $fileUploader->upload($imgData, '/adverts/'.$advert->getId());
@@ -116,8 +132,8 @@ class AdvertController extends AbstractController
                     $em->flush();
 
                     // Clear/reset form
-                    $advert       = new Advert();
-                    $form_advert  = $this->createForm(AdvertType::class, $advert);
+                    $advert = new Advert();
+                    $formAdvert = $this->createForm(AdvertType::class, $advert);
                 } catch (\Exception $e) {
                     // Something goes wrong
                     $em->clear();
@@ -128,7 +144,7 @@ class AdvertController extends AbstractController
                         'exception' => $e->getMessage() . ', at line: '.$e->getLine(),
                         'message_status' => sprintf(
                           'Un problème est survenu lors de la %s de l\'annonce.',
-                          ($is_edit === true ? 'modification' : 'sauvegarde')
+                          ($isEdit === true ? 'modification' : 'sauvegarde')
                         ),
                     );
                 }
@@ -136,20 +152,22 @@ class AdvertController extends AbstractController
 
             // Set flash message if $return has message_status
             if (isset($return['message_status']) && !empty($return['message_status'])) {
-                $request->getSession()->getFlashBag()->add(
+                /** @var Session $session */
+                $session = $request->getSession();
+                $session->getFlashBag()->add(
                     (isset($return['slug_status']) ? $return['slug_status'] : 'notice'),
                     $return['message_status']
                 );
 
                 // Redirect on adverts home after editing one
-                if ($is_edit === true)
+                if ($isEdit === true)
                     return $this->redirectToRoute('adverts');
             }
         }
 
         // Retrieve vinyls to use in advert form and create "InSale" related to a new advert
-        $vinyls_to_sale = $this->vinylRepository->findAllAvailableForSale();
-        usort($vinyls_to_sale, function($a, $b) {
+        $vinylsToSale = $this->vinylRepository->findAllAvailableForSale();
+        usort($vinylsToSale, function($a, $b) {
             $a_str = null;
             $b_str = null;
             $a_first_artist = $a->getArtists()->first();
@@ -170,10 +188,10 @@ class AdvertController extends AbstractController
         });
 
         // Get advert's vinyls by ID
-        $advert_vinyls = [];
+        $advertVinyls = [];
         if (null !== $advert->getId()) {
             foreach ($advert->getInSales() as $inSale) {
-                $advert_vinyls[$inSale->getVinyl()->getId()] = $inSale;
+                $advertVinyls[$inSale->getVinyl()->getId()] = $inSale;
             }
         }
 
@@ -182,14 +200,14 @@ class AdvertController extends AbstractController
                 'title' => 'Annonces'
             ],
             'user'              => $user,
-            'form_advert'       => isset($form_advert) ? $form_advert->createView() : null,
+            'form_advert'       => isset($formAdvert) ? $formAdvert->createView() : null,
             'adverts'           => $this->advertRepository->findAll(),
             'nb_adverts_sold'   => $this->advertRepository->countAllSold(),
-            'is_advert_edit'    => $is_edit,
+            'is_advert_edit'    => $isEdit,
             'advert_to_edit'    => $advert,
-            'advert_vinyls'     => $advert_vinyls,
+            'advert_vinyls'     => $advertVinyls,
             'total_vinyls'      => $this->vinylRepository->countAll(),
-            'vinyls_to_sale'    => $vinyls_to_sale,
+            'vinyls_to_sale'    => $vinylsToSale,
             'nb_vinyls_in_sale' => $this->inSaleRepository->countVinylsInSale(),
             'nb_vinyls_sold'    => $this->vinylRepository->countVinylsSold(),
             'total_prices'      => (float) $this->advertRepository->countTotalPrices(),
@@ -262,7 +280,9 @@ class AdvertController extends AbstractController
 
         // Set flash message if $return has message_status
         if (isset($return['message_status']) && !empty($return['message_status'])) {
-            $request->getSession()->getFlashBag()->add(
+            /** @var Session $session */
+            $session = $request->getSession();
+            $session->getFlashBag()->add(
                 (isset($return['slug_status']) ? $return['slug_status'] : 'notice'),
                 $return['message_status']
             );
@@ -276,18 +296,18 @@ class AdvertController extends AbstractController
      * @Route("/annonces/{id}/est-vendue/{isSold}", name="advert_update_is_sold")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function advert_update_is_sold($id, $isSold, Request $request)
+    public function advert_update_is_sold(int $id, string $isSold, Request $request)
     {
         $em = $this->getDoctrine()->getManager();
         $advert = $this->advertRepository->findOneById($id);
 
         if ($advert !== null) {
             try {
-                $advert_is_sold = ($isSold === '1');
+                $isSold = ($isSold === '1');
                 // Update advert is sold or not
-                $advert->setIsSold($advert_is_sold);
+                $advert->setIsSold($isSold);
 
-                // TODO Retrieve vinyls & update their quantities
+                // Retrieve vinyls & update their quantities
                 $inSales = $advert->getInSales();
                 foreach ($inSales as $is) {
                   $vinyl    = $is->getVinyl();
@@ -296,7 +316,7 @@ class AdvertController extends AbstractController
                   $qty_sold     = $is->getQuantity();
 
                   // Up / Down vinyls quantity sold
-                  if ($advert_is_sold == true) {
+                  if ($isSold == true) {
                       if ($old_qty_sold + $qty_sold <= $max_qty)
                           $vinyl->setQuantitySold($old_qty_sold + $qty_sold);
                   } else {
@@ -312,7 +332,7 @@ class AdvertController extends AbstractController
                 $return = array(
                     'query_status' => 1,
                     'slug_status' => 'success',
-                    'message_status' => (($advert_is_sold) ? 'L\'annonce a bien été passée à l\'état vendue.' : 'L\'annonce est de nouveau en vente.')
+                    'message_status' => ($isSold ? 'L\'annonce a bien été passée à l\'état vendue.' : 'L\'annonce est de nouveau en vente.')
                 );
             } catch (\Exception $e) {
                 $return = array(
@@ -322,7 +342,6 @@ class AdvertController extends AbstractController
                     'message_status' => 'Un problème est survenu lors du changement de l\'état est vendu de l\'annonce.'
                 );
             }
-
         } else {
             $return = array(
                 'query_status' => 0,
@@ -335,10 +354,14 @@ class AdvertController extends AbstractController
         if ($request->isXmlHttpRequest()) {
             return $this->json($return);
         } else {
-            // Set message in flashbag on direct access
-            $request->getSession()->getFlashBag()->add($return['slug_status'], $return['message_status']);
+            /**
+             * Set message in flashbag on direct access & then redirect
+             *  
+             * @var Session $session
+             */
+            $session = $request->getSession();
+            $session->getFlashBag()->add($return['slug_status'], $return['message_status']);
 
-            // No direct access
             return $this->redirectToRoute('adverts');
         }
     }
@@ -348,12 +371,12 @@ class AdvertController extends AbstractController
      */
     public function booking(Request $request): Response
     {
-        $em = $this->getDoctrine()->getManager();
         $booking = new Advert();
-        $form_booking = $this->createForm(BookingType::class, $booking);
+        $formBooking = $this->createForm(BookingType::class, $booking);
 
-        $form_booking->handleRequest($request);
-        if ($form_booking->isSubmitted() && $form_booking->isValid()) {
+        $formBooking->handleRequest($request);
+        if ($formBooking->isSubmitted() && $formBooking->isValid()) {
+            $em = $this->getDoctrine()->getManager();
             $em->persist($booking);
 
             // Try to save (flush) or clear
@@ -368,16 +391,16 @@ class AdvertController extends AbstractController
                 ];
 
                 // Assign vinyls to created advert
-                $vinyls_qty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
-                $vinyls = $this->vinylRepository->findById(array_keys($vinyls_qty));
+                $vinylsQty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
+                $vinyls = $this->vinylRepository->findById(array_keys($vinylsQty));
                 foreach ($vinyls as $vinyl) {
-                    $vinyl_qty  = ((isset($vinyls_qty[$vinyl->getId()]) && isset($vinyls_qty[$vinyl->getId()][0])) ? (int)$vinyls_qty[$vinyl->getId()][0] : 0);
-                    $inSale     = new InSale();
+                    $quantity = ((isset($vinylsQty[$vinyl->getId()]) && isset($vinylsQty[$vinyl->getId()][0])) ? (int) $vinylsQty[$vinyl->getId()][0] : 0);
+                    $inSale = new InSale();
 
-                    if ($vinyl_qty > 0) {
+                    if ($quantity > 0) {
                         $inSale->setVinyl($vinyl);
                         $inSale->setAdvert($booking);
-                        $inSale->setQuantity($vinyl_qty);
+                        $inSale->setQuantity($quantity);
 
                         // Persist & flush new vinyl in sale
                         $em->persist($inSale);
@@ -386,6 +409,44 @@ class AdvertController extends AbstractController
 
                 // Flush vinyls in database
                 $em->flush();
+
+                try {
+                    $booking = $request->get('booking');
+                    $this->reorderVinylsByArtists($vinyls);
+
+                    // Send email to notify admin
+                    $email = (new TemplatedEmail())
+                        ->from(new Address($this->getParameter('app.admin.email'), $this->getParameter('app.admin.name')))
+                        ->to(new Address($this->getParameter('app.contact.email'), $this->getParameter('app.contact.name')))
+                        ->subject('Nouvelle réservation de vinyle !')
+    
+                        ->htmlTemplate('emails/new-booking.html.twig')
+                        ->textTemplate('emails/new-booking.text.twig')
+    
+                        ->context([
+                            'booking' => [
+                                'customer_name' => $booking['name'],
+                                'description' => $booking['description'],
+                                'price' => $booking['price']
+                            ],
+                            'vinyls_selected' => $vinyls,
+                        ])
+                    ;
+
+                    // Debug purpose only on dev env.
+                    if ('dev' === $this->kernel->getEnvironment() && false) {
+                        $renderer = new BodyRenderer($this->twig);
+                        $renderer->render($email);
+
+                        echo $email->getHtmlBody();
+                        exit;
+                    }
+    
+                    $this->mailer->send($email);
+                    
+                    $return['message_status'] = 'Réservation effectuée avec succès, un email a été envoyé, vous serez contacté au plus vite !';
+                } catch (\Exception $e) {
+                }
             } catch (\Exception $e) {
                 $em->clear();
 
@@ -399,7 +460,9 @@ class AdvertController extends AbstractController
 
             // Set flash message if $return has message_status
             if (isset($return['message_status']) && !empty($return['message_status'])) {
-                $request->getSession()->getFlashBag()->add(
+                /** @var Session $session */
+                $session = $request->getSession();
+                $session->getFlashBag()->add(
                     (isset($return['slug_status']) ? $return['slug_status'] : 'notice'),
                     $return['message_status']
                 );
@@ -409,7 +472,30 @@ class AdvertController extends AbstractController
         return $this->redirectToRoute('home');
     }
 
-    private function removeAccents(&$string)
+    private function reorderVinylsByArtists(array &$vinyls): void
+    {
+        usort($vinyls, function($a, $b) {
+            $a_str = null;
+            $b_str = null;
+            $a_first_artist = $a->getArtists()->first();
+            $b_first_artist = $b->getArtists()->first();
+            // Check if an artist is defined
+            if (is_object($a_first_artist) && is_object($b_first_artist)) {
+                $a_str = $a_first_artist->getName();
+                $b_str = $b_first_artist->getName();
+            }
+
+            // Remove accents
+            $this->removeAccents($a_str);
+            $this->removeAccents($b_str);
+
+            // Re-order only if "a" and "b" string are defined
+            if (!is_null($a_str) && !is_null($b_str))
+                return strcmp($a_str, $b_str);
+        });
+    }
+
+    private function removeAccents(string &$string): string
     {
         $string = strtr(utf8_decode($string), utf8_decode('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ'), 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
         return $string;

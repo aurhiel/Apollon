@@ -1,7 +1,5 @@
 {# default twig values #}
 {% set domain = app.request.getSchemeAndHttpHost() %}
-{% set app_theme = app.request.cookies.get('APP_THEME') ?? 'light' %}
-{% set app_theme_reversed = app_theme == 'dark' ? 'light' : 'dark' %}
 <!DOCTYPE html>
 <html>
   <head>

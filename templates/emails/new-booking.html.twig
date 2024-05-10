@@ -1,0 +1,55 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block body %}
+  {% set customer_sentence %}
+    {% if booking.customer_name is not empty %}
+      <b>{{ booking.customer_name|capitalize }}</b> a effectué·e
+    {% else %}
+      Une personne a effectuée
+    {% endif %}
+  {% endset %}
+  {% set price_sentence %}
+    {% if booking.price is not empty %}
+      , pour un montant de <b>{{ booking.price }}€</b>.
+    {% else %}
+      .
+    {% endif %}
+  {% endset %}
+  {% if vinyls_selected|length > 1 %}
+    {{ customer_sentence }} une réservation de {{ vinyls_selected|length }} vinyles{{ price_sentence|trim|raw }}
+  {% else %}
+    {{ customer_sentence }} une réservation pour un vinyle{{ price_sentence|trim|raw }}
+  {% endif %}
+
+  {% if booking.description is not empty %}
+    <h4 class="mb-1">Info. supplémentaires fournies / demandées</h4>
+    <div class="fst-italic">{{ booking.description }}</div>
+  {% endif %}
+
+  <hr>
+
+  <h3 class="mb-1">Voici {% if vinyls_selected|length > 1 %}la liste des vinyles sélectionnés{% else %}le vinyle sélectionné{% endif %}:</h3>
+  
+  {% set last_artists_str = null %}
+  <div class="table-stretched">
+    <table>
+      <tr>
+        <th>Artiste(s)</th>
+        <th>Faces A / B</th>
+      </tr>
+      {% for vinyl in vinyls_selected %}
+        {% set artists_str = null %}
+        {% if vinyl.artists is not empty %}
+          {% for artist in vinyl.artists %}
+            {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
+          {% endfor %}
+        {% endif %}
+        <tr>
+          <td>{% if last_artists_str != artists_str %}{{ artists_str }}{% endif %}</td>
+          <td>{{ vinyl.trackFaceA }} / {{ vinyl.trackFaceB }}</td>
+        </tr>
+        {% set last_artists_str = artists_str %}
+      {% endfor %}
+    </table>
+  </div>
+{% endblock %}

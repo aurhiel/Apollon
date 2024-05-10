@@ -10,7 +10,7 @@ security:
     providers:
         users_in_memory:
             memory:
-                users :
+                users:
                     anderson: { password: '%env(ADMIN_PASSWORD)%', roles: [ 'ROLE_ADMIN' ] }
                     losovia: { password: '%env(LOSOVIA_PASSWORD)%', roles: [ 'ROLE_VIEWER' ] }
     firewalls:
