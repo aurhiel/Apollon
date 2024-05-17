@@ -1,4 +1,4 @@
-{% set is_home = (app.request.attributes.get('_route') == 'home') %}
+{% set _route = app.request.attributes.get('_route') %}
 {% set has_form_artist = (form_artist is defined and form_artist is not empty) %}
 {% set has_form_vinyl = (form_vinyl is defined and form_vinyl is not empty) %}
 {% set has_form_advert = (form_advert is defined and form_advert is not empty) %}
@@ -15,7 +15,7 @@
 
       {% block nav_brand %}
         <a class="navbar-brand me-auto ms-2 ms-md-0 me-md-3" href="{{ path('home') }}">
-          {% include 'components/logo.html.twig' %}
+          {% include 'components/logo.html.twig' with { is_home: _route == 'home' } %}
         </a>
       {% endblock %}
 
@@ -24,13 +24,13 @@
         {% block nav %}
           <ul class="navbar-nav pt-3 pt-md-0">
             <li class="nav-item">
-              <a class="nav-link{% if (app.request.attributes.get('_route') == 'artists') %} active{% endif %}"
+              <a class="nav-link{% if (_route == 'artists' or _route == 'artist_infos') %} active{% endif %}"
                 href="{{ path('artists') }}">
                 Artistes
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link{% if (app.request.attributes.get('_route') == 'adverts') %} active{% endif %}"
+              <a class="nav-link{% if (_route == 'adverts' or _route == 'advert_infos') %} active{% endif %}"
                 href="{{ path('adverts') }}">
                 Annonces
               </a>

@@ -5,9 +5,8 @@
   <img src="{{ asset('/images/logo.png') }}" class="shuri-logo shuri-logo--no-script" alt="Logo de {{ identity.last_name }} {{ identity.first_name }}">
 </noscript>
 #}
-{% set is_home = app.request.attributes.get('_route') == 'home' %}
 
 {# SVG Logo #}
 <span class="app-logo">
-  Apo<span{% if is_home %} class="text-primary"{% endif %}>.</span>
+  Apo<span{% if is_home is defined and is_home == true %} class="text-primary"{% endif %}>.</span>
 </span>

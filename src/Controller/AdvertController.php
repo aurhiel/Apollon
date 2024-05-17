@@ -196,7 +196,7 @@ class AdvertController extends AbstractController
         }
 
         return $this->render('adverts/list.html.twig', [
-            'meta'    => [
+            'meta' => [
                 'title' => 'Annonces'
             ],
             'user'              => $user,
@@ -206,24 +206,24 @@ class AdvertController extends AbstractController
             'is_advert_edit'    => $isEdit,
             'advert_to_edit'    => $advert,
             'advert_vinyls'     => $advertVinyls,
-            'total_vinyls'      => $this->vinylRepository->countAll(),
+            'total_vinyls'      => (int) $this->vinylRepository->countAll(),
             'vinyls_to_sale'    => $vinylsToSale,
-            'nb_vinyls_in_sale' => $this->inSaleRepository->countVinylsInSale(),
-            'nb_vinyls_sold'    => $this->vinylRepository->countVinylsSold(),
+            'nb_vinyls_in_sale' => (int) $this->inSaleRepository->countVinylsInSale(),
+            'nb_vinyls_sold'    => (int) $this->vinylRepository->countVinylsSold(),
             'total_prices'      => (float) $this->advertRepository->countTotalPrices(),
             'total_prices_checkout' => (float) $this->advertRepository->countTotalPricesCheckout(),
         ]);
     }
 
     /**
-     * @Route("/annonces/{id}/infos/{key}", name="advert_infos", defaults={"key"=null})
+     * @Route("/annonces/{id}-{slug}.html", priority=10, name="advert_infos", defaults={"key"=null})
      */
-    public function advert_info(int $id, ?string $key, Security $security)
+    public function advert_info(int $id, string $slug, Request $request, Security $security)
     {
         $user = $security->getUser();
         $advert = $this->advertRepository->findOneById($id);
 
-        if (null !== $advert->getKey() && $advert->getKey() !== $key) {
+        if (null !== $advert->getKey() && $advert->getKey() !== $request->query->get('key')) {
           return $this->redirectToRoute('adverts');
         }
 

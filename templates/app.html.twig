@@ -130,7 +130,7 @@
               <td class="col-artist"{% if artists_str is not null %} data-sort-value="{{ artists_str|remove_accents|lower }}"{% endif %}>
                 {% if vinyl.artists is not empty %}
                   {% for artist in vinyl.artists %}
-                    <a href="{{ path('artists_infos', { id: artist.id }) }}">{{ artist.name }}</a>{% if loop.last == false %}, {% endif %}
+                    <a href="{{ path('artist_infos', { id: artist.id, slug: artist.name|slug|lower }) }}">{{ artist.name }}</a>{% if loop.last == false %}, {% endif %}
                   {% endfor %}
                   <span class="-artists-list-raw d-none" data-value="{{ artists_str }}"></span>
                 {% endif %}

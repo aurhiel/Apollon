@@ -16,9 +16,9 @@
           {
             'label': 'Nb. vinyle vendu',
             'amount': nb_vinyls_sold,
-            'total': nb_vinyls_in_sale,
+            'total': total_vinyls,
             'amount_css_class': '-total-vinyls-sold',
-            'total_css_class': '-total-vinyls-in-sale',
+            'total_css_class': '-vinyls-total-quantity',
             'progress_bar': true
           },
           {
@@ -77,7 +77,7 @@
             <div class="card-header">
               <h2 class="h5 mb-0 row align-items-center">
                 <div class="-item-title col-9 col-xl-10 col-xxl-9 pe-0">
-                  <a href="{{ path('advert_infos', { id: advert.id, key: advert.key }) }}">
+                  <a href="{{ path('advert_infos', { id: advert.id, slug: advert.title|slug|lower, key: advert.key }) }}">
                     {{ advert.title }}
                     {% if is_granted('ROLE_ADMIN') and advert.name is not empty %}
                     <small class="d-inline-block text-muted fw-normal fst-italic">(pour: <b>{{ advert.name }}</b>)</small>

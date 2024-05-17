@@ -35,6 +35,8 @@ class AdminController extends AbstractController
     public function vinyl_delete($id, Request $request, AuthorizationCheckerInterface $authChecker)
     {
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
+            /** @var Session $session */
+            $session = $request->getSession();
             $em = $this->getDoctrine()->getManager();
 
             // Retrieve item to delete
@@ -53,10 +55,10 @@ class AdminController extends AbstractController
                 $em->flush();
 
                 // Set success message
-                $request->getSession()->getFlashBag()->add('success',
+                $session->getFlashBag()->add('success',
                   'Le vinyle a bien été supprimé.');
             } else {
-                $request->getSession()->getFlashBag()->add('error',
+                $session->getFlashBag()->add('error',
                   'Le vinyle avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.');
             }
         }
@@ -116,8 +118,9 @@ class AdminController extends AbstractController
         if ($request->isXmlHttpRequest()) {
             return $this->json($return_data);
         } else {
-            // Set message in flashbag on direct access
-            $request->getSession()->getFlashBag()->add($return_data['slug_status'], $return_data['message_status']);
+            /** @var Session $session */
+            $session = $request->getSession();
+            $session->getFlashBag()->add($return_data['slug_status'], $return_data['message_status']);
 
             // No direct access
             return $this->redirectToRoute('home');
@@ -176,7 +179,9 @@ class AdminController extends AbstractController
             return $this->json($return_data);
         } else {
             // Set message in flashbag on direct access
-            $request->getSession()->getFlashBag()->add($return_data['slug_status'], $return_data['message_status']);
+            /** @var Session $session */
+            $session = $request->getSession();
+            $session->getFlashBag()->add($return_data['slug_status'], $return_data['message_status']);
 
             // No direct access
             return $this->redirectToRoute('home');
@@ -235,7 +240,9 @@ class AdminController extends AbstractController
             return $this->json($return_data);
         } else {
             // Set message in flashbag on direct access
-            $request->getSession()->getFlashBag()->add($return_data['slug_status'], $return_data['message_status']);
+            /** @var Session $session */
+            $session = $request->getSession();
+            $session->getFlashBag()->add($return_data['slug_status'], $return_data['message_status']);
 
             // No direct access
             return $this->redirectToRoute('home');
@@ -249,6 +256,8 @@ class AdminController extends AbstractController
     public function artist_delete($id, Request $request, AuthorizationCheckerInterface $authChecker)
     {
         $em = $this->getDoctrine()->getManager();
+        /** @var Session $session */
+        $session = $request->getSession();
 
         // Retrieve item to delete
         $entity = $this->artistRepository->findOneById($id);
@@ -259,10 +268,10 @@ class AdminController extends AbstractController
             $em->flush();
 
             // Set success message
-            $request->getSession()->getFlashBag()->add('success',
+            $session->getFlashBag()->add('success',
               'L\'artiste a bien été supprimé.');
         } else {
-            $request->getSession()->getFlashBag()->add('error',
+            $session->getFlashBag()->add('error',
               'L\'artiste avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.');
         }
 
@@ -313,7 +322,9 @@ class AdminController extends AbstractController
             return $this->json($return);
         } else {
             // Set message in flashbag on direct access
-            $request->getSession()->getFlashBag()->add($return['slug_status'], $return['message_status']);
+            /** @var Session $session */
+            $session = $request->getSession();
+            $session->getFlashBag()->add($return['slug_status'], $return['message_status']);
 
             // No direct access
             return $this->redirectToRoute('home');

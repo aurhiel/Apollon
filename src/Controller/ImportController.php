@@ -38,7 +38,9 @@ class ImportController extends AbstractController
      */
     public function import_csv(Request $request, Security $security, AuthorizationCheckerInterface $authChecker)
     {
-        $flashbag = $request->getSession()->getFlashBag();
+        /** @var Session $session */
+        $session = $request->getSession();
+        $flashbag = $session->getFlashBag();
 
         // If asked > launch import
         if ($request->request->get('import-launch') !== null) {
