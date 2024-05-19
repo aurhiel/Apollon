@@ -54,7 +54,7 @@ class ArtistController extends AbstractController
             if ($imgGoogled) {
                 $artist_slug = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $artist->getName());
                 $avatarFileName = $this->fileUploader->upload(
-                    $imgGoogled, 
+                    $imgGoogled,
                     '/avatars', $artist_slug . '.' . pathinfo(parse_url($imgGoogled, PHP_URL_PATH), PATHINFO_EXTENSION),
                 );
                 $artist->setAvatarFilename($avatarFileName);

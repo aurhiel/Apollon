@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+  <div class="container">
+    <h1 class="mb-4"><span class="bi-cup-hot text-primary"></span> CSV Manager</h1>
+
+    <h2 class="h3">Importer un CSV</h2>
+    <form class="row g-3 align-items-center" method="post" action="{{ path('import_csv') }}">
+      <div class="col-auto">
+        <select class="form-select" id="import-csv-file" name="import-csv-file">
+        {% for csv_file in csv_files %}
+          <option value="{{ csv_file }}">{{ csv_file }}</option>
+        {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="import-clear-db" name="import-clear-db">
+          <label class="form-check-label fw-bold" for="import-clear-db">
+            Vider la base de données
+          </label>
+        </div>
+      </div>
+      <div class="col-12">
+        <button class="btn btn-primary" type="submit" name="import-launch" value="1">Lancer l'import.</button>
+      </div>
+    </form>
+
+    <hr class="w-25 my-5">
+
+    <h2 class="h3">Vinyles exportés en CSV</h2>
+    <div class="list-group mb-3 col-12 col-sm-8 col-md-6 col-lg-5">
+      {% for csv_file in csv_files %}
+        <a href="{{ csv_directory ~ '/' ~ csv_file }}" class="list-group-item list-group-item-action">{{ csv_file }}</a>
+      {% endfor %}
+    </div>
+
+    <a class="btn btn-secondary" href="{{ path('export_csv') }}">Exporter la liste des vinyles</a>
+  </div>
+{% endblock %}

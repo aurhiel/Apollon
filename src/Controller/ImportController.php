@@ -39,9 +39,21 @@ class ImportController extends AbstractController
     }
 
     /**
-     * @Route("/importer-csv", priority=15, name="import_csv")
+     * @Route("/csv-manager", priority=15, name="csv_manager")
      */
-    public function import_csv(Request $request, Security $security): Response
+    public function home(Security $security): Response
+    {
+        return $this->render('csv-manager/home.html.twig', [
+            'user' => $security->getUser(),
+            'csv_directory' => CSVParser::RELATIVE_DIRECTORY,
+            'csv_files' => $this->csvParser->list(),
+        ]);
+    }
+
+    /**
+     * @Route("/csv-manager/import", priority=15, name="import_csv")
+     */
+    public function import_csv(Request $request): Response
     {
         /** @var Session $session */
         $session = $request->getSession();
@@ -51,9 +63,8 @@ class ImportController extends AbstractController
         if ($request->request->get('import-launch') !== null) {
             if ('dev' === $this->environment) {
                 $em = $this->getDoctrine()->getManager();
-                $directory = '../public/uploads/';
                 $filename = 'vinyls.csv';
-                $vinyls_csv = $this->csvParser->parse($directory, $filename);
+                $vinyls_csv = $this->csvParser->parse($filename);
 
                 // Clear database (vinyls & artists)
                 if ($request->request->get('import-clear-db') === 'on') {
@@ -82,7 +93,7 @@ class ImportController extends AbstractController
                                 $artist = new Artist();
                                 $artist->setName(trim($artist_name));
 
-                                // Persist artist... 
+                                // Persist artist...
                                 $em->persist($artist);
                                 //  ... and flush, in order to retrieve later with `findOneByName()`
                                 $em->flush();
@@ -127,7 +138,7 @@ class ImportController extends AbstractController
                         'notice',
                         sprintf(
                             'Le fichier CSV à importer est vide (localisation: "%s%s").',
-                            $directory,
+                            CSVParser::MAIN_DIRECTORY,
                             $filename
                         )
                     );
@@ -137,8 +148,72 @@ class ImportController extends AbstractController
             }
         }
 
-        return $this->render('import-csv.html.twig', [
-            'user' => $security->getUser(),
-        ]);
+        return $this->redirectToRoute('csv_manager');
+    }
+
+    /**
+     * @Route("/csv-manager/export", priority=15, name="export_csv")
+     */
+    public function export_csv(Request $request): Response
+    {
+        try {
+            $filename = sprintf('vinyls.%s.csv', (new \DateTime())->format('Y-m-d-H:i:s'));
+            $filepath = $this->csvParser->export(
+                $filename,
+                $this->formatVinyls($this->vinylRepository->findAll())
+            );
+
+            $return = array(
+                'query_status' => 1,
+                'slug_status' => 'success',
+                'message_status' => sprintf(
+                    'Vinyles exportés avec succès (fichier: <a href="%s">%s</a>).',
+                    $filepath,
+                    $filename
+                )
+            );
+        } catch (\Exception $e) {
+            $return = array(
+                'query_status' => 0,
+                'slug_status' => 'error',
+                'exception' => $e->getMessage(),
+                'message_status' => 'Un problème est survenu lors de l\'exportation des vinyles.'
+            );
+        }
+
+        /** @var Session $session */
+        $session = $request->getSession();
+        $session->getFlashBag()->add($return['slug_status'], $return['message_status']);
+
+        return $this->redirectToRoute('csv_manager');
+    }
+
+    /**
+     * Format vinyls to prepare them for export
+     *
+     * @param Vinyl[] $vinyls
+     */
+    private function formatVinyls(array $vinyls): array
+    {
+        $formatted = [];
+
+        foreach ($vinyls as $vinyl) {
+            $artists = [];
+            foreach ($vinyl->getArtists() as $artist) {
+                $artists[] = $artist->getName();
+            }
+
+            $formatted[] = [
+                'artists' => implode('/', $artists),
+                'face-a' => $vinyl->getTrackFaceA(),
+                'face-b' => $vinyl->getTrackFaceB(),
+                'quantity' => $vinyl->getQuantity(),
+                'quantity-with-cover' => $vinyl->getQuantityWithCover(),
+                'quantity-available' => $vinyl->getQuantityAvailable(),
+                'quantity-sold' => $vinyl->getQuantitySold()
+            ];
+        }
+
+        return $formatted;
     }
 }
