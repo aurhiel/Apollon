@@ -55,7 +55,7 @@ class AdvertController extends AbstractController
     /**
      * @Route("/annonces/{id}", name="adverts", defaults={"id"=null})
      */
-    public function adverts(?int $id, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader)
+    public function adverts(?int $id, Request $request, Security $security, AuthorizationCheckerInterface $authChecker, FileUploader $fileUploader): Response
     {
         $em = $this->getDoctrine()->getManager();
         $user = $security->getUser();
@@ -218,7 +218,7 @@ class AdvertController extends AbstractController
     /**
      * @Route("/annonces/{id}-{slug}.html", priority=10, name="advert_infos", defaults={"key"=null})
      */
-    public function advert_info(int $id, string $slug, Request $request, Security $security)
+    public function advert_info(int $id, string $slug, Request $request, Security $security): Response
     {
         $user = $security->getUser();
         $advert = $this->advertRepository->findOneById($id);
@@ -296,7 +296,7 @@ class AdvertController extends AbstractController
      * @Route("/annonces/{id}/est-vendue/{isSold}", name="advert_update_is_sold")
      * @IsGranted("ROLE_ADMIN")
      */
-    public function advert_update_is_sold(int $id, string $isSold, Request $request)
+    public function advert_update_is_sold(int $id, string $isSold, Request $request): Response
     {
         $em = $this->getDoctrine()->getManager();
         $advert = $this->advertRepository->findOneById($id);

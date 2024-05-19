@@ -50,7 +50,7 @@ class HomeController extends AbstractController
     /**
      * @Route("/vinyles/{id}/{trackFace}/youtube-id", name="vinyl_get_youtube_id")
      */
-    public function vinyl_get_youtube_id($id, $trackFace, Request $request, HttpClientInterface $client)
+    public function vinyl_get_youtube_id($id, $trackFace, Request $request, HttpClientInterface $client): Response
     {
         $base_url = 'https://youtube.googleapis.com/youtube/v3/search?key='. $this->getParameter('g_auth_key') . '&maxResults=1';
         $em = $this->getDoctrine()->getManager();

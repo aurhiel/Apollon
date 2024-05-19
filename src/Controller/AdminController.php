@@ -10,8 +10,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\HttpFoundation\Response;
 
+
+
+/**
+ * @IsGranted("ROLE_ADMIN")
+ */
 class AdminController extends AbstractController
 {
     private ArtistRepository $artistRepository;
@@ -30,48 +35,43 @@ class AdminController extends AbstractController
 
     /**
      * @Route("/vinyles/{id}/supprimer", priority=10, name="vinyl_delete")
-     * @IsGranted("ROLE_ADMIN")
      */
-    public function vinyl_delete($id, Request $request, AuthorizationCheckerInterface $authChecker)
+    public function vinyl_delete($id, Request $request)
     {
-        if(true === $authChecker->isGranted('ROLE_ADMIN')) {
-            /** @var Session $session */
-            $session = $request->getSession();
-            $em = $this->getDoctrine()->getManager();
+        /** @var Session $session */
+        $session = $request->getSession();
+        $em = $this->getDoctrine()->getManager();
 
-            // Retrieve item to delete
-            $entity = $this->vinylRepository->findOneById($id);
+        // Retrieve item to delete
+        $entity = $this->vinylRepository->findOneById($id);
 
-            if ($entity !== null) {
-                // Remove related images
-                $images = $entity->getImages();
-                foreach ($images as $image) {
-                    // Delete image (file deleted in ImageListener)
-                    $em->remove($image);
-                }
-
-                // Delete entity & flush
-                $em->remove($entity);
-                $em->flush();
-
-                // Set success message
-                $session->getFlashBag()->add('success',
-                  'Le vinyle a bien été supprimé.');
-            } else {
-                $session->getFlashBag()->add('error',
-                  'Le vinyle avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.');
+        if ($entity !== null) {
+            // Remove related images
+            $images = $entity->getImages();
+            foreach ($images as $image) {
+                // Delete image (file deleted in ImageListener)
+                $em->remove($image);
             }
+
+            // Delete entity & flush
+            $em->remove($entity);
+            $em->flush();
+
+            // Set success message
+            $session->getFlashBag()->add('success',
+                'Le vinyle a bien été supprimé.');
+        } else {
+            $session->getFlashBag()->add('error',
+                'Le vinyle avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.');
         }
 
-        // No direct access
         return $this->redirectToRoute('home');
     }
 
     /**
      * @Route("/vinyles/{id}/quantite/{type_update}", priority=10, name="vinyl_update_quantity")
-     * @IsGranted("ROLE_ADMIN")
      */
-    public function vinyl_update_quantity($id, $type_update, Request $request, AuthorizationCheckerInterface $authChecker)
+    public function vinyl_update_quantity($id, $type_update, Request $request): Response
     {
         $em = $this->getDoctrine()->getManager();
 
@@ -129,9 +129,8 @@ class AdminController extends AbstractController
 
     /**
      * @Route("/vinyles/{id}/quantite-vendue/{type_update}", priority=10, name="vinyl_update_quantity_sold")
-     * @IsGranted("ROLE_ADMIN")
      */
-    public function vinyl_update_quantity_sold($id, $type_update, Request $request, AuthorizationCheckerInterface $authChecker)
+    public function vinyl_update_quantity_sold($id, $type_update, Request $request): Response
     {
         $em = $this->getDoctrine()->getManager();
 
@@ -190,9 +189,8 @@ class AdminController extends AbstractController
 
     /**
      * @Route("/vinyles/{id}/quantite-pochette/{type_update}", priority=10, name="vinyl_update_quantity_cover")
-     * @IsGranted("ROLE_ADMIN")
      */
-    public function vinyl_update_quantity_cover($id, $type_update, Request $request, AuthorizationCheckerInterface $authChecker)
+    public function vinyl_update_quantity_cover($id, $type_update, Request $request): Response
     {
         $em = $this->getDoctrine()->getManager();
 
@@ -251,9 +249,8 @@ class AdminController extends AbstractController
 
     /**
      * @Route("/artistes/{id}/supprimer", priority=10, name="artist_delete")
-     * @IsGranted("ROLE_ADMIN")
      */
-    public function artist_delete($id, Request $request, AuthorizationCheckerInterface $authChecker)
+    public function artist_delete($id, Request $request)
     {
         $em = $this->getDoctrine()->getManager();
         /** @var Session $session */
@@ -281,9 +278,8 @@ class AdminController extends AbstractController
 
     /**
      * @Route("/images/{id}/supprimer", priority=10, name="image_delete")
-     * @IsGranted("ROLE_ADMIN")
      */
-    public function image_delete($id, Request $request, AuthorizationCheckerInterface $authChecker)
+    public function image_delete($id, Request $request): Response
     {
         $em = $this->getDoctrine()->getManager();
 

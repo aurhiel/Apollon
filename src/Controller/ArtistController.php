@@ -32,7 +32,7 @@ class ArtistController extends AbstractController
      */
     public function artists(Security $security): Response
     {
-        return $this->render('artists.html.twig', [
+        return $this->render('artists/list.html.twig', [
             'meta' => ['title' => 'Artistes'],
             'user' => $security->getUser(),
             'artists' => $this->artistRepository->findAll(),
@@ -65,7 +65,7 @@ class ArtistController extends AbstractController
             }
         }
 
-        return $this->render('artist-single.html.twig', [
+        return $this->render('artists/single.html.twig', [
             'meta' => [ 'title' => $artist->getName() ],
             'core_class' => 'app-artist-single',
             'user' => $security->getUser(),
@@ -73,7 +73,7 @@ class ArtistController extends AbstractController
         ]);
     }
 
-    private function searchArtistPhoto(string $artist_name)
+    private function searchArtistPhoto(string $artist_name): mixed
     {
         $base_url = 'https://customsearch.googleapis.com/customsearch/v1?key='. $this->getParameter('g_auth_key') . '&cx=' . $this->getParameter('g_search_cx') . '&searchType=image&imgSize=medium';
         $img_url = false;

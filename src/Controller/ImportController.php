@@ -6,37 +6,42 @@ use App\Entity\Artist;
 use App\Entity\Vinyl;
 use App\Repository\ArtistRepository;
 use App\Repository\VinylRepository;
+use App\Service\CSVParser;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Finder\Finder;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
+/**
+ * @IsGranted("ROLE_ADMIN")
+ */
 class ImportController extends AbstractController
 {
     private string $environment;
     private ArtistRepository $artistRepository;
     private VinylRepository $vinylRepository;
+    private CSVParser $csvParser;
 
     public function __construct(
-        KernelInterface $kernel,
         ArtistRepository $artistRepository,
-        VinylRepository $vinylRepository
+        VinylRepository $vinylRepository,
+        KernelInterface $kernel,
+        CSVParser $csvParser
     ) {
-        $this->environment = $kernel->getEnvironment();
         $this->artistRepository = $artistRepository;
         $this->vinylRepository = $vinylRepository;
+        $this->environment = $kernel->getEnvironment();
+        $this->csvParser = $csvParser;
     }
 
     /**
      * @Route("/importer-csv", priority=15, name="import_csv")
-     * @IsGranted("ROLE_ADMIN")
      */
-    public function import_csv(Request $request, Security $security, AuthorizationCheckerInterface $authChecker)
+    public function import_csv(Request $request, Security $security): Response
     {
         /** @var Session $session */
         $session = $request->getSession();
@@ -46,7 +51,9 @@ class ImportController extends AbstractController
         if ($request->request->get('import-launch') !== null) {
             if ('dev' === $this->environment) {
                 $em = $this->getDoctrine()->getManager();
-                $vinyls_csv = $this->parseCSV();
+                $directory = '../public/uploads/';
+                $filename = 'vinyls.csv';
+                $vinyls_csv = $this->csvParser->parse($directory, $filename);
 
                 // Clear database (vinyls & artists)
                 if ($request->request->get('import-clear-db') === 'on') {
@@ -56,18 +63,17 @@ class ImportController extends AbstractController
 
                 // Import vinyls from CSV file if not empty
                 if (!empty($vinyls_csv)) {
-
                     // Loop on CSV vinyls
                     foreach ($vinyls_csv as $data) {
                         $vinyl = new Vinyl();
 
                         // Set new vinyl fields
-                        // // Quantity
+                        //  > Quantity
                         $vinyl->setQuantity((int) $data[0]);
-                        // // Tracks
+                        //  > Tracks
                         $vinyl->setTrackFaceA($data[1]);
                         $vinyl->setTrackFaceB($data[2]);
-                        // // Artist
+                        //  > Artist(s)
                         $d_artists = explode('/', $data[3]);
                         foreach ($d_artists as $artist_name) {
                             // If artist already exist, retrieve it, or create a new one
@@ -76,9 +82,9 @@ class ImportController extends AbstractController
                                 $artist = new Artist();
                                 $artist->setName(trim($artist_name));
 
-                                // Persist artist & flush (in order to retrieve --
-                                //  -- later with findOneByName())
+                                // Persist artist... 
                                 $em->persist($artist);
+                                //  ... and flush, in order to retrieve later with `findOneByName()`
                                 $em->flush();
                             }
 
@@ -117,8 +123,14 @@ class ImportController extends AbstractController
                     $flashbag->add($return['slug_status'], $return['message_status']);
                 } else {
                     // Set message if file is empty / not found
-                    $flashbag->add('notice',
-                      'Le fichier CSV est vide ou n\'a pas été trouvé (localisation: "' . $this->csvParsingOptions['finder_in'] . '' . $this->csvParsingOptions['finder_name'] . '").');
+                    $flashbag->add(
+                        'notice',
+                        sprintf(
+                            'Le fichier CSV à importer est vide (localisation: "%s%s").',
+                            $directory,
+                            $filename
+                        )
+                    );
                 }
             } else {
                 $flashbag->add('notice', 'Importation du CSV activée seulement en `dev` par sécurité.');
@@ -128,45 +140,5 @@ class ImportController extends AbstractController
         return $this->render('import-csv.html.twig', [
             'user' => $security->getUser(),
         ]);
-    }
-
-    private $csvParsingOptions = array(
-        'finder_in' => '../public/uploads/',
-        'finder_name' => 'vinyls.csv',
-        'ignoreFirstLine' => true,
-        'delimiter' => ','
-    );
-    /**
-     * Parse a csv file
-     *
-     * @return array
-     */
-    private function parseCSV()
-    {
-        $ignoreFirstLine = $this->csvParsingOptions['ignoreFirstLine'];
-
-        $finder = new Finder();
-        $finder->files()
-            ->in($this->csvParsingOptions['finder_in'])
-            ->name($this->csvParsingOptions['finder_name'])
-        ;
-        foreach ($finder as $file) { $csv = $file; }
-
-        if (!isset($csv)) {
-            throw new \RuntimeException(sprintf('Cannot find CSV file to import (in: %s, name: %s)', $this->csvParsingOptions['finder_in'], $this->csvParsingOptions['finder_name']));
-        }
-
-        $rows = array();
-        if (($handle = fopen($csv->getRealPath(), "r")) !== FALSE) {
-            $i = 0;
-            while (($data = fgetcsv($handle, null, $this->csvParsingOptions['delimiter'])) !== FALSE) {
-                $i++;
-                if ($ignoreFirstLine && $i == 1) { continue; }
-                $rows[] = $data;
-            }
-            fclose($handle);
-        }
-
-        return $rows;
     }
 }
