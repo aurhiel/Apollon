@@ -99,12 +99,11 @@
                         {% for img in advert_to_edit.images %}
                           <span class="-item -in-database ratio ratio-1x1" style="background-image: url({{ asset(img.path) }})"
                             data-id-image="{{ img.id }}">
-                            <button class="btn btn-danger px-2 pt-2 pb-1" type="button"
-                              data-confirm-href="{{ path('image_delete', { id: img.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer cette image ?"
-                                data-confirm-link-class="btn-delete-img" data-confirm-always-close="true" data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
-                              <span class="icon-file-minus"></span>
-                              <span class="sr-only"></span>
-                            </button>
+                            <a tabindex="0" class="btn btn-danger px-2" role="button" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-html="true" data-bs-placement="top"
+                              data-bs-content="<div class='text-center'>Êtes-vous sûr de vouloir supprimer cette image&nbsp;? <br><a class='btn btn-sm btn-danger btn-delete-img mt-2' href='{{ path('image_delete', { id: img.id }) }}'>Supprimer</a></div>">
+                              <span class="bi-file-earmark-minus"></span>
+                              <span class="visually-hidden">Supprimer</span>
+                            </a>
                           </span>
                         {% endfor %}
                       {% else %}

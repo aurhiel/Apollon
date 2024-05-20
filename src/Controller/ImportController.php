@@ -21,6 +21,8 @@ use Symfony\Component\HttpKernel\KernelInterface;
  */
 class ImportController extends AbstractController
 {
+    private const ARTISTS_SEPARATOR = '#';
+
     private string $environment;
     private ArtistRepository $artistRepository;
     private VinylRepository $vinylRepository;
@@ -63,7 +65,7 @@ class ImportController extends AbstractController
         if ($request->request->get('import-launch') !== null) {
             if ('dev' === $this->environment) {
                 $em = $this->getDoctrine()->getManager();
-                $filename = 'vinyls.csv';
+                $filename = $request->request->get('import-csv-file');
                 $vinyls_csv = $this->csvParser->parse($filename);
 
                 // Clear database (vinyls & artists)
@@ -79,13 +81,11 @@ class ImportController extends AbstractController
                         $vinyl = new Vinyl();
 
                         // Set new vinyl fields
-                        //  > Quantity
-                        $vinyl->setQuantity((int) $data[0]);
                         //  > Tracks
-                        $vinyl->setTrackFaceA($data[1]);
-                        $vinyl->setTrackFaceB($data[2]);
-                        //  > Artist(s)
-                        $d_artists = explode('/', $data[3]);
+                        $vinyl->setTrackFaceA(isset($data['face-a']) ? $data['face-a'] : $data[1]);
+                        $vinyl->setTrackFaceB(isset($data['face-b']) ? $data['face-b'] : $data[2]);
+                        //  > Artist(sb)
+                        $d_artists = explode(self::ARTISTS_SEPARATOR, isset($data['artists']) ? $data['artists'] : $data[3]);
                         foreach ($d_artists as $artist_name) {
                             // If artist already exist, retrieve it, or create a new one
                             $artist = $this->artistRepository->findOneByName(trim($artist_name));
@@ -102,6 +102,10 @@ class ImportController extends AbstractController
                             // Add artist to current vinyl
                             $vinyl->addArtist($artist);
                         }
+                        //  > Quantities
+                        $vinyl->setQuantity((int) (isset($data['quantity']) ? $data['quantity'] : $data[0]));
+                        if (isset($data['quantity-with-cover'])) { $vinyl->setQuantityWithCover((int) $data['quantity-with-cover']); }
+                        if (isset($data['quantity-sold'])) { $vinyl->setQuantitySold((int) $data['quantity-sold']); }
 
                         // Persist vinyl
                         $em->persist($vinyl);
@@ -204,12 +208,11 @@ class ImportController extends AbstractController
             }
 
             $formatted[] = [
-                'artists' => implode('/', $artists),
+                'artists' => implode(self::ARTISTS_SEPARATOR, $artists),
                 'face-a' => $vinyl->getTrackFaceA(),
                 'face-b' => $vinyl->getTrackFaceB(),
                 'quantity' => $vinyl->getQuantity(),
                 'quantity-with-cover' => $vinyl->getQuantityWithCover(),
-                'quantity-available' => $vinyl->getQuantityAvailable(),
                 'quantity-sold' => $vinyl->getQuantitySold()
             ];
         }

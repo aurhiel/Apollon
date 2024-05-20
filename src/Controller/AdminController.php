@@ -277,7 +277,7 @@ class AdminController extends AbstractController
     }
 
     /**
-     * @Route("/images/{id}/supprimer", priority=10, name="image_delete")
+     * @Route("/admin/images/{id}/supprimer", priority=10, name="image_delete")
      */
     public function image_delete($id, Request $request): Response
     {

@@ -267,6 +267,7 @@ var app = {
       // Globals / Generics
       // Trigger scroll event after ready to display elements already on screen
       // self.$window.trigger('scroll');
+
       // Modal:Confirm delete, add link to delete and add custom things (title, body, ...)
       if (self.$modal_confirm.length > 0) {
         var $btn_clicked = null;
@@ -300,10 +301,9 @@ var app = {
             self.$body.find('.modal').last().css('z-index', 1090);
             self.$body.find('.modal-backdrop').css('z-index', 1080);
           } else {
-            console.log('[modal.confirm()] Must define a data-href');
+            console.log('[modal.confirm()] Must define a `data-confirm-href`');
           }
         });
-
         // When confirm modal is hidden
         self.$modal_confirm.get(0).addEventListener('hidden.bs.modal', function (e) {
           var $modal_confirm = $(this);
@@ -321,12 +321,14 @@ var app = {
           self.$body.find('.modal-backdrop').removeAttr('style');
         });
       }
+
       // Auto-select in multi-select TODO multiple selection
       self.$body.find('.form-multi-select').each(function() {
         var $container = $(this);
         if (typeof $container.data('ms-autoselect') != 'undefined')
           $container.find('input[value="' + $container.data('ms-autoselect') + '"]').prop('checked', true);
       });
+
       // Event:Images library preview
       self.$body.on('change', '.form-image-lib input', function() {
         var $file_input = $(this);
@@ -348,6 +350,7 @@ var app = {
           $library.removeClass('-has-images').html($library.data('initial-text'));
         }
       });
+
       // Event:Delete image
       self.$body.on('click', '.btn-delete-img', function(e) {
         var $modal = self.$modal_advert.length > 0 ? self.$modal_advert : self.$modal_vinyl;
@@ -380,6 +383,7 @@ var app = {
         e.stopPropagation();
         return false;
       });
+
       // Event:Disable every form's buttons after submitting the form
       self.$body.find('.form').on('submit', function() {
         $(this).find('.btn').addClass('disabled');
@@ -420,9 +424,7 @@ var app = {
           method: 'POST',
           url: base_url + '/' + $btn.data('qty-type'),
           success: function(r) {
-            if (r.query_status != 1) {
-              alert(r.message_status);
-            } else {
+            if (r.query_status == 1) {
               $col_qty.find('.qty-amount').html(r.new_quantity);
               $col_qty.find('.btn-qty[data-qty-type="-1"]').toggleClass('disabled', (r.new_quantity < min_limit));
               if (max_qty != null)
@@ -430,6 +432,8 @@ var app = {
 
               if (typeof r.total_vinyls != 'undefined')
                 self.$vinyls_total_qty.html(r.total_vinyls);
+            } else {
+              alert(r.message_status);
             }
           }
         });
@@ -775,7 +779,7 @@ var app = {
           url: '/annonces/' + advert_id + '/est-vendue/' + (($checkbox.is(':checked')) ? '1' : '0'),
           success: function(r) {
             if (r.query_status == 1) {
-              var new_nb_sold   = parseFloat(self.$ads_total_vinyls_sold.html()) + ($advert.data('advert-total-qty') * ($checkbox.is(':checked') ? 1 : -1));
+              var new_nb_sold = parseFloat(self.$ads_total_vinyls_sold.html()) + ($advert.data('advert-total-qty') * ($checkbox.is(':checked') ? 1 : -1));
               var new_total_got = parseFloat(self.$ads_total_price_got.html()) + ($advert.data('advert-price') * ($checkbox.is(':checked') ? 1 : -1));
 
               // Update datas

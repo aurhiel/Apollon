@@ -80,12 +80,12 @@
     </div>
 
     {# Modals #}
-    {% include 'modals/manage-booking.html.twig' %}
+    {% include 'components/modals/manage-booking.html.twig' %}
     {% if app.user %}
-      {% include 'modals/manage-artist.html.twig' %}
-      {% include 'modals/manage-advert.html.twig' %}
-      {% include 'modals/manage-vinyl.html.twig' %}
-      {% include 'modals/confirm-delete.html.twig' %}
+      {% include 'components/modals/manage-artist.html.twig' %}
+      {% include 'components/modals/manage-advert.html.twig' %}
+      {% include 'components/modals/manage-vinyl.html.twig' %}
+      {% include 'components/modals/confirm-delete.html.twig' %}
     {% endif %}
   </body>
 </html>

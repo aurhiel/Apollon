@@ -73,7 +73,10 @@ class ArtistController extends AbstractController
         ]);
     }
 
-    private function searchArtistPhoto(string $artist_name): mixed
+    /**
+     * @return string|bool
+     */
+    private function searchArtistPhoto(string $artist_name)
     {
         $base_url = 'https://customsearch.googleapis.com/customsearch/v1?key='. $this->getParameter('g_auth_key') . '&cx=' . $this->getParameter('g_search_cx') . '&searchType=image&imgSize=medium';
         $img_url = false;

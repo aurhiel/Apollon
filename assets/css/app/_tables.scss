@@ -57,9 +57,7 @@
 }
 
 .table-sortable {
-  .-sort-icon {
-    color: $text-muted;
-  }
+  .-sort-icon { opacity: .75; }
 
   th {
     cursor: pointer;

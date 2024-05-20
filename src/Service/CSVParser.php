@@ -10,8 +10,15 @@ class CSVParser
     public const RELATIVE_DIRECTORY = '/uploads/csv-parser';
     public const MAIN_DIRECTORY = '../public/uploads/csv-parser';
 
+    private array $headers = [];
+
     public function __construct()
     {
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers;
     }
 
     public function parse(string $filename, bool $ignoreFirstLine = true, string $delimiter = ','): array
@@ -32,8 +39,17 @@ class CSVParser
             $i = 0;
             while (($data = fgetcsv($handle, null, $delimiter)) !== FALSE) {
                 $i++;
-                if ($ignoreFirstLine && $i == 1) { continue; }
-                $rows[] = $data;
+                if ($ignoreFirstLine && $i == 1) { $this->headers = $data; continue; }
+
+                if (!empty($this->headers)) {
+                    $row = [];
+                    foreach ($data as $key => $value) {
+                        $row[$this->headers[$key]] = $value;
+                    }
+                    $rows[] = $row;
+                } else {
+                    $rows[] = $data;
+                }
             }
             fclose($handle);
         }
