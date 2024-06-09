@@ -50,6 +50,14 @@
                   {{ form_errors(form_vinyl.notes) }}
                 </div>
 
+                <div class="{% if vinyl_to_edit.id is empty %}visually-hidden{% endif %}">
+                  {{ form_label(form_vinyl.samples) }}
+                  {{ form_widget(form_vinyl.samples) }}
+                  {{ form_errors(form_vinyl.samples) }}
+
+                  {% include 'components/forms/vinyl-samples.html.twig' %}
+                </div>
+
                 <div class="col-12 form-group form-image-lib" data-bs-theme="light">
                   {{ form_label(form_vinyl.images) }}
                   {{ form_widget(form_vinyl.images) }}

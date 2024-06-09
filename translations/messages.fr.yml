@@ -72,3 +72,5 @@ form_vinyl :
   notes :
     label       : "Notes"
     placeholder : "Ajoutez ici l'état des faces du vinyle, de la pochette, ..."
+  samples :
+    label       : "Exemplaires"

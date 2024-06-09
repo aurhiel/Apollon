@@ -5,7 +5,7 @@ namespace App\Form;
 // Entities
 use App\Entity\Vinyl;
 use App\Entity\Artist;
-
+use App\Entity\Sample;
 // Repositories
 use App\Repository\ArtistRepository;
 
@@ -92,10 +92,18 @@ class VinylType extends AbstractType
                     // 'class' => 'required-giga'
                 ],
                 'required'    => false,
-  					])
+            ])
+            ->add('samples', EntityType::class, [
+                'class'       => Sample::class,
+                'label'       => 'form_vinyl.samples.label',
+                'label_attr'  => [ 'class' => 'col-form-label fw-bold'],
+                'attr'        => [ 'class' => 'visually-hidden' ],
+                'multiple'    => true,
+                'required'    => false,
+            ])
             ->add('images', FileType::class,[
                 'label'       => 'form_basic.images.label',
-                'label_attr'  => [ 'class' => 'col-form-label fw-bold pt-0'],
+                'label_attr'  => [ 'class' => 'col-form-label fw-bold'],
                 'attr'        => [ 'class' => 'form-control' ],
                 'multiple'    => true,
                 'mapped'      => false,

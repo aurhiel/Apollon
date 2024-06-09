@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Vinyl;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @method Vinyl|null find($id, $lockMode = null, $lockVersion = null)
@@ -17,6 +18,16 @@ class VinylRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Vinyl::class);
+    }
+
+    public function findRequired(int $id): Vinyl
+    {
+        $entity = $this->findOneById($id);
+        if (null === $entity) {
+            throw new NotFoundHttpException(sprintf('Vinyl [id: %d] not found', $id));
+        }
+
+        return $entity;
     }
 
     public function findAll()
