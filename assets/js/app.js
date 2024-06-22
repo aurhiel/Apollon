@@ -544,9 +544,9 @@ var app = {
       var user_vinyls_selected = {};
       self.$vinyls.on('change', '.vinyl-checkbox-is-selected', function() {
         var $checkbox = $(this);
-        var $vinyl    = $checkbox.parents('.-item-vinyl').first();
-        var vinyl_id  = $vinyl.data('vinyl-id');
-        var artists_str = $vinyl.find('.-artists-list-raw').data('value');
+        var $vinyl = $checkbox.parents('.-item-vinyl').first();
+        var vinyl_id = $vinyl.data('vinyl-id');
+        var artists_str = $vinyl.data('vinyl-artists');
 
         // Add or remove vinyl from selected list
         if ($checkbox.prop('checked') === true) {
@@ -559,10 +559,10 @@ var app = {
 
           // Push new track
           user_vinyls_selected[artists_str].tracks[vinyl_id] = {
-            rpm: $vinyl.find('.col-rpm').html(),
-            face_A: $vinyl.find('.-vinyl-track-A').html(),
-            face_B: $vinyl.find('.-vinyl-track-B').html(),
-            quantity_with_cover: $vinyl.find('.col-quantity.-with-cover').data('qty-value')
+            rpm: $vinyl.data('vinyl-rpm'),
+            face_A: $vinyl.data('vinyl-track-a'),
+            face_B: $vinyl.data('vinyl-track-b'),
+            quantity_with_cover: $vinyl.find('.-vinyl-qty-with-cover').data('qty-value')
           };
           user_total_selected++;
         } else {
@@ -749,8 +749,8 @@ var app = {
 
             // Push new track
             vinyls_selected[artists_str].tracks[vinyl_id] = {
-              face_A: $vinyl.find('.-vinyl-track-A').html(),
-              face_B: $vinyl.find('.-vinyl-track-B').html(),
+              face_A: $vinyl.data('vinyl-track-a'),
+              face_B: $vinyl.data('vinyl-track-b'),
               quantity: new_qty,
             };
             $vinyl.addClass('-selected');
@@ -896,16 +896,14 @@ var app = {
       //
       // YouTube player & fun
       // Create YouTube player (iframe & co) using JS
-      self.$vinyls.on('click', 'td.col-track', function() {
-        var $col    = $(this);
-        var $row    = $col.parents('tr').first();
-        var id_vinyl = $row.data('vinyl-id');
-        var track_face  = $col.data('track-face');
+      self.$vinyls.on('click', '[data-apo-toggle="play-track"]', function() {
+        var $track = $(this);
+        var $vinyl = $track.parents('.-item-vinyl').first();
 
         // Get youtube videos
         $.ajax({
           method: 'POST',
-          url: '/vinyles/' + id_vinyl + '/' + track_face + '/youtube-id',
+          url: '/vinyles/' + $vinyl.data('vinyl-id') + '/' + $track.data('track-face') + '/youtube-id',
           success: function(r) {
             if (r.query_status == 1 && r.youtube_id != null) {
               // Update artist & track title

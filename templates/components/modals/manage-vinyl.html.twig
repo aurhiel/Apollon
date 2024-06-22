@@ -12,30 +12,47 @@
             {# Form inputs #}
             <div class="form--inputs">
               <div class="row g-3">
-                <div class="col-md-6 form-group" data-bs-theme="light">
-                  {{ form_label(form_vinyl.rpm) }}
-                  {{ form_widget(form_vinyl.rpm) }}
+                <div class="col-sm-6 col-lg-3 form-group" data-bs-theme="light">
+                  <div class="form-floating">
+                    {{ form_widget(form_vinyl.rpm) }}
+                    {{ form_label(form_vinyl.rpm) }}
+                  </div>
                   {{ form_errors(form_vinyl.rpm) }}
                 </div>
-                <div class="col-md-3 form-group" data-bs-theme="light">
-                  {{ form_label(form_vinyl.quantity) }}
-                  {{ form_widget(form_vinyl.quantity) }}
+                <div class="col-sm-6 col-lg-3 form-group" data-bs-theme="light">
+                  <div class="form-floating">
+                    {{ form_widget(form_vinyl.quantity) }}
+                    {{ form_label(form_vinyl.quantity) }}
+                  </div>
                   {{ form_errors(form_vinyl.quantity) }}
                 </div>
-                <div class="col-md-3 form-group" data-bs-theme="light">
-                  {{ form_label(form_vinyl.quantity_sold) }}
-                  {{ form_widget(form_vinyl.quantity_sold) }}
+                <div class="col-sm-6 col-lg-3 form-group" data-bs-theme="light">
+                  <div class="form-floating">
+                    {{ form_widget(form_vinyl.quantity_with_cover) }}
+                    {{ form_label(form_vinyl.quantity_with_cover) }}
+                  </div>
+                  {{ form_errors(form_vinyl.quantity_with_cover) }}
+                </div>
+                <div class="col-sm-6 col-lg-3 form-group" data-bs-theme="light">
+                  <div class="form-floating">
+                    {{ form_widget(form_vinyl.quantity_sold) }}
+                    {{ form_label(form_vinyl.quantity_sold) }}
+                  </div>
                   {{ form_errors(form_vinyl.quantity_sold) }}
                 </div>
 
                 <div class="col-md-6 form-group" data-bs-theme="light">
-                  {{ form_label(form_vinyl.track_face_A) }}
-                  {{ form_widget(form_vinyl.track_face_A) }}
+                  <div class="form-floating">
+                    {{ form_widget(form_vinyl.track_face_A) }}
+                    {{ form_label(form_vinyl.track_face_A) }}
+                  </div>
                   {{ form_errors(form_vinyl.track_face_A) }}
                 </div>
                 <div class="col-md-6 form-group" data-bs-theme="light">
-                  {{ form_label(form_vinyl.track_face_B) }}
-                  {{ form_widget(form_vinyl.track_face_B) }}
+                  <div class="form-floating">
+                    {{ form_widget(form_vinyl.track_face_B) }}
+                    {{ form_label(form_vinyl.track_face_B) }}
+                  </div>
                   {{ form_errors(form_vinyl.track_face_B) }}
                 </div>
 

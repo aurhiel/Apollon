@@ -37,13 +37,15 @@ class VinylRepository extends ServiceEntityRepository
             ->addSelect('artists')
             ->leftJoin('v.images', 'images')
             ->addSelect('images')
+            ->leftJoin('v.samples', 'samples')
+            ->addSelect('samples')
         ;
 
         if (true === $onlyAvailableForSelling) {
             $qb->andWhere('v.quantity - v.quantitySold > 0');
         }
 
-        return $qb->orderBy('v.id', 'ASC')
+        return $qb->orderBy('artists.name', 'ASC')
             ->getQuery()
             ->getResult()
         ;

@@ -29,26 +29,20 @@
   <hr>
 
   <h3 class="mb-1">Voici {% if vinyls_selected|length > 1 %}la liste des vinyles sélectionnés{% else %}le vinyle sélectionné{% endif %}:</h3>
-  
-  {% set last_artists_str = null %}
+
   <div class="table-stretched">
     <table>
       <tr>
         <th>Artiste(s)</th>
         <th>Faces A / B</th>
       </tr>
+      {% set last_artists_str = null %}
       {% for vinyl in vinyls_selected %}
-        {% set artists_str = null %}
-        {% if vinyl.artists is not empty %}
-          {% for artist in vinyl.artists %}
-            {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
-          {% endfor %}
-        {% endif %}
         <tr>
-          <td>{% if last_artists_str != artists_str %}{{ artists_str }}{% endif %}</td>
+          <td>{% if last_artists_str != vinyl.artistsAsString %}{{ vinyl.artistsAsString }}{% endif %}</td>
           <td>{{ vinyl.trackFaceA }} / {{ vinyl.trackFaceB }}</td>
         </tr>
-        {% set last_artists_str = artists_str %}
+        {% set last_artists_str = vinyl.artistsAsString %}
       {% endfor %}
     </table>
   </div>

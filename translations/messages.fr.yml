@@ -60,6 +60,9 @@ form_vinyl :
   qty_sold :
     label       : "Quantité vendue"
     placeholder : "Quantité vendue"
+  qty_cover :
+    label       : "Quantité avec pochette"
+    placeholder : "Quantité avec pochette"
   track_face_a :
     label       : "Face A"
     placeholder : "Face A"

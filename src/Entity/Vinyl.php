@@ -61,7 +61,7 @@ class Vinyl
     private $quantitySold = 0;
 
     /**
-     * @ORM\Column(type="smallint", nullable=true)
+     * @ORM\Column(type="smallint")
      */
     private $quantityWithCover = 0;
 
@@ -166,6 +166,13 @@ class Vinyl
         return $this->artists;
     }
 
+    public function getArtistsAsString(): string
+    {
+        return implode(', ', array_map(function($artist) {
+            return $artist->getName();
+        }, $this->artists->toArray()));
+    }
+
     public function addArtist(Artist $artist): self
     {
         if (!$this->artists->contains($artist)) {
@@ -208,15 +215,20 @@ class Vinyl
 
     public function getQuantityAvailable()
     {
-        return $this->quantity - $this->quantitySold;
+        return max($this->quantity - $this->quantitySold, 0);
     }
 
-    public function getQuantityWithCover(): ?int
+    public function getQuantityWithCover(): int
     {
         return $this->quantityWithCover;
     }
 
-    public function setQuantityWithCover(?int $quantityWithCover): self
+    public function getQuantityAvailableWithCover(): int
+    {
+        return max($this->quantityWithCover - $this->quantitySold, 0);
+    }
+
+    public function setQuantityWithCover(int $quantityWithCover): self
     {
         $this->quantityWithCover = $quantityWithCover;
 
