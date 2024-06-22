@@ -30,16 +30,20 @@ class VinylRepository extends ServiceEntityRepository
         return $entity;
     }
 
-    public function findAll()
+    public function findAll(bool $onlyAvailableForSelling = true)
     {
-        return $this->createQueryBuilder('v')
-            // Join relations
+        $qb = $this->createQueryBuilder('v')
             ->leftJoin('v.artists', 'artists')
             ->addSelect('artists')
             ->leftJoin('v.images', 'images')
             ->addSelect('images')
-            // Order
-            ->orderBy('v.id', 'ASC')
+        ;
+
+        if (true === $onlyAvailableForSelling) {
+            $qb->andWhere('v.quantity - v.quantitySold > 0');
+        }
+
+        return $qb->orderBy('v.id', 'ASC')
             ->getQuery()
             ->getResult()
         ;

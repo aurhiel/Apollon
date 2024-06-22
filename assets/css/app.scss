@@ -78,12 +78,17 @@
   }
 }
 
-.app-body {
-  min-height: 80vh;
+.app-header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
 }
 
-.app-header {
-  z-index: 10;
+.app-body {
+  min-height: 80vh;
+  margin-top: 3.6rem;
 }
 
 .app-footer {
@@ -251,7 +256,7 @@
 
 
 //
-// Reponsive 
+// Reponsive
 
 @include media-breakpoint-up(md) {
   .app-player {

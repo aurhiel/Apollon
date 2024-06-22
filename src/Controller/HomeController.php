@@ -168,13 +168,9 @@ class HomeController extends AbstractController
             $em = $this->getDoctrine()->getManager();
             $artist = new Artist();
 
-            // 1) Build artist forms
+            // Build & handle artist form
             $form_artist = $this->createForm(ArtistType::class, $artist);
-
-            // 2) Handle artist forms
             $form_artist->handleRequest($request);
-
-            // 3) Save artist
             if ($form_artist->isSubmitted() && $form_artist->isValid()) {
                 // Check if artist is already in database
                 if (is_null($this->artistRepository->findOneByName($artist->getName()))) {
@@ -188,7 +184,7 @@ class HomeController extends AbstractController
 
                     $em->persist($artist);
 
-                    // 4) Try to save (flush) or clear
+                    // Try to save (flush) or clear
                     try {
                         // Flush OK !
                         $em->flush();
@@ -230,17 +226,13 @@ class HomeController extends AbstractController
                 }
             }
 
-            // 1) Build vinyl forms
+            // Build & handle vinyl form
             $form_vinyl = $this->createForm(VinylType::class, $vinyl);
-
-            // 2) Handle vinyl forms
             $form_vinyl->handleRequest($request);
-
-            // 3) Save vinyl
             if ($form_vinyl->isSubmitted() && $form_vinyl->isValid()) {
                 $em->persist($vinyl);
 
-                // 4) Try to save (flush) or clear
+                // Try to save (flush) or clear
                 try {
                     // Flush OK !
                     $em->flush();
@@ -270,7 +262,7 @@ class HomeController extends AbstractController
                     }
 
                     // Clear/reset form
-                    $vinyl      = new Vinyl();
+                    $vinyl = new Vinyl();
                     $form_vinyl = $this->createForm(VinylType::class, $vinyl);
                 } catch (\Exception $e) {
                     // Something goes wrong
@@ -311,7 +303,7 @@ class HomeController extends AbstractController
             'form_booking' => $form_booking->createView(),
             'form_artist' => isset($form_artist) ? $form_artist->createView() : null,
             'form_vinyl' => isset($form_vinyl) ? $form_vinyl->createView() : null,
-            'vinyls' => $this->vinylRepository->findAll(),
+            'vinyls' => $this->vinylRepository->findAll(!$authChecker->isGranted('ROLE_VIEWER')),
             'artists' => $this->artistRepository->findAll(),
             'is_vinyl_edit' => $is_vinyl_edit,
             'vinyl_to_edit' => $vinyl,
