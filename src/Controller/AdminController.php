@@ -42,27 +42,22 @@ class AdminController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         // Retrieve item to delete
-        $entity = $this->vinylRepository->findOneById($id);
+        $entity = $this->vinylRepository->findRequired($id);
 
-        if ($entity !== null) {
-            // Remove related images
-            $images = $entity->getImages();
-            foreach ($images as $image) {
-                // Delete image (file deleted in ImageListener)
-                $em->remove($image);
-            }
-
-            // Delete entity & flush
-            $em->remove($entity);
-            $em->flush();
-
-            // Set success message
-            $session->getFlashBag()->add('success',
-                'Le vinyle a bien été supprimé.');
-        } else {
-            $session->getFlashBag()->add('error',
-                'Le vinyle avec pour ID: <b>' . $id . '</b> n\'existe pas en base de données.');
+        // Remove related images
+        $images = $entity->getImages();
+        foreach ($images as $image) {
+            // Delete image (file deleted in ImageListener)
+            $em->remove($image);
         }
+
+        // Delete entity & flush
+        $em->remove($entity);
+        $em->flush();
+
+        // Set success message
+        $session->getFlashBag()->add('success',
+            'Le vinyle a bien été supprimé.');
 
         return $this->redirectToRoute('home');
     }
@@ -75,41 +70,32 @@ class AdminController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         // Retrieve item to update quantity
-        $entity = $this->vinylRepository->findOneById($id);
+        $entity = $this->vinylRepository->findRequired($id);
 
-        if ($entity !== null) {
-            // Update new vinyl quantity & persist it
-            $entity->setQuantity($entity->getQuantity() + (($type_update == '-1') ? -1 : 1));
-            $em->persist($entity);
+        // Update new vinyl quantity & persist it
+        $entity->setQuantity($entity->getQuantity() + (($type_update == '-1') ? -1 : 1));
+        $em->persist($entity);
 
-            // Try to save (flush) or clear
-            try {
-                // Flush OK !
-                $em->flush();
+        // Try to save (flush) or clear
+        try {
+            // Flush OK !
+            $em->flush();
 
-                $return_data = array(
-                    'query_status'    => 1,
-                    'message_status'  => 'Modification de la quantité effectuée avec succès.',
-                    'id_entity'       => $entity->getId(),
-                    'new_quantity'    => $entity->getQuantity(),
-                    'total_vinyls'    => $this->vinylRepository->countAll()
-                );
-            } catch (\Exception $e) {
-                // Something goes wrong
-                $em->clear();
-
-                $return_data = array(
-                    'query_status'    => 0,
-                    'exception'       => $e->getMessage(),
-                    'message_status'  => 'Un problème est survenu lors de la modification de la quantité.'
-                );
-            }
-        } else {
-            // Data to return/display
             $return_data = array(
-                'query_status'      => 0,
-                'slug_status'       => 'error',
-                'message_status'    => 'Le vinyle avec pour ID: "' . $id . '" n\'existe pas en base de données.'
+                'query_status'    => 1,
+                'message_status'  => 'Modification de la quantité effectuée avec succès.',
+                'id_entity'       => $entity->getId(),
+                'new_quantity'    => $entity->getQuantity(),
+                'total_vinyls'    => $this->vinylRepository->countAll()
+            );
+        } catch (\Exception $e) {
+            // Something goes wrong
+            $em->clear();
+
+            $return_data = array(
+                'query_status'    => 0,
+                'exception'       => $e->getMessage(),
+                'message_status'  => 'Un problème est survenu lors de la modification de la quantité.'
             );
         }
 
@@ -134,41 +120,32 @@ class AdminController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         // Retrieve item to update quantity
-        $entity = $this->vinylRepository->findOneById($id);
+        $entity = $this->vinylRepository->findRequired($id);
 
-        if ($entity !== null) {
-            // Update new vinyl quantity sold & persist it
-            $entity->setQuantitySold($entity->getQuantitySold() + (($type_update == '-1') ? -1 : 1));
-            $em->persist($entity);
+        // Update new vinyl quantity sold & persist it
+        $entity->setQuantitySold($entity->getQuantitySold() + (($type_update == '-1') ? -1 : 1));
+        $em->persist($entity);
 
-            // Try to save (flush) or clear
-            try {
-                // Flush OK !
-                $em->flush();
+        // Try to save (flush) or clear
+        try {
+            // Flush OK !
+            $em->flush();
 
-                $return_data = array(
-                    'query_status'    => 1,
-                    'message_status'  => 'Modification de la quantité vendue effectuée avec succès.',
-                    'id_entity'       => $entity->getId(),
-                    'new_quantity'    => $entity->getQuantitySold(),
-                    'total_vinyls'    => $this->vinylRepository->countAll()
-                );
-            } catch (\Exception $e) {
-                // Something goes wrong
-                $em->clear();
-
-                $return_data = array(
-                    'query_status'    => 0,
-                    'exception'       => $e->getMessage(),
-                    'message_status'  => 'Un problème est survenu lors de la modification de la quantité vendue.'
-                );
-            }
-        } else {
-            // Data to return/display
             $return_data = array(
-                'query_status'      => 0,
-                'slug_status'       => 'error',
-                'message_status'    => 'Le vinyle avec pour ID: "' . $id . '" n\'existe pas en base de données.'
+                'query_status'    => 1,
+                'message_status'  => 'Modification de la quantité vendue effectuée avec succès.',
+                'id_entity'       => $entity->getId(),
+                'new_quantity'    => $entity->getQuantitySold(),
+                'total_vinyls'    => $this->vinylRepository->countAll()
+            );
+        } catch (\Exception $e) {
+            // Something goes wrong
+            $em->clear();
+
+            $return_data = array(
+                'query_status'    => 0,
+                'exception'       => $e->getMessage(),
+                'message_status'  => 'Un problème est survenu lors de la modification de la quantité vendue.'
             );
         }
 
@@ -194,41 +171,32 @@ class AdminController extends AbstractController
         $em = $this->getDoctrine()->getManager();
 
         // Retrieve item to update quantity
-        $entity = $this->vinylRepository->findOneById($id);
+        $entity = $this->vinylRepository->findRequired($id);
 
-        if ($entity !== null) {
-            // Update new vinyl quantity sold & persist it
-            $entity->setQuantityWithCover($entity->getQuantityWithCover() + (($type_update == '-1') ? -1 : 1));
-            $em->persist($entity);
+        // Update new vinyl quantity sold & persist it
+        $entity->setQuantityWithCover($entity->getQuantityWithCover() + (($type_update == '-1') ? -1 : 1));
+        $em->persist($entity);
 
-            // Try to save (flush) or clear
-            try {
-                // Flush OK !
-                $em->flush();
+        // Try to save (flush) or clear
+        try {
+            // Flush OK !
+            $em->flush();
 
-                $return_data = array(
-                    'query_status'    => 1,
-                    'message_status'  => 'Modification de la quantité des vinyles avec une pochette effectuée avec succès.',
-                    'id_entity'       => $entity->getId(),
-                    'new_quantity'    => $entity->getQuantityWithCover(),
-                    'total_vinyls'    => $this->vinylRepository->countAll()
-                );
-            } catch (\Exception $e) {
-                // Something goes wrong
-                $em->clear();
-
-                $return_data = array(
-                    'query_status'    => 0,
-                    'exception'       => $e->getMessage(),
-                    'message_status'  => 'Un problème est survenu lors de la modification de la quantité des vinyles avec une pochette.'
-                );
-            }
-        } else {
-            // Data to return/display
             $return_data = array(
-                'query_status'      => 0,
-                'slug_status'       => 'error',
-                'message_status'    => 'Le vinyle avec pour ID: "' . $id . '" n\'existe pas en base de données.'
+                'query_status'    => 1,
+                'message_status'  => 'Modification de la quantité des vinyles avec une pochette effectuée avec succès.',
+                'id_entity'       => $entity->getId(),
+                'new_quantity'    => $entity->getQuantityWithCover(),
+                'total_vinyls'    => $this->vinylRepository->countAll()
+            );
+        } catch (\Exception $e) {
+            // Something goes wrong
+            $em->clear();
+
+            $return_data = array(
+                'query_status'    => 0,
+                'exception'       => $e->getMessage(),
+                'message_status'  => 'Un problème est survenu lors de la modification de la quantité des vinyles avec une pochette.'
             );
         }
 

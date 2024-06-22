@@ -55,9 +55,9 @@ class HomeController extends AbstractController
         $base_url = 'https://youtube.googleapis.com/youtube/v3/search?key='. $this->getParameter('g_auth_key') . '&maxResults=1';
         $em = $this->getDoctrine()->getManager();
         $return_data = [];
-        $entity = $this->vinylRepository->findOneById($id);
+        $entity = $this->vinylRepository->findRequired($id);
 
-        if ($entity !== null && ($trackFace == 'A' || $trackFace == 'B')) {
+        if ($trackFace == 'A' || $trackFace == 'B') {
           $methodGetYTID = "getTrackFace{$trackFace}YoutubeID";
           $methodGetTrack = "getTrackFace{$trackFace}";
           $youtubeID = $entity->{$methodGetYTID}();
@@ -130,7 +130,7 @@ class HomeController extends AbstractController
             $return_data = [
                 'query_status'      => 0,
                 'slug_status'       => 'error',
-                'message_status'    => 'Le vinyle avec pour ID: "' . $id . '" n\'existe pas en base de données.'
+                'message_status'    => 'Face de vinyle "' . $trackFace . '" invalide (valeurs possibles: A ou B)'
             ];
         }
 
@@ -159,9 +159,9 @@ class HomeController extends AbstractController
         ]);
 
         // Retrieve vinyl if asked ($is_vinyl_edit = true) or new one
-        $vinyl_edit     = $this->vinylRepository->findOneById($vinyl_id);
-        $is_vinyl_edit  = null !== $vinyl_edit;
-        $vinyl          = ($is_vinyl_edit === true) ? $vinyl_edit : new Vinyl();
+        $vinyl_edit = $this->vinylRepository->findOneById($vinyl_id);
+        $is_vinyl_edit = null !== $vinyl_edit;
+        $vinyl = ($is_vinyl_edit === true) ? $vinyl_edit : new Vinyl();
 
         // Only admin user can add vinyls & artists
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
@@ -302,7 +302,7 @@ class HomeController extends AbstractController
                     return $this->redirectToRoute('home');
             }
         }
-        
+
         $total_vinyls = (int) $this->vinylRepository->countAll();
         $nb_vinyls_sold = (int) $this->vinylRepository->countVinylsSold();
 
