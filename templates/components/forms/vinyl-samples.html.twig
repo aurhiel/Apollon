@@ -1,0 +1,46 @@
+{% include 'components/lists/samples-table.html.twig' with { samples: vinyl_to_edit.samples, editable: true } %}
+
+<div class="bg-secondary text-white rounded-3 p-3">
+  <div class="row g-2">
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 pt-2 form-group" data-bs-theme="light">
+      <label for="sample-rate-face-a" class="visually-hidden">Note face A</label>
+      <input type="range" class="form-range" min="0" max="5" name="sample-rate-face-a" id="sample-rate-face-a">
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 pt-2 me-md-4 me-lg-0 form-group" data-bs-theme="light">
+      <label for="sample-rate-face-b" class="visually-hidden">Note face B</label>
+      <input type="range" class="form-range" min="0" max="5" name="sample-rate-face-b" id="sample-rate-face-b">
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 form-group" data-bs-theme="light">
+      <label for="sample-cover-type" class="visually-hidden">Pochette</label>
+      <select name="sample-cover-type" class="form-control" id="sample-cover-type">
+        <option value="no-cover" selected="selected">Pas de pochette</option>
+        <option value="has-cover">Pochette d'origine</option>
+        <option value="generic-cover">Pochette générique</option>
+      </select>
+    </div>
+
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 pt-2 form-group" data-bs-theme="light">
+      <label for="sample-rate-cover" class="visually-hidden">Note pochette</label>
+      <input type="range" class="form-range" min="0" max="5" id="sample-rate-cover" disabled="disabled">
+    </div>
+
+    <div class="col-12 col-md-5 col-lg-3" data-bs-theme="light">
+      <label for="sample-price" class="visually-hidden">Prix</label>
+      <input type="number" class="form-control" step="0.1" name="sample-price" id="sample-price" placeholder="Prix du vinyle">
+    </div>
+
+    <div class="col-12 col-md-7 col-lg-9" data-bs-theme="light">
+      <label for="sample-details" class="visually-hidden">Détails</label>
+      <textarea name="sample-details" id="sample-details" class="form-control" rows="1"
+        placeholder="Détails sur le vinyle et la pochette (rayures, écritures, ...)"></textarea>
+    </div>
+
+    <div class="col-12 text-end">
+      <button id="add-sample-2-vinyl" class="btn btn-sm btn-primary" type="button" data-vinyl-id="{{ vinyl_to_edit.id }}">
+        <span class="bi-patch-plus-fill me-1"></span> exemplaire
+      </button>
+    </div>
+  </div>
+</div>

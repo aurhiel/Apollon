@@ -44,27 +44,22 @@
                     {% set total_vinyls = 0 %}
                     {% for vinyl in vinyls_to_sale %}
                       {% if vinyl.quantityAvailable > 0 %}
-                        {% set artists_str = null %}
-                        {% if vinyl.artists is not empty %}
-                          {% for artist in vinyl.artists %}
-                            {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
-                          {% endfor %}
-                        {% endif %}
                         {# Get vinyls data #}
                         {% set vinyl_qty = 0 %}
                         {% if is_advert_edit == true and advert_vinyls is not empty and advert_vinyls[vinyl.id] is defined %}
                           {% set vinyl_qty = advert_vinyls[vinyl.id].quantity %}
                         {% endif %}
-                        <li class="list-group-item -item-vinyl{% if vinyl_qty > 0 %} -selected{% endif %}" data-vinyl-id="{{ vinyl.id }}">
+                        <li class="list-group-item -item-vinyl{% if vinyl_qty > 0 %} -selected{% endif %}" data-vinyl-id="{{ vinyl.id }}"
+                          data-vinyl-rpm="{{ vinyl.rpm }}" data-vinyl-track-a="{{ vinyl.trackFaceA }}" data-vinyl-track-b="{{ vinyl.trackFaceB }}" data-vinyl-artists="{{ vinyl.artistsAsString }}">
                           <div class="row align-items-center">
                             <div class="col-9 col-lg-10">
                               <div class="row align-items-center">
                                 <div class="-vinyl-tracks col-12 col-lg-8" data-vinyl-rpm="{{ vinyl.rpm }}">
-                                  <span class="text-muted">Face A:</span> <b class="-vinyl-track-A">{{ vinyl.trackFaceA }}</b><br>
-                                  <span class="text-muted">Face B:</span> <b class="-vinyl-track-B">{{ vinyl.trackFaceB }}</b><br>
+                                  <span class="text-muted">Face A:</span> <b>{{ vinyl.trackFaceA }}</b><br>
+                                  <span class="text-muted">Face B:</span> <b>{{ vinyl.trackFaceB }}</b><br>
                                 </div>
                                 <div class="-vinyl-artists col-12 col-lg-4">
-                                  <small><span class="text-muted">Par</span> <i class="-list">{{ artists_str }}</i></small>
+                                  <small><span class="text-muted">Par</span> <i class="-list">{{ vinyl.artistsAsString }}</i></small>
                                 </div>
                               </div>
                             </div>

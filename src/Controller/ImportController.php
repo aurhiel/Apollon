@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Artist;
 use App\Entity\Vinyl;
 use App\Repository\ArtistRepository;
+use App\Repository\SampleRepository;
 use App\Repository\VinylRepository;
 use App\Service\CSVParser;
 
@@ -25,16 +26,19 @@ class ImportController extends AbstractController
 
     private string $environment;
     private ArtistRepository $artistRepository;
+    private SampleRepository $sampleRepository;
     private VinylRepository $vinylRepository;
     private CSVParser $csvParser;
 
     public function __construct(
         ArtistRepository $artistRepository,
+        SampleRepository $sampleRepository,
         VinylRepository $vinylRepository,
         KernelInterface $kernel,
         CSVParser $csvParser
     ) {
         $this->artistRepository = $artistRepository;
+        $this->sampleRepository = $sampleRepository;
         $this->vinylRepository = $vinylRepository;
         $this->environment = $kernel->getEnvironment();
         $this->csvParser = $csvParser;
@@ -70,6 +74,7 @@ class ImportController extends AbstractController
 
                 // Clear database (vinyls & artists)
                 if ($request->request->get('import-clear-db') === 'on') {
+                    $this->sampleRepository->resetDatabase();
                     $this->vinylRepository->resetDatabase();
                     $this->artistRepository->resetDatabase();
                 }
@@ -78,8 +83,12 @@ class ImportController extends AbstractController
                 if (!empty($vinyls_csv)) {
                     // Loop on CSV vinyls
                     foreach ($vinyls_csv as $data) {
-                        $vinyl = new Vinyl();
+                        // Avoid invalid lines
+                        if (!isset($data['face-a']) && !isset($data[1])) {
+                            continue;
+                        }
 
+                        $vinyl = new Vinyl();
                         // Set new vinyl fields
                         //  > Tracks
                         $vinyl->setTrackFaceA(isset($data['face-a']) ? $data['face-a'] : $data[1]);

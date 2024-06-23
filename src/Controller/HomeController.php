@@ -55,9 +55,9 @@ class HomeController extends AbstractController
         $base_url = 'https://youtube.googleapis.com/youtube/v3/search?key='. $this->getParameter('g_auth_key') . '&maxResults=1';
         $em = $this->getDoctrine()->getManager();
         $return_data = [];
-        $entity = $this->vinylRepository->findOneById($id);
+        $entity = $this->vinylRepository->findRequired($id);
 
-        if ($entity !== null && ($trackFace == 'A' || $trackFace == 'B')) {
+        if ($trackFace == 'A' || $trackFace == 'B') {
           $methodGetYTID = "getTrackFace{$trackFace}YoutubeID";
           $methodGetTrack = "getTrackFace{$trackFace}";
           $youtubeID = $entity->{$methodGetYTID}();
@@ -130,7 +130,7 @@ class HomeController extends AbstractController
             $return_data = [
                 'query_status'      => 0,
                 'slug_status'       => 'error',
-                'message_status'    => 'Le vinyle avec pour ID: "' . $id . '" n\'existe pas en base de données.'
+                'message_status'    => 'Face de vinyle "' . $trackFace . '" invalide (valeurs possibles: A ou B)'
             ];
         }
 
@@ -159,22 +159,18 @@ class HomeController extends AbstractController
         ]);
 
         // Retrieve vinyl if asked ($is_vinyl_edit = true) or new one
-        $vinyl_edit     = $this->vinylRepository->findOneById($vinyl_id);
-        $is_vinyl_edit  = null !== $vinyl_edit;
-        $vinyl          = ($is_vinyl_edit === true) ? $vinyl_edit : new Vinyl();
+        $vinyl_edit = $this->vinylRepository->findOneById($vinyl_id);
+        $is_vinyl_edit = null !== $vinyl_edit;
+        $vinyl = ($is_vinyl_edit === true) ? $vinyl_edit : new Vinyl();
 
         // Only admin user can add vinyls & artists
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
             $em = $this->getDoctrine()->getManager();
             $artist = new Artist();
 
-            // 1) Build artist forms
+            // Build & handle artist form
             $form_artist = $this->createForm(ArtistType::class, $artist);
-
-            // 2) Handle artist forms
             $form_artist->handleRequest($request);
-
-            // 3) Save artist
             if ($form_artist->isSubmitted() && $form_artist->isValid()) {
                 // Check if artist is already in database
                 if (is_null($this->artistRepository->findOneByName($artist->getName()))) {
@@ -188,7 +184,7 @@ class HomeController extends AbstractController
 
                     $em->persist($artist);
 
-                    // 4) Try to save (flush) or clear
+                    // Try to save (flush) or clear
                     try {
                         // Flush OK !
                         $em->flush();
@@ -230,17 +226,13 @@ class HomeController extends AbstractController
                 }
             }
 
-            // 1) Build vinyl forms
+            // Build & handle vinyl form
             $form_vinyl = $this->createForm(VinylType::class, $vinyl);
-
-            // 2) Handle vinyl forms
             $form_vinyl->handleRequest($request);
-
-            // 3) Save vinyl
             if ($form_vinyl->isSubmitted() && $form_vinyl->isValid()) {
                 $em->persist($vinyl);
 
-                // 4) Try to save (flush) or clear
+                // Try to save (flush) or clear
                 try {
                     // Flush OK !
                     $em->flush();
@@ -270,7 +262,7 @@ class HomeController extends AbstractController
                     }
 
                     // Clear/reset form
-                    $vinyl      = new Vinyl();
+                    $vinyl = new Vinyl();
                     $form_vinyl = $this->createForm(VinylType::class, $vinyl);
                 } catch (\Exception $e) {
                     // Something goes wrong
@@ -302,7 +294,7 @@ class HomeController extends AbstractController
                     return $this->redirectToRoute('home');
             }
         }
-        
+
         $total_vinyls = (int) $this->vinylRepository->countAll();
         $nb_vinyls_sold = (int) $this->vinylRepository->countVinylsSold();
 
@@ -311,7 +303,7 @@ class HomeController extends AbstractController
             'form_booking' => $form_booking->createView(),
             'form_artist' => isset($form_artist) ? $form_artist->createView() : null,
             'form_vinyl' => isset($form_vinyl) ? $form_vinyl->createView() : null,
-            'vinyls' => $this->vinylRepository->findAll(),
+            'vinyls' => $this->vinylRepository->findAll(!$authChecker->isGranted('ROLE_VIEWER')),
             'artists' => $this->artistRepository->findAll(),
             'is_vinyl_edit' => $is_vinyl_edit,
             'vinyl_to_edit' => $vinyl,

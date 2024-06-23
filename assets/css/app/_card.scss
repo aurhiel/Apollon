@@ -2,6 +2,11 @@
 //
 
 
+input[type="checkbox"]:checked ~ .card {
+  border-color: $primary;
+  box-shadow: 0 0 0 1px $primary;
+}
+
 .card-stats {
   user-select: none;
 
