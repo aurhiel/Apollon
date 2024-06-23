@@ -238,17 +238,25 @@
   }
 }
 
-
 #modal-manage-booking {
   textarea {
     min-height: 8rem;
   }
 }
 
+#modal-vinyl-samples {
+  .table {
+    tr {
+      th, td {
+        &:first-child { padding-left: 1rem }
+        &:last-child { padding-right: 1rem }
+      }
+    }
+  }
+}
 
 //
 // Color modes
-
 @include color-mode(dark) {
   .app-footer {
     background-color: $dark;
@@ -258,7 +266,6 @@
 
 //
 // Reponsive
-
 @include media-breakpoint-up(md) {
   .app-player {
     position: fixed;

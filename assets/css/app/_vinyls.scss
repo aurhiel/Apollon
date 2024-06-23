@@ -51,6 +51,21 @@
     position: relative;
     z-index: 0;
 
+    &[data-vinyl-rpm="45"] {
+      .card-subtitle {
+        bottom: .3rem;
+        right: .1rem;
+      }
+
+      .card-text {
+        padding-right: 1.4rem;
+      }
+
+      .icon-illustration {
+        font-size: 3.6rem;
+      }
+    }
+
     .vinyl-checkbox-is-selected {
       position: absolute;
       right: .8rem;
@@ -77,6 +92,17 @@
     > * { z-index: 5; }
   }
 
+  .card-subtitle {
+    position: absolute;
+    bottom: .9rem;
+    right: .45rem;
+    transform: rotateZ(45deg);
+  }
+
+  .card-text {
+    padding-right: 1.8rem;
+  }
+
   .icon-illustration {
     font-size: 4.2rem;
     position: absolute;
@@ -84,5 +110,12 @@
     bottom: -1.8rem;
     right: -.8rem;
     opacity: .05;
+  }
+
+  .-fake-link {
+    &:hover, &:focus {
+      text-decoration: underline;
+      cursor: pointer;
+    }
   }
 }
