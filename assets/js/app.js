@@ -193,8 +193,9 @@ var app = {
     this.$modal_advert = this.$body.find('#modal-manage-advert');
     this.$modal_confirm = this.$body.find('#modal-confirm-delete');
     // Vinyls list container
-    this.$vinyls = this.$body.find('.vinyls-entities');
+    this.$vinyls = this.$body.find('.vinyls-entities > .-item-vinyl');
     this.$vinyls_total_qty = this.$body.find('.-vinyls-total-quantity');
+    this.$vinyls_modal_samples = this.$body.find('#modal-vinyl-samples');
     // Adverts list container
     this.$adverts = this.$body.find('#advers-entities');
     // Booking nodes
@@ -343,7 +344,7 @@ var app = {
           $container.find('input[value="' + $container.data('ms-autoselect') + '"]').prop('checked', true);
       });
 
-      // Event:Images library preview
+      // Event: Images library preview
       self.$body.on('change', '.form-image-lib input', function() {
         var $file_input = $(this);
         var files       = $file_input.get(0).files;
@@ -365,7 +366,7 @@ var app = {
         }
       });
 
-      // Event:Delete image
+      // Event: Delete image
       self.$body.on('click', '.btn-delete-img', function(e) {
         var $modal = self.$modal_advert.length > 0 ? self.$modal_advert : self.$modal_vinyl;
 
@@ -395,11 +396,18 @@ var app = {
         return self.stopEvent(e);
       });
 
-      // Event:Disable every form's buttons after submitting the form
+      // Event: Disable every form's buttons after submitting the form
       self.$body.find('.form').on('submit', function() {
         $(this).find('.btn').addClass('disabled');
       });
 
+      // Event:
+      self.$vinyls_modal_samples.get(0).addEventListener('show.bs.modal', function (e) {
+        var vinyl_id = $(e.relatedTarget).data('vinyl-id');
+        var $vinyl = self.$vinyls.filter('[data-vinyl-id="' + vinyl_id + '"]');
+
+        self.$vinyls_modal_samples.find('.modal-summary').html($($vinyl.find('.modal-samples-content').html()));
+      });
 
       //
       // Vinyls
@@ -456,7 +464,7 @@ var app = {
               $row.append($('<td/>').append(self.rateStarsNodeGen(sample.rateFaceA)));
               $row.append($('<td/>').append(self.rateStarsNodeGen(sample.rateFaceB)));
               //  > Cover info
-              var coverTxt = 'Aucune pochette';
+              var coverTxt = '-';
               if (sample.hasCover) {
                 coverTxt = self.rateStarsNodeGen(sample.rateCover);
               } else if (sample.hasGenericCover) {

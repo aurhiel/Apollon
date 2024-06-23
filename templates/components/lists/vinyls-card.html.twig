@@ -1,5 +1,5 @@
 {% if vinyls is not empty %}
-  <div class="vinyls-entities vinyls-entities--card row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-2">
+<div class="vinyls-entities vinyls-entities--card row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-2">
   {% for vinyl in vinyls %}
     <div class="-item-vinyl col{% if vinyl.quantityAvailable < 1 %} sold-out{% if is_granted('ROLE_ADMIN') == false %} disabled{% endif %}{% endif %}" data-vinyl-id="{{ vinyl.id }}"
       data-vinyl-rpm="{{ vinyl.rpm }}" data-vinyl-track-a="{{ vinyl.trackFaceA }}" data-vinyl-track-b="{{ vinyl.trackFaceB }}" data-vinyl-artists="{{ vinyl.artistsAsString }}">
@@ -19,7 +19,7 @@
             <div class="text-truncate"><b>Face B:</b> <span data-apo-toggle="play-track" data-track-face="B">{{ vinyl.trackFaceB }}</span></div>
           </div>
         </div>
-        <div class="card-footer py-1 px-2 small">
+        <div class="card-footer position-relative py-1 px-2 small">
         {% if is_granted('ROLE_ADMIN') %}
           <div class="row align-items-center">
             <div class="col text-truncate">
@@ -52,11 +52,19 @@
                 {% endif %}
               {% endif %}
             </div>
+            {% if vinyl.samples is not empty %}
+              <div class="col-auto">
+                <span class="bi-info-circle-fill text-primary ms-2 stretched-link" data-bs-toggle="modal" data-bs-target="#modal-vinyl-samples" data-vinyl-id="{{ vinyl.id }}"></span>
+                <div class="d-none modal-samples-content">
+                  {% include 'components/lists/samples-table.html.twig' with { samples: vinyl.samples } %}
+                </div>
+              </div>
+            {% endif %}
           </div>
         {% endif %}
         </div>
       </div>
     </div>
   {% endfor %}
-  </div>
+</div>
 {% endif %}
