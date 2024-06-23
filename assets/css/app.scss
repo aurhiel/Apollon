@@ -23,6 +23,7 @@
 @import 'app/lists';
 @import 'app/navbar';
 @import 'app/popover';
+@import 'app/vinyls';
 
 
 // App helpers (position, ...)
@@ -78,12 +79,17 @@
   }
 }
 
-.app-body {
-  min-height: 80vh;
+.app-header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
 }
 
-.app-header {
-  z-index: 10;
+.app-body {
+  min-height: 80vh;
+  margin-top: 3.6rem;
 }
 
 .app-footer {
@@ -232,17 +238,25 @@
   }
 }
 
-
 #modal-manage-booking {
   textarea {
     min-height: 8rem;
   }
 }
 
+#modal-vinyl-samples {
+  .table {
+    tr {
+      th, td {
+        &:first-child { padding-left: 1rem }
+        &:last-child { padding-right: 1rem }
+      }
+    }
+  }
+}
 
 //
 // Color modes
-
 @include color-mode(dark) {
   .app-footer {
     background-color: $dark;
@@ -251,8 +265,7 @@
 
 
 //
-// Reponsive 
-
+// Reponsive
 @include media-breakpoint-up(md) {
   .app-player {
     position: fixed;

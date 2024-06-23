@@ -28,13 +28,7 @@
 --
 
 Voici {% if vinyls_selected|length > 1 %}la liste des vinyles sélectionnés{% else %}le vinyle sélectionné{% endif %}:
-  
+
 {% for vinyl in vinyls_selected %}
-  {% set artists_str = null %}
-  {% if vinyl.artists is not empty %}
-    {% for artist in vinyl.artists %}
-      {% set artists_str = artists_str ~ artist.name ~ (loop.last == false ? ', ' : '') %}
-    {% endfor %}
-  {% endif %}
-  {{ artists_str }}: {{ vinyl.trackFaceA }} / {{ vinyl.trackFaceB }}
+  {{ vinyl.artistsAsString }}: {{ vinyl.trackFaceA }} / {{ vinyl.trackFaceB }}
 {% endfor %}

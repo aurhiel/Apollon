@@ -175,11 +175,65 @@ var app = {
     return Object.keys(object).sort().reduce((r, k) => (r[k] = object[k], r), {});
   },
   // Page loading
-  loading : function() {
+  loading: function() {
     this.$body.addClass('is-loading');
   },
-  unload : function() {
+  unload: function() {
     this.$body.removeClass('is-loading');
+  },
+  initNodes: function() {
+    // Player
+    this.$player = this.$body.find('.app-player');
+    // Header
+    this.$header = this.$body.find('.app-header');
+    // Modals
+    this.$modal_booking = this.$body.find('#modal-manage-booking');
+    this.$modal_artist = this.$body.find('#modal-manage-artist');
+    this.$modal_vinyl = this.$body.find('#modal-manage-vinyl');
+    this.$modal_advert = this.$body.find('#modal-manage-advert');
+    this.$modal_confirm = this.$body.find('#modal-confirm-delete');
+    // Vinyls list container
+    this.$vinyls = this.$body.find('.vinyls-entities > .-item-vinyl');
+    this.$vinyls_total_qty = this.$body.find('.-vinyls-total-quantity');
+    this.$vinyls_modal_samples = this.$body.find('#modal-vinyl-samples');
+    // Adverts list container
+    this.$adverts = this.$body.find('#advers-entities');
+    // Booking nodes
+    this.$booking_form = this.$modal_booking.find('form');
+    this.$booking_input_price = this.$booking_form.find('#booking_price');
+    this.$booking_input_title = this.$booking_form.find('#booking_title');
+    this.$booking_vinyls = this.$booking_form.find('.vinyls-entities');
+    this.$booking_vinyl_row = this.$booking_vinyls.find('tbody > tr').clone();
+    this.$booking_total_selected = this.$booking_form.find('.-vinyls-total-selected > .-amount');
+    // // Reset vinyls table body
+    this.$booking_vinyls.find('tbody').empty();
+    // Samples nodes
+    this.$samples_list = this.$modal_vinyl.find('#vinyl-samples');
+    this.$sample_face_a_rate = this.$modal_vinyl.find('#sample-rate-face-a');
+    this.$sample_face_b_rate = this.$modal_vinyl.find('#sample-rate-face-b');
+    this.$sample_cover_type = this.$modal_vinyl.find('#sample-cover-type');
+    this.$sample_cover_rate = this.$modal_vinyl.find('#sample-rate-cover');
+    this.$sample_price = this.$modal_vinyl.find('#sample-price');
+    this.$sample_details = this.$modal_vinyl.find('#sample-details');
+    this.$sample_btn_add = this.$modal_vinyl.find('#add-sample-2-vinyl');
+  },
+  // Ultimate-stop smashing events !
+  stopEvent: function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  },
+  rateStarsNodeGen: function(rate) {
+    var $main = $('<span class="inline-block"></span>');
+
+    for (let i = 1; i <= 5; i++) {
+      $main.append($('<span class="' +
+        ('bi-star' + ((rate >= i) ? '-fill' : '')) +
+        (i > 1 ? ' ms-1' : '') + '"/>'
+      ));
+    }
+
+    return $main;
   },
   // Rocket launcher ! > code executed immediately (before document ready)
   launch : function() {
@@ -190,58 +244,23 @@ var app = {
     // Le viss
     var self = this;
     // Set nodes
-    self.$body      = $('.app-core');
+    self.$body = $('.app-core');
     self.$html_body = $('html, body')
-    self.$window    = $(window);
+    self.$window = $(window);
 
-    //
-    // Set loading
     self.loading();
-
 
     //
     // Doc ready
     (function() {
       console.log('🌱 Radis ! ~');
 
-      //
-      // Variables
-      self.$player = self.$body.find('.app-player');
-      // Header
-      self.$header = self.$body.find('.app-header');
-      // Modals
-      self.$modal_booking = self.$body.find('#modal-manage-booking');
-      self.$modal_artist  = self.$body.find('#modal-manage-artist');
-      self.$modal_vinyl   = self.$body.find('#modal-manage-vinyl');
-      self.$modal_advert  = self.$body.find('#modal-manage-advert');
-      self.$modal_confirm = self.$body.find('#modal-confirm-delete');
-      // Vinyls list container
-      self.$vinyls = self.$body.find('.vinyls-entities');
-      self.$vinyls_total_qty = self.$body.find('.-vinyls-total-quantity');
-      // Adverts list container
-      self.$adverts = self.$body.find('#advers-entities');
-      // Booking nodes
-      self.$booking_form = self.$modal_booking.find('form');
-      self.$booking_input_price = self.$booking_form.find('#booking_price');
-      self.$booking_input_title = self.$booking_form.find('#booking_title');
-      self.$booking_vinyls = self.$booking_form.find('.vinyls-entities');
-      self.$booking_vinyl_row = self.$booking_vinyls.find('tbody > tr').clone();
-      self.$booking_total_selected = self.$booking_form.find('.-vinyls-total-selected > .-amount');
-      // // Reset vinyls table body
-      self.$booking_vinyls.find('tbody').empty();
-
-
-      //
-      // Remove loading (not used yet...)
+      self.initNodes();
       self.unload();
 
-
-      //
       // Clipboard JS
       clipboard.launch();
 
-
-      //
       // Bootstrap
       // BS: Tooltips
       self.$body.find('[data-bs-toggle="tooltip"]').tooltip();
@@ -254,16 +273,12 @@ var app = {
           return new Popover(popoverTriggerEl);
       });
 
-
-      //
       // Table sortable
       var $sortable = self.$body.find('.table-sortable');
       if ($sortable.length > 0) {
         $sortable.tablesort().data('tablesort').sort($("th.default-sort"));
       }
 
-
-      //
       // Globals / Generics
       // Trigger scroll event after ready to display elements already on screen
       // self.$window.trigger('scroll');
@@ -329,7 +344,7 @@ var app = {
           $container.find('input[value="' + $container.data('ms-autoselect') + '"]').prop('checked', true);
       });
 
-      // Event:Images library preview
+      // Event: Images library preview
       self.$body.on('change', '.form-image-lib input', function() {
         var $file_input = $(this);
         var files       = $file_input.get(0).files;
@@ -351,7 +366,7 @@ var app = {
         }
       });
 
-      // Event:Delete image
+      // Event: Delete image
       self.$body.on('click', '.btn-delete-img', function(e) {
         var $modal = self.$modal_advert.length > 0 ? self.$modal_advert : self.$modal_vinyl;
 
@@ -378,32 +393,122 @@ var app = {
           }
         });
 
-        // Ultimate-stop smashing
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+        return self.stopEvent(e);
       });
 
-      // Event:Disable every form's buttons after submitting the form
+      // Event: Disable every form's buttons after submitting the form
       self.$body.find('.form').on('submit', function() {
         $(this).find('.btn').addClass('disabled');
       });
 
+      // Event:
+      self.$vinyls_modal_samples.get(0).addEventListener('show.bs.modal', function (e) {
+        var vinyl_id = $(e.relatedTarget).data('vinyl-id');
+        var $vinyl = self.$vinyls.filter('[data-vinyl-id="' + vinyl_id + '"]');
+
+        self.$vinyls_modal_samples.find('.modal-summary').html($($vinyl.find('.modal-samples-content').html()));
+      });
 
       //
       // Vinyls
-      // Auto open vinyl modal on edit & add event on modal hide
       if (self.$modal_vinyl.hasClass('-is-edit')) {
+        // Auto open vinyl modal on edit & add event on modal hide
         self.$header.find('.btn[name="toggle-modal-form-vinyl"]').trigger('click');
 
         // Redirect on hide (= cancel edit)
         self.$modal_vinyl.get(0).addEventListener('hide.bs.modal', function(e) {
           window.location.href = "/";
+          return self.stopEvent(e);
+        });
 
-          // Ultimate-stop smashing
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
+        // Samples
+        self.$sample_cover_type.on('change', function() {
+          if (this.value == 'has-cover') {
+            self.$sample_cover_rate.removeAttr('disabled');
+          } else {
+            self.$sample_cover_rate.attr('disabled', 'disabled');
+          }
+        });
+        self.$sample_btn_add.on('click', function(e) {
+          var payload = {
+            'vinyl-id': parseInt(self.$sample_btn_add.attr('data-vinyl-id')),
+            'rate-face-a': self.$sample_face_a_rate.val(),
+            'rate-face-b': self.$sample_face_b_rate.val(),
+            'price': self.$sample_price.val(),
+            'details': self.$sample_details.val()
+          };
+
+          if (self.$sample_cover_type.val() == 'has-cover') {
+            payload['has-cover'] = true;
+            payload['rate-cover'] = self.$sample_cover_rate.val();
+          } else if (self.$sample_cover_type.val() == 'generic-cover') {
+            payload['has-generic-cover'] = true;
+          }
+
+          $.ajax({
+            method: 'POST',
+            url: '/exemplaires',
+            data: payload,
+            error: function() { alert('Un problème est survenu lors de l\'ajout...') },
+            success: function(sample) {
+              // Clean form.
+              self.$sample_face_a_rate.val(3);
+              self.$sample_face_b_rate.val(3);
+              self.$sample_cover_type.val('no-cover');
+              self.$sample_cover_rate.val(3).prop('disabled', true);
+              self.$sample_price.val('');
+              self.$sample_details.val('');
+
+              // Generate new sample row...
+              var $row = $('<tr data-sample-id="' + sample.id + '"></tr>');
+              $row.append($('<td/>').append(self.rateStarsNodeGen(sample.rateFaceA)));
+              $row.append($('<td/>').append(self.rateStarsNodeGen(sample.rateFaceB)));
+              //  > Cover info
+              var coverTxt = '-';
+              if (sample.hasCover) {
+                coverTxt = self.rateStarsNodeGen(sample.rateCover);
+              } else if (sample.hasGenericCover) {
+                coverTxt = 'Générique';
+              }
+              $row.append($('<td/>').append(coverTxt));
+              $row.append($('<td>' + sample.price + '€</td>'));
+              //  > Actions (TODO: details button)
+              var $btnDelete = $('<a tabindex="0" class="btn btn-sm btn-outline-danger px-2 py-1"/>')
+                .attr('data-bs-toggle', 'popover')
+                .attr('data-bs-trigger', 'focus')
+                .attr('data-bs-html', 'true')
+                .attr('data-bs-placement', 'left')
+                .attr('data-bs-content', "Êtes-vous sûr de vouloir supprimer cet exemplaire de vinyle ? <div class='mt-2 text-end'><a class='btn btn-sm btn-danger btn-delete-sample' href='/exemplaires/"+sample.id+"'>Oui</a></div>")
+                .append($('<span class="bi-trash"/>'))
+              ;
+              new Popover($btnDelete.get(0));
+              $row.append($('<td class="text-end"/>').append($btnDelete));
+
+              // ... then append the new sample's row to samples table
+              self.$samples_list.find('tbody').append($row);
+
+            }
+          });
+
+          return self.stopEvent(e);
+        });
+        self.$body.on('click', '.btn-delete-sample', function(e) {
+          var $link = $(this);
+          // Erh, data attribute not working... ¯\_(ツ)_/¯
+          var sample_id = $link.attr('href').split('/');
+          sample_id = parseInt(sample_id[sample_id.length - 1]);
+
+          $.ajax({
+            method: 'DELETE',
+            url: $link.attr('href'),
+            error: function() { alert('Un problème est survenu lors de la suppression...') },
+            success: function() {
+              // Delete sample row
+              self.$samples_list.find('tbody > tr[data-sample-id="' + sample_id + '"]').remove();
+            }
+          });
+
+          return self.stopEvent(e);
         });
       }
       // Button to update vinyls quantity (total & sold)
@@ -447,9 +552,9 @@ var app = {
       var user_vinyls_selected = {};
       self.$vinyls.on('change', '.vinyl-checkbox-is-selected', function() {
         var $checkbox = $(this);
-        var $vinyl    = $checkbox.parents('.-item-vinyl').first();
-        var vinyl_id  = $vinyl.data('vinyl-id');
-        var artists_str = $vinyl.find('.-artists-list-raw').data('value');
+        var $vinyl = $checkbox.parents('.-item-vinyl').first();
+        var vinyl_id = $vinyl.data('vinyl-id');
+        var artists_str = $vinyl.data('vinyl-artists');
 
         // Add or remove vinyl from selected list
         if ($checkbox.prop('checked') === true) {
@@ -462,10 +567,10 @@ var app = {
 
           // Push new track
           user_vinyls_selected[artists_str].tracks[vinyl_id] = {
-            rpm: $vinyl.find('.col-rpm').html(),
-            face_A: $vinyl.find('.-vinyl-track-A').html(),
-            face_B: $vinyl.find('.-vinyl-track-B').html(),
-            quantity_with_cover: $vinyl.find('.col-quantity.-with-cover').data('qty-value')
+            rpm: $vinyl.data('vinyl-rpm'),
+            face_A: $vinyl.data('vinyl-track-a'),
+            face_B: $vinyl.data('vinyl-track-b'),
+            quantity_with_cover: $vinyl.find('.-vinyl-qty-with-cover').data('qty-value')
           };
           user_total_selected++;
         } else {
@@ -487,7 +592,7 @@ var app = {
           $tb_buttons.removeClass('btn-primary').addClass('btn-secondary').prop('disabled', true);
         }
       });
-      // Click on toolbox action buttons (Copy or Book)
+      // Click on toolbox action buttons (Copy or Booking)
       $tb_buttons.on('click', function() {
         var $btn = $(this);
 
@@ -652,8 +757,8 @@ var app = {
 
             // Push new track
             vinyls_selected[artists_str].tracks[vinyl_id] = {
-              face_A: $vinyl.find('.-vinyl-track-A').html(),
-              face_B: $vinyl.find('.-vinyl-track-B').html(),
+              face_A: $vinyl.data('vinyl-track-a'),
+              face_B: $vinyl.data('vinyl-track-b'),
               quantity: new_qty,
             };
             $vinyl.addClass('-selected');
@@ -744,11 +849,7 @@ var app = {
         // Redirect on hide (= cancel edit)
         self.$modal_advert.get(0).addEventListener('hide.bs.modal', function(e) {
           window.location.href = "/annonces";
-
-          // Ultimate-stop smashing
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
+          return self.stopEvent(e);
         });
       }
       // Event:Display adverts gallery
@@ -796,26 +897,21 @@ var app = {
           }
         });
 
-        // Ultimate-stop smashing
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+        return self.stopEvent(e);
       });
 
 
       //
       // YouTube player & fun
       // Create YouTube player (iframe & co) using JS
-      self.$vinyls.on('click', 'td.col-track', function() {
-        var $col    = $(this);
-        var $row    = $col.parents('tr').first();
-        var id_vinyl = $row.data('vinyl-id');
-        var track_face  = $col.data('track-face');
+      self.$vinyls.on('click', '[data-apo-toggle="play-track"]', function() {
+        var $track = $(this);
+        var $vinyl = $track.parents('.-item-vinyl').first();
 
         // Get youtube videos
         $.ajax({
           method: 'POST',
-          url: '/vinyles/' + id_vinyl + '/' + track_face + '/youtube-id',
+          url: '/vinyles/' + $vinyl.data('vinyl-id') + '/' + $track.data('track-face') + '/youtube-id',
           success: function(r) {
             if (r.query_status == 1 && r.youtube_id != null) {
               // Update artist & track title

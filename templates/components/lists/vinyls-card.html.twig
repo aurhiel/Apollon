@@ -1,0 +1,70 @@
+{% if vinyls is not empty %}
+<div class="vinyls-entities vinyls-entities--card row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-2">
+  {% for vinyl in vinyls %}
+    <div class="-item-vinyl col{% if vinyl.quantityAvailable < 1 %} sold-out{% if is_granted('ROLE_ADMIN') == false %} disabled{% endif %}{% endif %}" data-vinyl-id="{{ vinyl.id }}"
+      data-vinyl-rpm="{{ vinyl.rpm }}" data-vinyl-track-a="{{ vinyl.trackFaceA }}" data-vinyl-track-b="{{ vinyl.trackFaceB }}" data-vinyl-artists="{{ vinyl.artistsAsString }}">
+      <input id="vinyl-{{ vinyl.id }}-selected" class="form-check-input vinyl-checkbox-is-selected"
+        type="checkbox" value="{{ vinyl.id }}"{% if vinyl.quantityAvailable < 1 %} disabled{% endif %}>
+      <div class="card position-relative">
+        <div class="card-body p-2">
+          <span class="icon-illustration bi-disc"></span>
+          <label class="card-title d-block h5 text-truncate mb-0" for="vinyl-{{ vinyl.id }}-selected">
+            {{ vinyl.artistsAsString }}
+          </label>
+          <small class="card-subtitle d-block mb-1 text-body-secondary fw-bold">
+            {{ vinyl.rpm }} tours
+          </small>
+          <div class="card-text small">
+            <div class="text-truncate"><b>Face A:</b> <span data-apo-toggle="play-track" data-track-face="A">{{ vinyl.trackFaceA }}</span></div>
+            <div class="text-truncate"><b>Face B:</b> <span data-apo-toggle="play-track" data-track-face="B">{{ vinyl.trackFaceB }}</span></div>
+          </div>
+        </div>
+        <div class="card-footer position-relative py-1 px-2 small">
+        {% if is_granted('ROLE_ADMIN') %}
+          <div class="row align-items-center">
+            <div class="col text-truncate">
+              Qantité: <b>{{ vinyl.quantityAvailable }}</b>
+              {% if vinyl.quantityAvailableWithCover > 0 %}
+              | Pochette: <b>{{ vinyl.quantityAvailableWithCover }}</b>
+              {% endif %}
+            </div>
+            <div class="col-auto">
+              <a class="badge text-bg-secondary"
+                href="{{ path('home', { vinyl_id: vinyl.id }) }}">
+                <span class="bi-pencil-square"></span>
+              </a>
+              <a class="badge text-bg-danger px-2 py-1"
+                data-confirm-href="{{ path('vinyl_delete', { id: vinyl.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer ce vinyle ?<br>- Face A: <b>{{ vinyl.trackFaceA }}</b><br>- Face B: <b>{{ vinyl.trackFaceB }}</b><br><i>{{ vinyl.artistsAsString }}</i>"
+                  data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
+                <span class="bi-trash"></span>
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <div class="row align-items-center">
+            <div class="col text-truncate">
+              <b>{{ vinyl.quantityAvailable }}</b> exemplaire{% if vinyl.quantityAvailable > 1 %}s{% endif %}
+              {% if vinyl.quantityAvailableWithCover > 0 %}
+                {% if vinyl.quantityAvailableWithCover == vinyl.quantityAvailable %}
+                  avec pochette
+                {% else %}
+                  dont <span class="-vinyl-qty-with-cover fw-bold" data-qty-value="{{ vinyl.quantityAvailableWithCover }}">{{ vinyl.quantityAvailableWithCover }}</span> avec pochette
+                {% endif %}
+              {% endif %}
+            </div>
+            {% if vinyl.samples is not empty %}
+              <div class="col-auto">
+                <span class="bi-info-circle-fill text-primary ms-2 stretched-link" data-bs-toggle="modal" data-bs-target="#modal-vinyl-samples" data-vinyl-id="{{ vinyl.id }}"></span>
+                <div class="d-none modal-samples-content">
+                  {% include 'components/lists/samples-table.html.twig' with { samples: vinyl.samples } %}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}

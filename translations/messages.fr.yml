@@ -60,6 +60,9 @@ form_vinyl :
   qty_sold :
     label       : "Quantité vendue"
     placeholder : "Quantité vendue"
+  qty_cover :
+    label       : "Quantité avec pochette"
+    placeholder : "Quantité avec pochette"
   track_face_a :
     label       : "Face A"
     placeholder : "Face A"
@@ -72,3 +75,5 @@ form_vinyl :
   notes :
     label       : "Notes"
     placeholder : "Ajoutez ici l'état des faces du vinyle, de la pochette, ..."
+  samples :
+    label       : "Exemplaires"

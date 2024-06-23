@@ -61,7 +61,7 @@ class Vinyl
     private $quantitySold = 0;
 
     /**
-     * @ORM\Column(type="smallint", nullable=true)
+     * @ORM\Column(type="smallint")
      */
     private $quantityWithCover = 0;
 
@@ -80,11 +80,17 @@ class Vinyl
      */
     private $images;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Sample::class, mappedBy="vinyl", orphanRemoval=true)
+     */
+    private $samples;
+
     public function __construct()
     {
         $this->artists = new ArrayCollection();
         $this->inSales = new ArrayCollection();
         $this->images = new ArrayCollection();
+        $this->samples = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -160,6 +166,13 @@ class Vinyl
         return $this->artists;
     }
 
+    public function getArtistsAsString(): string
+    {
+        return implode(', ', array_map(function($artist) {
+            return $artist->getName();
+        }, $this->artists->toArray()));
+    }
+
     public function addArtist(Artist $artist): self
     {
         if (!$this->artists->contains($artist)) {
@@ -202,15 +215,20 @@ class Vinyl
 
     public function getQuantityAvailable()
     {
-        return $this->quantity - $this->quantitySold;
+        return max($this->quantity - $this->quantitySold, 0);
     }
 
-    public function getQuantityWithCover(): ?int
+    public function getQuantityWithCover(): int
     {
         return $this->quantityWithCover;
     }
 
-    public function setQuantityWithCover(?int $quantityWithCover): self
+    public function getQuantityAvailableWithCover(): int
+    {
+        return max($this->quantityWithCover - $this->quantitySold, 0);
+    }
+
+    public function setQuantityWithCover(int $quantityWithCover): self
     {
         $this->quantityWithCover = $quantityWithCover;
 
@@ -283,6 +301,36 @@ class Vinyl
             // set the owning side to null (unless already changed)
             if ($image->getVinyl() === $this) {
                 $image->setVinyl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Sample[]
+     */
+    public function getSamples(): Collection
+    {
+        return $this->samples;
+    }
+
+    public function addSample(Sample $sample): self
+    {
+        if (!$this->samples->contains($sample)) {
+            $this->samples[] = $sample;
+            $sample->setVinyl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSample(Sample $sample): self
+    {
+        if ($this->samples->removeElement($sample)) {
+            // set the owning side to null (unless already changed)
+            if ($sample->getVinyl() === $this) {
+                $sample->setVinyl(null);
             }
         }
 
