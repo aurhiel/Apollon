@@ -19,7 +19,7 @@
                 </div>
                 <div class="col-12 col-sm-5 col-lg-3 form-group" data-bs-theme="light">
                   {{ form_label(form_booking.price) }}
-                  <span title="{{ 'form_booking.price.help_text'|trans }}" 
+                  <span title="{{ 'form_booking.price.help_text'|trans }}"
                     class="icon bi-info-circle text-warning ms-1" data-bs-toggle="tooltip"></span>
                   <div class="input-group">
                     {{ form_widget(form_booking.price) }}
@@ -42,9 +42,9 @@
                         <tr>
                           <th scope="col" class="col-id">#</th>
                           <th scope="col" class="col-rpm">T.</th>
+                          <th scope="col" class="col-artist">Artiste(s)</th>
                           <th scope="col" class="col-track">Face A</th>
                           <th scope="col" class="col-track">Face B</th>
-                          <th scope="col" class="col-artist">Artiste(s)</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -55,14 +55,12 @@
                               id="advert_vinyl_#ID#_qty" value="1">
                           </th>
                           <td class="col-rpm">#RPM#</td>
+                          <td class="col-artist">#ARTIST#</td>
                           <td class="col-track" data-track-face="A">
                             <span class="-text">#TRACK_A#</span>&nbsp;<span class="-icon-play icon-play-circle"></span>
                           </td>
                           <td class="col-track" data-track-face="B">
                             <span class="-text">#TRACK_B#</span>&nbsp;<span class="-icon-play icon-play-circle"></span>
-                          </td>
-                          <td class="col-artist">
-                            #ARTIST#
                           </td>
                         </tr>
                       </tbody>

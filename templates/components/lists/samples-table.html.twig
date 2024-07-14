@@ -1,46 +1,48 @@
 {% set editable = editable is not defined ? false : editable %}
-<div class="table-responsive">
-  <table id="vinyl-samples" class="table table-striped">
-    <thead>
-      <tr>
-        <th>Face A</th>
-        <th>Face B</th>
-        <th>Pochette</th>
-        <th>Prix</th>
-        {% if editable %}<th></th>{% endif %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for sample in samples %}
-        {% set coverRateTxt = '-' %}
-        {% if sample.hasCover %}
-          {% set coverRateTxt %}
-            {% include 'components/rate-stars.html.twig' with { rate: sample.rateCover } %}
-          {% endset %}
-        {% elseif sample.hasGenericCover %}
-          {% set coverRateTxt = 'Générique' %}
-        {% endif %}
-        <tr data-sample-id="{{ sample.id }}">
-          <td>{% include 'components/rate-stars.html.twig' with { rate: sample.rateFaceA } %}</td>
-          <td>{% include 'components/rate-stars.html.twig' with { rate: sample.rateFaceB } %}</td>
-          <td>{{ coverRateTxt }}</td>
-          <td>{{ sample.price|number_format(2, ',') }}€</td>
-          {% if editable %}
-          <td class="text-end">
-            {% if sample.details is not empty %}
-              <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1" data-bs-toggle="popover" data-bs-html="true" data-bs-placement="left"
-                title="Infos supplémentaires" data-bs-content="{{ sample.details|spaceless }}">
-                <span class="bi-file-plus"></span>
-              </button>
-            {% endif %}
-            <a tabindex="0" class="btn btn-sm btn-outline-danger px-2 py-1" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-html="true" data-bs-placement="left"
-              data-bs-content="Êtes-vous sûr de vouloir supprimer cet exemplaire de vinyle ? <div class='mt-2 text-end'><a class='btn btn-sm btn-danger btn-delete-sample' href='{{ path('samples_delete', { sample_id: sample.id }) }}'>Oui</a></div>">
-              <span class="bi-trash"></span>
-            </a>
-          </td>
-          {% endif %}
+{% if samples is defined and samples is not empty %}
+  <div class="table-responsive">
+    <table class="vinyl-samples table table-striped">
+      <thead>
+        <tr>
+          <th>Face A</th>
+          <th>Face B</th>
+          <th>Pochette</th>
+          <th>Prix</th>
+          {% if editable %}<th></th>{% endif %}
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        {% for sample in samples %}
+          {% set coverRateTxt = '-' %}
+          {% if sample.hasCover %}
+            {% set coverRateTxt %}
+              {% include 'components/rate-stars.html.twig' with { rate: sample.rateCover } %}
+            {% endset %}
+          {% elseif sample.hasGenericCover %}
+            {% set coverRateTxt = 'Générique' %}
+          {% endif %}
+          <tr data-sample-id="{{ sample.id }}" data-sample-price="{{ sample.price }}">
+            <td>{% include 'components/rate-stars.html.twig' with { rate: sample.rateFaceA } %}</td>
+            <td>{% include 'components/rate-stars.html.twig' with { rate: sample.rateFaceB } %}</td>
+            <td>{{ coverRateTxt }}</td>
+            <td>{{ sample.price|number_format(2, ',') }}€</td>
+            {% if editable %}
+            <td class="text-end">
+              {% if sample.details is not empty %}
+                <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1" data-bs-toggle="popover" data-bs-html="true" data-bs-placement="left"
+                  title="Infos supplémentaires" data-bs-content="{{ sample.details|spaceless }}">
+                  <span class="bi-file-plus"></span>
+                </button>
+              {% endif %}
+              <a tabindex="0" class="btn btn-sm btn-outline-danger px-2 py-1" data-bs-toggle="popover" data-bs-trigger="focus" data-bs-html="true" data-bs-placement="left"
+                data-bs-content="Êtes-vous sûr de vouloir supprimer cet exemplaire de vinyle ? <div class='mt-2 text-end'><a class='btn btn-sm btn-danger btn-delete-sample' href='{{ path('samples_delete', { sample_id: sample.id }) }}'>Oui</a></div>">
+                <span class="bi-trash"></span>
+              </a>
+            </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}

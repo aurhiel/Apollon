@@ -165,6 +165,7 @@ var toolbox = {
     var vinyl_id = $vinyl.data('vinyl-id');
     var artists_str = $vinyl.data('vinyl-artists');
 
+    // Create new artists entry in vinyls selected
     if (typeof this.user_vinyls_selected[artists_str] == 'undefined') {
       this.user_vinyls_selected[artists_str] = {
         artists : artists_str,
@@ -172,12 +173,22 @@ var toolbox = {
       };
     }
 
-    // Push new track
+    var $samples = $vinyl.find('.vinyl-samples > tbody > tr');
+    var sample = null;
+    if ($samples.length > 0) {
+      sample = {
+        id: $samples.first().data('sample-id'),
+        price: $samples.first().data('sample-price')
+      };
+    }
+
+    // Push new vinyl selected
     this.user_vinyls_selected[artists_str].tracks[vinyl_id] = {
       rpm: $vinyl.data('vinyl-rpm'),
       face_A: $vinyl.data('vinyl-track-a'),
       face_B: $vinyl.data('vinyl-track-b'),
-      quantity_with_cover: $vinyl.find('.-vinyl-qty-with-cover').data('qty-value')
+      quantity_with_cover: $vinyl.find('.-vinyl-qty-with-cover').data('qty-value'),
+      sample: sample
     };
     this.user_total_selected++;
   },
@@ -247,6 +258,8 @@ var toolbox = {
     var i_artist = 0;
     var nb_artists = Object.keys(this.user_vinyls_selected).length;
     var total_selected = 0;
+    var total_with_price = 0;
+    var min_price = 0;
     var booking_title = '';
     var is_rpm_consistent = true;
     var last_rpm = null;
@@ -289,6 +302,14 @@ var toolbox = {
             // Append new vinyl row to booking form table
             self.$booking_vinyls.find('tbody').append($row);
 
+            // Calculate min price
+            if (null != vinyl.sample) {
+              min_price += vinyl.sample.price;
+              ++total_with_price;
+            } else {
+              ++min_price;
+            }
+
             last_rpm = vinyl.rpm;
             ++total_selected;
           }
@@ -297,9 +318,12 @@ var toolbox = {
       i_artist++;
     }
 
-    // Add total vinyls selected & update min price
+    // Add total vinyls selected & update price field
     this.$booking_total_selected.html(total_selected);
-    this.$booking_input_price.attr('min', total_selected); // .val(total_selected);
+    this.$booking_input_price.attr('min', min_price).val('');
+    if (total_selected == total_with_price) {
+      this.$booking_input_price.val(min_price);
+    }
 
     // Create booking title ...
     if (booking_title == '') {
@@ -402,7 +426,7 @@ var app = {
     // Adverts list container
     this.$adverts = this.$body.find('#advers-entities');
     // Samples nodes
-    this.$samples_list = this.$modal_vinyl.find('#vinyl-samples');
+    this.$samples_list = this.$modal_vinyl.find('.vinyl-samples');
     this.$sample_face_a_rate = this.$modal_vinyl.find('#sample-rate-face-a');
     this.$sample_face_b_rate = this.$modal_vinyl.find('#sample-rate-face-b');
     this.$sample_cover_type = this.$modal_vinyl.find('#sample-cover-type');
