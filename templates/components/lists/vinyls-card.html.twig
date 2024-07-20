@@ -52,11 +52,12 @@
                 {% endif %}
               {% endif %}
             </div>
-            {% if vinyl.samples is not empty %}
+            {% set vinyl_samples = vinyl.samples|filter(sample => sample.isSold == false or is_granted('ROLE_VIEWER')) %}
+            {% if vinyl_samples is not empty %}
               <div class="col-auto">
                 <span class="bi-info-circle-fill text-primary ms-2"></span>
                 <div class="d-none modal-samples-content">
-                  {% include 'components/lists/samples-table.html.twig' with { samples: vinyl.samples } %}
+                  {% include 'components/lists/samples-table.html.twig' with { samples: vinyl_samples } %}
                 </div>
               </div>
             {% endif %}

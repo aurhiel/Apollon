@@ -253,6 +253,13 @@ var toolbox = {
     if (text_to_copy.length > 0)
       $target.html($('<div>'+text_to_copy+'</div>'));
   },
+  createSampleInputHidden: function(vinyl_id, sample_id) {
+    var $input = $('<input type="hidden" name="advert_vinyl_selected[' + vinyl_id + '][sample]" ' +
+      'id="advert_vinyl_sample_' + sample_id + '">');
+    $input.val(sample_id);
+
+    return $input;
+  },
   bookSelection: function() {
     var self = this;
     var i_artist = 0;
@@ -302,9 +309,11 @@ var toolbox = {
             // Append new vinyl row to booking form table
             self.$booking_vinyls.find('tbody').append($row);
 
-            // Calculate min price
+            // Calculate min price & create hidden input to save sample selected
             if (null != vinyl.sample) {
               min_price += vinyl.sample.price;
+              $row.append(self.createSampleInputHidden(vinyl_id, vinyl.sample.id));
+
               ++total_with_price;
             } else {
               ++min_price;
@@ -639,7 +648,8 @@ var app = {
           return self.stopEvent(e);
         });
 
-        // Samples
+        // Samples:
+        // - Display cover rate or not according to cover type (generic, no-cover or has-cover)
         self.$sample_cover_type.on('change', function() {
           if (this.value == 'has-cover') {
             self.$sample_cover_rate.removeAttr('disabled');
@@ -647,6 +657,7 @@ var app = {
             self.$sample_cover_rate.attr('disabled', 'disabled');
           }
         });
+        // - Save new sample
         self.$sample_btn_add.on('click', function(e) {
           var payload = {
             'vinyl-id': parseInt(self.$sample_btn_add.attr('data-vinyl-id')),
@@ -678,7 +689,8 @@ var app = {
               self.$sample_details.val('');
 
               // Generate new sample row...
-              var $row = $('<tr data-sample-id="' + sample.id + '"></tr>');
+              var $row = $('<tr data-sample-id="' + sample.id + '" data-sample-price="' + sample.price + '"></tr>');
+              $row.append($('<td><input class="form-check-input" type="checkbox" name="sample-is-sold" id="sample-is-sold-' + sample.id + '"></td>'))
               $row.append($('<td/>').append(self.rateStarsNodeGen(sample.rateFaceA)));
               $row.append($('<td/>').append(self.rateStarsNodeGen(sample.rateFaceB)));
               //  > Cover info
@@ -705,11 +717,14 @@ var app = {
               // ... then append the new sample's row to samples table
               self.$samples_list.find('tbody').append($row);
 
+              // Finally, display table if hidden
+              self.$samples_list.removeClass('visually-hidden');
             }
           });
 
           return self.stopEvent(e);
         });
+        // - Delete a sample
         self.$body.on('click', '.btn-delete-sample', function(e) {
           var $link = $(this);
           // Erh, data attribute not working... ¯\_(ツ)_/¯
@@ -727,6 +742,18 @@ var app = {
           });
 
           return self.stopEvent(e);
+        });
+        // - Update sample as sold or not
+        self.$samples_list.on('change', 'input[name="sample-is-sold"]', function() {
+          var $checkbox = $(this);
+          var sample_id = $checkbox.parents('tr').first().data('sample-id');
+
+          $.ajax({
+            method: 'PATCH',
+            url: '/exemplaires/' + sample_id + '/est-vendu/' + ($checkbox.is(':checked') ? '1' : '0'),
+            error: function() { alert('Un problème est survenu lors de la mise à jour du status "vendu"...') },
+            success: function() { /* Nothing to do ! */ }
+          });
         });
       }
       // Button to update vinyls quantity (total & sold)
