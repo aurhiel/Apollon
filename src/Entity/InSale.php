@@ -34,6 +34,11 @@ class InSale
      */
     private $quantity;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Sample::class)
+     */
+    private $sample;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -71,6 +76,18 @@ class InSale
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    public function getSample(): ?Sample
+    {
+        return $this->sample;
+    }
+
+    public function setSample(?Sample $sample): self
+    {
+        $this->sample = $sample;
 
         return $this;
     }

@@ -58,6 +58,11 @@ class Sample
      */
     private ?Vinyl $vinyl;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $isSold;
+
     public function __toString(): string
     {
         return sprintf(
@@ -165,6 +170,18 @@ class Sample
     public function setVinyl(?Vinyl $vinyl): self
     {
         $this->vinyl = $vinyl;
+
+        return $this;
+    }
+
+    public function isSold(): ?bool
+    {
+        return $this->isSold;
+    }
+
+    public function setIsSold(?bool $isSold): self
+    {
+        $this->isSold = $isSold;
 
         return $this;
     }

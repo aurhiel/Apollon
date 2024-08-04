@@ -9,6 +9,7 @@ use App\Form\AdvertType;
 use App\Form\BookingType;
 use App\Repository\AdvertRepository;
 use App\Repository\InSaleRepository;
+use App\Repository\SampleRepository;
 use App\Repository\VinylRepository;
 use App\Service\FileUploader;
 
@@ -31,6 +32,7 @@ class AdvertController extends AbstractController
 {
     private AdvertRepository $advertRepository;
     private InSaleRepository $inSaleRepository;
+    private SampleRepository $sampleRepository;
     private VinylRepository $vinylRepository;
     private MailerInterface $mailer;
     private Environment $twig;
@@ -39,6 +41,7 @@ class AdvertController extends AbstractController
     public function __construct(
         AdvertRepository $advertRepository,
         InSaleRepository $inSaleRepository,
+        SampleRepository $sampleRepository,
         VinylRepository $vinylRepository,
         MailerInterface $mailer,
         Environment $twig,
@@ -46,6 +49,7 @@ class AdvertController extends AbstractController
     ) {
         $this->advertRepository = $advertRepository;
         $this->inSaleRepository = $inSaleRepository;
+        $this->sampleRepository = $sampleRepository;
         $this->vinylRepository = $vinylRepository;
         $this->mailer = $mailer;
         $this->twig = $twig;
@@ -93,26 +97,7 @@ class AdvertController extends AbstractController
                     // $advertAdded = $advert;
 
                     // Assign vinyls to created advert
-                    $vinylsQty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
-                    $vinyls = $this->vinylRepository->findById(array_keys($vinylsQty));
-                    // Remove old vinyls "in sale"
-                    foreach ($advert->getInSales() as $inSale) {
-                        $em->remove($inSale);
-                    }
-                    foreach ($vinyls as $vinyl) {
-                        $quantity = ((isset($vinylsQty[$vinyl->getId()]) && isset($vinylsQty[$vinyl->getId()][0])) ? (int) $vinylsQty[$vinyl->getId()][0] : 0);
-                        $inSale = new InSale();
-
-                        if ($quantity > 0) {
-                            $inSale->setVinyl($vinyl);
-                            $inSale->setAdvert($advert);
-                            $inSale->setQuantity($quantity);
-
-                            // Persist new vinyl in sale
-                            $em->persist($inSale);
-                        }
-                    }
-                    $em->flush();
+                    $this->convertVinylsSelectedToInSales($advert, $request->get('advert_vinyl_selected'), true);
 
                     // Upload advert images
                     $images = $formAdvert->get('images')->getData();
@@ -201,7 +186,7 @@ class AdvertController extends AbstractController
             ],
             'user'              => $user,
             'form_advert'       => isset($formAdvert) ? $formAdvert->createView() : null,
-            'adverts'           => $this->advertRepository->findAll(),
+            'adverts'           => $this->advertRepository->findAll(!$authChecker->isGranted('ROLE_VIEWER')),
             'nb_adverts_sold'   => $this->advertRepository->countAllSold(),
             'is_advert_edit'    => $isEdit,
             'advert_to_edit'    => $advert,
@@ -310,19 +295,21 @@ class AdvertController extends AbstractController
                 // Retrieve vinyls & update their quantities
                 $inSales = $advert->getInSales();
                 foreach ($inSales as $is) {
-                  $vinyl    = $is->getVinyl();
-                  $max_qty  = $vinyl->getQuantity();
-                  $old_qty_sold = $vinyl->getQuantitySold();
-                  $qty_sold     = $is->getQuantity();
+                    $vinyl = $is->getVinyl();
+                    $max_qty = $vinyl->getQuantity();
+                    $old_qty_sold = $vinyl->getQuantitySold();
+                    $qty_sold = $is->getQuantity();
 
-                  // Up / Down vinyls quantity sold
-                  if ($isSold == true) {
-                      if ($old_qty_sold + $qty_sold <= $max_qty)
-                          $vinyl->setQuantitySold($old_qty_sold + $qty_sold);
-                  } else {
-                      if ($old_qty_sold - $qty_sold >= 0)
-                          $vinyl->setQuantitySold($old_qty_sold - $qty_sold);
-                  }
+                    // Update sample status if sold or not
+                    if (null !== $is->getSample()) {
+                        $is->getSample()->setIsSold($isSold);
+                    }
+
+                    // Up / Down vinyls quantity sold
+                    $vinyl->setQuantitySold((true === $isSold)
+                        ? min($old_qty_sold + $qty_sold, $max_qty)
+                        : max($old_qty_sold - $qty_sold, 0)
+                    );
                 }
 
                 // Flush database
@@ -356,7 +343,7 @@ class AdvertController extends AbstractController
         } else {
             /**
              * Set message in flashbag on direct access & then redirect
-             *  
+             *
              * @var Session $session
              */
             $session = $request->getSession();
@@ -391,24 +378,7 @@ class AdvertController extends AbstractController
                 ];
 
                 // Assign vinyls to created advert
-                $vinylsQty = $this->filterVinylsWithQuantity($request->get('advert_vinyl_qty'));
-                $vinyls = $this->vinylRepository->findById(array_keys($vinylsQty));
-                foreach ($vinyls as $vinyl) {
-                    $quantity = ((isset($vinylsQty[$vinyl->getId()]) && isset($vinylsQty[$vinyl->getId()][0])) ? (int) $vinylsQty[$vinyl->getId()][0] : 0);
-                    $inSale = new InSale();
-
-                    if ($quantity > 0) {
-                        $inSale->setVinyl($vinyl);
-                        $inSale->setAdvert($booking);
-                        $inSale->setQuantity($quantity);
-
-                        // Persist & flush new vinyl in sale
-                        $em->persist($inSale);
-                    }
-                }
-
-                // Flush vinyls in database
-                $em->flush();
+                $vinyls = $this->convertVinylsSelectedToInSales($booking, $request->get('advert_vinyl_selected'));
 
                 try {
                     $booking = $request->get('booking');
@@ -419,10 +389,10 @@ class AdvertController extends AbstractController
                         ->from(new Address($this->getParameter('app.admin.email'), $this->getParameter('app.admin.name')))
                         ->to(new Address($this->getParameter('app.contact.email'), $this->getParameter('app.contact.name')))
                         ->subject('Nouvelle réservation de vinyle !')
-    
+
                         ->htmlTemplate('emails/new-booking.html.twig')
                         ->textTemplate('emails/new-booking.text.twig')
-    
+
                         ->context([
                             'booking' => [
                                 'customer_name' => $booking['name'],
@@ -441,9 +411,9 @@ class AdvertController extends AbstractController
                         echo $email->getHtmlBody();
                         exit;
                     }
-    
+
                     $this->mailer->send($email);
-                    
+
                     $return['message_status'] = 'Réservation effectuée avec succès, un email a été envoyé, vous serez contacté au plus vite !';
                 } catch (\Exception $e) {
                 }
@@ -470,6 +440,45 @@ class AdvertController extends AbstractController
         }
 
         return $this->redirectToRoute('home');
+    }
+
+    private function convertVinylsSelectedToInSales(Advert $advert, array $vinylsSelected, bool $resetInSales = false): array
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        // Remove old vinyls "in sale"
+        if (true === $resetInSales) {
+            foreach ($advert->getInSales() as $inSale) {
+                $em->remove($inSale);
+            }
+        }
+
+        $vinyls = $this->vinylRepository->findById(array_keys($vinylsSelected));
+        foreach ($vinyls as $vinyl) {
+            $vinylInput = $vinylsSelected[$vinyl->getId()];
+            $quantity = isset($vinylInput['qty']) ? (int) $vinylInput['qty'] : 0;
+            $inSale = new InSale();
+
+            if ($quantity > 0) {
+                $inSale->setVinyl($vinyl);
+                $inSale->setAdvert($advert);
+                $inSale->setQuantity($quantity);
+
+                if (isset($vinylInput['sample'])) {
+                    $inSale->setSample(
+                        $this->sampleRepository->findOneById((int) $vinylInput['sample'])
+                    );
+                }
+
+                // Persist & flush new vinyl in sale
+                $em->persist($inSale);
+            }
+        }
+
+        // Flush new in sales in database
+        $em->flush();
+
+        return $vinyls;
     }
 
     private function reorderVinylsByArtists(array &$vinyls): void
@@ -499,13 +508,5 @@ class AdvertController extends AbstractController
     {
         $string = strtr(utf8_decode($string), utf8_decode('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ'), 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
         return $string;
-    }
-
-    private function filterVinylsWithQuantity(array $vinylsQty): array
-    {
-        return array_filter($vinylsQty, function($row) {
-          $quantity = (int) $row[0];
-          return $quantity > 0;
-        });
     }
 }

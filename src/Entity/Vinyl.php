@@ -82,6 +82,7 @@ class Vinyl
 
     /**
      * @ORM\OneToMany(targetEntity=Sample::class, mappedBy="vinyl", orphanRemoval=true)
+     * @ORM\OrderBy({"price" = "DESC"})
      */
     private $samples;
 
