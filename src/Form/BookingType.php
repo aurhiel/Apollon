@@ -37,7 +37,7 @@ class BookingType extends AbstractType
             ->add('name', TextType::class, [
                 'label'       => 'form_booking.name.label',
                 'label_attr'  => [ 'class' => 'form-label fw-bold'],
-                'required'    => false,
+                'required'    => true,
                 'attr'        => [
                     'placeholder' => 'form_booking.name.placeholder',
                 ]
@@ -47,7 +47,7 @@ class BookingType extends AbstractType
                 'label_attr'    => [ 'class' => 'form-label fw-bold'],
                 'scale'         => 2,
                 'html5'         => true,
-                'required'      => false,
+                'required'      => true,
                 'attr'          => [
                     'placeholder'   => 'form_booking.price.placeholder',
                     'class'         => 'text-right',

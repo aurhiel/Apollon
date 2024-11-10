@@ -19,20 +19,21 @@ class AdvertRepository extends ServiceEntityRepository
         parent::__construct($registry, Advert::class);
     }
 
-    public function findAll()
+    public function findAll(bool $onlyAvailable = true)
     {
-        return $this->createQueryBuilder('a')
-            // Join relations
-            ->leftJoin('a.images', 'images')
-            ->addSelect('images')
-            ->leftJoin('a.inSales', 'in_sales')
-            ->addSelect('in_sales')
+        $qb = $this->createQueryBuilder('advert')
+            ->select('advert, images, in_sales, vinyl, artists')
+            ->leftJoin('advert.images', 'images')
+            ->leftJoin('advert.inSales', 'in_sales')
             ->leftJoin('in_sales.vinyl', 'vinyl')
-            ->addSelect('vinyl')
             ->leftJoin('vinyl.artists', 'artists')
-            ->addSelect('artists')
-            ->orderBy('a.id', 'ASC')
-            // Get query & result
+        ;
+
+        if (true === $onlyAvailable) {
+            $qb->where('advert.isSold = false');
+        }
+
+        return $qb->orderBy('advert.id', 'ASC')
             ->getQuery()
             ->getResult()
         ;
@@ -42,7 +43,7 @@ class AdvertRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('a')
             ->select('COUNT(a)')
-            ->where('a.is_sold = true')
+            ->where('a.isSold = true')
             ->getQuery()
             ->getSingleScalarResult()
         ;
@@ -61,7 +62,7 @@ class AdvertRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('a')
             ->select('SUM(a.price) AS total_price')
-            ->andWhere('a.is_sold = true')
+            ->andWhere('a.isSold = true')
             ->getQuery()
             ->getSingleScalarResult()
         ;

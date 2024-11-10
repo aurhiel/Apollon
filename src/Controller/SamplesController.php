@@ -78,4 +78,18 @@ class SamplesController extends AbstractController
 
         return $this->json([], Response::HTTP_NO_CONTENT);
     }
+
+    /**
+     * @Route("/exemplaires/{sample_id}/est-vendu/{is_sold}", name="samples_update_sold_status", methods="PATCH", priority=10)
+     */
+    public function update_sold_status(int $sample_id, bool $is_sold): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+        $sample = $this->sampleRepository->findRequired($sample_id);
+
+        $sample->setIsSold($is_sold);
+        $em->flush();
+
+        return $this->json([], Response::HTTP_NO_CONTENT);
+    }
 }
