@@ -66,7 +66,7 @@
       <div id="advers-entities" class="list-adverts row g-4" data-masonry='{"percentPosition": true }'>
       {# Display ALL ads to users with at least ROLE VIEWER
           OR only display available ads to not logged users #}
-      {% for advert in adverts|filter(ad => ((is_granted('ROLE_VIEWER') == true) or (is_granted('ROLE_VIEWER') == false and (ad.isSold is null or ad.isSold == false) and ad.name is null))) %}
+      {% for advert in adverts %}
         {% set advert_total_qty = 0 %}
         {% for in_sale in advert.inSales %}
           {% set advert_total_qty = advert_total_qty + in_sale.quantity %}
@@ -94,7 +94,7 @@
                 {% if advert.description is not empty %}
                   {{ advert.description|nl2br }}
                 {% else %}
-                  <div class="text-muted fst-italic text-center my-3"> - Aucune description - </div>
+                  <div class="text-muted fst-italic text-center"> - Aucune description - </div>
                 {% endif %}
                 {% if advert.name is not empty and advert.inSales is not empty %}
                   {% set vinylsByArtists = advert.vinylsByArtists() %}
@@ -147,11 +147,11 @@
                   <a href="{{ path('adverts', { id: advert.id }) }}" class="btn btn-sm btn-outline-secondary px-2 me-1">
                     <span class="bi-pencil-square"></span>
                   </a>
-                  <button class="btn btn-sm btn-outline-danger" type="button"
+                  <button class="btn btn-sm btn-outline-danger px-2 px-md-3" type="button"
                     data-confirm-href="{{ path('advert_delete', { id: advert.id }) }}" data-confirm-body="Êtes-vous sûr de vouloir supprimer l'annonce <b>{{ advert.title }}</b> ?"
                       data-bs-toggle="modal" data-bs-target="#modal-confirm-delete">
-                    <span class="bi-file-earmark-minus me-1"></span>
-                    Supprimer
+                    <span class="bi-file-earmark-minus me-md-1"></span>
+                    <span class="d-none d-md-inline">Supprimer</span>
                   </button>
                 </div>
               </div>

@@ -30,7 +30,8 @@ class AdvertRepository extends ServiceEntityRepository
         ;
 
         if (true === $onlyAvailable) {
-            $qb->where('advert.isSold = false');
+            $qb->where('advert.isSold IS NULL OR advert.isSold = false')
+                ->andWhere('advert.name IS NULL');
         }
 
         return $qb->orderBy('advert.id', 'ASC')
