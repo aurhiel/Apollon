@@ -158,13 +158,250 @@ var clipboard = {
   }
 }
 
+var toolbox = {
+  user_total_selected: 0,
+  user_vinyls_selected: {},
+  addVinyl: function($vinyl) {
+    var vinyl_id = $vinyl.data('vinyl-id');
+    var artists_str = $vinyl.data('vinyl-artists');
+
+    // Create new artists entry in vinyls selected
+    if (typeof this.user_vinyls_selected[artists_str] == 'undefined') {
+      this.user_vinyls_selected[artists_str] = {
+        artists : artists_str,
+        tracks  : {}
+      };
+    }
+
+    var $samples = $vinyl.find('.vinyl-samples > tbody > tr');
+    var sample = null;
+    if ($samples.length > 0) {
+      sample = {
+        id: $samples.first().data('sample-id'),
+        price: $samples.first().data('sample-price')
+      };
+    }
+
+    // Push new vinyl selected
+    this.user_vinyls_selected[artists_str].tracks[vinyl_id] = {
+      rpm: $vinyl.data('vinyl-rpm'),
+      face_A: $vinyl.data('vinyl-track-a'),
+      face_B: $vinyl.data('vinyl-track-b'),
+      quantity_with_cover: $vinyl.find('.-vinyl-qty-with-cover').data('qty-value'),
+      sample: sample
+    };
+    this.user_total_selected++;
+  },
+  removeVinyl: function($vinyl) {
+    delete this.user_vinyls_selected[$vinyl.data('vinyl-artists')].tracks[$vinyl.data('vinyl-id')];
+    this.user_total_selected--;
+  },
+  updateToolbox: function() {
+    // Update some texts in the selected vinyls toolbox
+    this.$tb_amount.html(this.user_total_selected);
+    this.$tb_text.html(this.user_total_selected > 1 ? this.$tb_text.data('js-text-plural') : this.$tb_text.data('js-text-singular'));
+
+    // Sort vinyls selected
+    this.user_vinyls_selected = app.sortObject(this.user_vinyls_selected);
+
+    // Update buttons in toolbox
+    if (this.user_total_selected > 0) {
+      this.$tb_buttons.removeClass('btn-secondary').addClass('btn-primary').prop('disabled', false);
+    } else {
+      this.$tb_buttons.removeClass('btn-primary').addClass('btn-secondary').prop('disabled', true);
+    }
+  },
+  copySelection: function($button) {
+    var self = this;
+    var $target = this.$body.find($button.data('clipboard-target'));
+    var text_to_copy = '';
+
+    // Reset target
+    $target.html('');
+
+    var i_artist = 0;
+    var nb_artists = Object.keys(this.user_vinyls_selected).length;
+    // Loop on each artist to create text to copy
+    for (const artist_name in this.user_vinyls_selected) {
+      var last = (i_artist === (nb_artists - 1));
+      var vinyls_selected = self.user_vinyls_selected[artist_name];
+      var tracks = vinyls_selected.tracks;
+      var nb_tracks = Object.keys(tracks).length;
+
+      if (nb_tracks > 0) {
+        // Add artist name
+        text_to_copy += vinyls_selected.artists;
+
+        // Add tracks
+        for (const vinyl_id in tracks) {
+          // Add vinyl track faces in desc
+          if (tracks.hasOwnProperty(vinyl_id)) {
+            var vinyl = tracks[vinyl_id];
+            text_to_copy += ((nb_tracks > 1) ? '<br>': ' ') + '- ' +
+              vinyl.face_A + ' / ' + vinyl.face_B + (vinyl.quantity_with_cover < 1 ? ' (sans pochette)': '');
+          }
+        }
+
+        // Add breakline after each artist
+        if (last == false)
+          text_to_copy += '<br>';
+      }
+      i_artist++;
+    }
+
+    // Update text to copy in $target
+    if (text_to_copy.length > 0)
+      $target.html($('<div>'+text_to_copy+'</div>'));
+  },
+  createSampleInputHidden: function(vinyl_id, sample_id) {
+    var $input = $('<input type="hidden" name="advert_vinyl_selected[' + vinyl_id + '][sample]" ' +
+      'id="advert_vinyl_sample_' + sample_id + '">');
+    $input.val(sample_id);
+
+    return $input;
+  },
+  bookSelection: function() {
+    var self = this;
+    var i_artist = 0;
+    var nb_artists = Object.keys(this.user_vinyls_selected).length;
+    var total_selected = 0;
+    var total_with_price = 0;
+    var min_price = 0;
+    var booking_title = '';
+    var is_rpm_consistent = true;
+    var last_rpm = null;
+
+    // Reset vinyls table
+    this.$booking_vinyls.find('tbody').empty();
+
+    // Loop on each artist to create text to copy
+    for (const artist_name in this.user_vinyls_selected) {
+      var vinyls_selected = self.user_vinyls_selected[artist_name];
+      var tracks = vinyls_selected.tracks;
+      var nb_tracks = Object.keys(tracks).length;
+
+      // Add vinyls to table in booking form
+      if (nb_tracks > 0) {
+        for (const vinyl_id in tracks) {
+          if (tracks.hasOwnProperty(vinyl_id)) {
+            var vinyl = tracks[vinyl_id];
+            var $row = self.$booking_vinyl_row.clone();
+            var $tracks = $row.find('.col-track');
+            var $input_qty = $row.find('.advert-vinyl-qty');
+            var input_qty = $input_qty.prop('outerHTML');
+
+            // Check rpm consistency to add it to title or not
+            if (last_rpm !== null && last_rpm !== vinyl.rpm) {
+              is_rpm_consistent = false;
+            }
+
+            // Update vinyl data in table row
+            $row.attr('data-vinyl-id', vinyl_id);
+            $row.find('.col-rpm').html(vinyl.rpm);
+            $tracks.filter('[data-track-face="A"]').find('.-text').html(vinyl.face_A);
+            $tracks.filter('[data-track-face="B"]').find('.-text').html(vinyl.face_B);
+            $row.find('.col-artist').html(artist_name);
+
+            // Remove input quantity pattern & replace it by the right one
+            $input_qty.remove();
+            $row.find('.col-id').append($(input_qty.replaceAll('#ID#', vinyl_id)));
+
+            // Append new vinyl row to booking form table
+            self.$booking_vinyls.find('tbody').append($row);
+
+            // Calculate min price & create hidden input to save sample selected
+            if (null != vinyl.sample) {
+              min_price += vinyl.sample.price;
+              $row.append(self.createSampleInputHidden(vinyl_id, vinyl.sample.id));
+
+              ++total_with_price;
+            } else {
+              ++min_price;
+            }
+
+            last_rpm = vinyl.rpm;
+            ++total_selected;
+          }
+        }
+      }
+      i_artist++;
+    }
+
+    // Add total vinyls selected & update price field
+    this.$booking_total_selected.html(total_selected);
+    this.$booking_input_price.attr('min', min_price).val('');
+    if (total_selected == total_with_price) {
+      this.$booking_input_price.val(min_price);
+    }
+
+    // Create booking title ...
+    if (booking_title == '') {
+      booking_title = ((nb_artists < 2) ? 'Vinyle ' : 'Lot de ' + total_selected + ' vinyles') + ((is_rpm_consistent) ? ' - ' + last_rpm + 'T' : '');
+      // & push artist name if only 1 vinyl selected
+      if (nb_artists < 2)
+        booking_title += (' - ' + artist_name);
+    }
+    // ... then add it to hidden input
+    this.$booking_input_title.val(booking_title);
+  },
+  initNodes: function($body) {
+    this.$body = $body;
+
+    // Booking nodes
+    this.$modal_booking = this.$body.find('#modal-manage-booking');
+    this.$booking_form = this.$modal_booking.find('form');
+    this.$booking_input_price = this.$booking_form.find('#booking_price');
+    this.$booking_input_title = this.$booking_form.find('#booking_title');
+    this.$booking_vinyls = this.$booking_form.find('.vinyls-entities');
+    this.$booking_vinyl_row = this.$booking_vinyls.find('tbody > tr').clone();
+    this.$booking_total_selected = this.$booking_form.find('.-vinyls-total-selected > .-amount');
+
+    // Reset vinyls table body
+    this.$booking_vinyls.find('tbody').empty();
+
+    this.$toolbox_selected_vinyls = this.$body.find('.toolbox-selected-vinyls');
+    this.$tb_buttons = this.$toolbox_selected_vinyls.find('.btn-selected-vinyls');
+    this.$tb_amount = this.$toolbox_selected_vinyls.find('.-amount');
+    this.$tb_text = this.$toolbox_selected_vinyls.find('.-text-selected');
+  },
+  launch: function($body, $vinyls) {
+    var self = this;
+    this.initNodes($body);
+
+    // Select or unselect a vinyl to copy or book
+    $vinyls.on('change', '.vinyl-checkbox-is-selected', function() {
+      var $checkbox = $(this);
+      var $vinyl = $checkbox.parents('.-item-vinyl').first();
+
+      if ($checkbox.prop('checked') === true) {
+        self.addVinyl($vinyl);
+      } else {
+        self.removeVinyl($vinyl);
+      }
+
+      self.updateToolbox();
+    });
+
+    // Click on toolbox action buttons (Copy or Booking)
+    this.$tb_buttons.on('click', function() {
+      var $btn = $(this);
+
+      // Copy or Book vinyls selected
+      if ($btn.attr('name') == 'copy') {
+        self.copySelection($btn);
+      } else {
+        self.bookSelection();
+      }
+    });
+  }
+}
+
 var app = {
   //
   // Variables
-  $body       : null,
-  $html_body  : null,
-  $window     : null,
-
+  $body : null,
+  $html_body : null,
+  $window : null,
 
   //
   // Functions
@@ -187,7 +424,6 @@ var app = {
     // Header
     this.$header = this.$body.find('.app-header');
     // Modals
-    this.$modal_booking = this.$body.find('#modal-manage-booking');
     this.$modal_artist = this.$body.find('#modal-manage-artist');
     this.$modal_vinyl = this.$body.find('#modal-manage-vinyl');
     this.$modal_advert = this.$body.find('#modal-manage-advert');
@@ -198,17 +434,8 @@ var app = {
     this.$vinyls_modal_samples = this.$body.find('#modal-vinyl-samples');
     // Adverts list container
     this.$adverts = this.$body.find('#advers-entities');
-    // Booking nodes
-    this.$booking_form = this.$modal_booking.find('form');
-    this.$booking_input_price = this.$booking_form.find('#booking_price');
-    this.$booking_input_title = this.$booking_form.find('#booking_title');
-    this.$booking_vinyls = this.$booking_form.find('.vinyls-entities');
-    this.$booking_vinyl_row = this.$booking_vinyls.find('tbody > tr').clone();
-    this.$booking_total_selected = this.$booking_form.find('.-vinyls-total-selected > .-amount');
-    // // Reset vinyls table body
-    this.$booking_vinyls.find('tbody').empty();
     // Samples nodes
-    this.$samples_list = this.$modal_vinyl.find('#vinyl-samples');
+    this.$samples_list = this.$modal_vinyl.find('.vinyl-samples');
     this.$sample_face_a_rate = this.$modal_vinyl.find('#sample-rate-face-a');
     this.$sample_face_b_rate = this.$modal_vinyl.find('#sample-rate-face-b');
     this.$sample_cover_type = this.$modal_vinyl.find('#sample-cover-type');
@@ -401,7 +628,7 @@ var app = {
         $(this).find('.btn').addClass('disabled');
       });
 
-      // Event:
+      // Event: Add samples to their modal before showing it
       self.$vinyls_modal_samples.get(0).addEventListener('show.bs.modal', function (e) {
         var vinyl_id = $(e.relatedTarget).data('vinyl-id');
         var $vinyl = self.$vinyls.filter('[data-vinyl-id="' + vinyl_id + '"]');
@@ -421,7 +648,8 @@ var app = {
           return self.stopEvent(e);
         });
 
-        // Samples
+        // Samples:
+        // - Display cover rate or not according to cover type (generic, no-cover or has-cover)
         self.$sample_cover_type.on('change', function() {
           if (this.value == 'has-cover') {
             self.$sample_cover_rate.removeAttr('disabled');
@@ -429,6 +657,7 @@ var app = {
             self.$sample_cover_rate.attr('disabled', 'disabled');
           }
         });
+        // - Save new sample
         self.$sample_btn_add.on('click', function(e) {
           var payload = {
             'vinyl-id': parseInt(self.$sample_btn_add.attr('data-vinyl-id')),
@@ -460,7 +689,8 @@ var app = {
               self.$sample_details.val('');
 
               // Generate new sample row...
-              var $row = $('<tr data-sample-id="' + sample.id + '"></tr>');
+              var $row = $('<tr data-sample-id="' + sample.id + '" data-sample-price="' + sample.price + '"></tr>');
+              $row.append($('<td><input class="form-check-input" type="checkbox" name="sample-is-sold" id="sample-is-sold-' + sample.id + '"></td>'))
               $row.append($('<td/>').append(self.rateStarsNodeGen(sample.rateFaceA)));
               $row.append($('<td/>').append(self.rateStarsNodeGen(sample.rateFaceB)));
               //  > Cover info
@@ -487,11 +717,14 @@ var app = {
               // ... then append the new sample's row to samples table
               self.$samples_list.find('tbody').append($row);
 
+              // Finally, display table if hidden
+              self.$samples_list.removeClass('visually-hidden');
             }
           });
 
           return self.stopEvent(e);
         });
+        // - Delete a sample
         self.$body.on('click', '.btn-delete-sample', function(e) {
           var $link = $(this);
           // Erh, data attribute not working... ¯\_(ツ)_/¯
@@ -510,6 +743,18 @@ var app = {
 
           return self.stopEvent(e);
         });
+        // - Update sample as sold or not
+        self.$samples_list.on('change', 'input[name="sample-is-sold"]', function() {
+          var $checkbox = $(this);
+          var sample_id = $checkbox.parents('tr').first().data('sample-id');
+
+          $.ajax({
+            method: 'PATCH',
+            url: '/exemplaires/' + sample_id + '/est-vendu/' + ($checkbox.is(':checked') ? '1' : '0'),
+            error: function() { alert('Un problème est survenu lors de la mise à jour du status "vendu"...') },
+            success: function() { /* Nothing to do ! */ }
+          });
+        });
       }
       // Button to update vinyls quantity (total & sold)
       self.$vinyls.on('click', '.btn-qty', function() {
@@ -518,8 +763,8 @@ var app = {
         var $col_qty  = $btn.parents('.col-quantity').first();
         var is_quantity_sold  = (typeof $col_qty.data('qty-type') != 'undefined' && $col_qty.data('qty-type') == 'sold');
         var is_quantity_cover = (typeof $col_qty.data('qty-type') != 'undefined' && $col_qty.data('qty-type') == 'cover');
-        var min_limit         = (is_quantity_sold || is_quantity_cover) ? 1 : 2;
-        var max_qty           = (typeof $control.data('qty-max') != 'undefined') ? parseInt($control.data('qty-max')) : null;
+        var min_limit = (is_quantity_sold || is_quantity_cover) ? 1 : 2;
+        var max_qty = (typeof $control.data('qty-max') != 'undefined') ? parseInt($control.data('qty-max')) : null;
         // Add "-sold" or "-cover" to url in order to update vinyl
         //  quantity sold or vinyls with a cover
         var base_url = '/vinyles/' + $col_qty.data('vinyl-id') + '/quantite'
@@ -543,172 +788,10 @@ var app = {
           }
         });
       });
-      // Vinyls selection managment
-      var $toolbox_selected_vinyls = self.$body.find('.toolbox-selected-vinyls');
-      var $tb_buttons = $toolbox_selected_vinyls.find('.btn-selected-vinyls');
-      var $tb_amount = $toolbox_selected_vinyls.find('.-amount');
-      var $tb_text = $toolbox_selected_vinyls.find('.-text-selected');
-      var user_total_selected = 0;
-      var user_vinyls_selected = {};
-      self.$vinyls.on('change', '.vinyl-checkbox-is-selected', function() {
-        var $checkbox = $(this);
-        var $vinyl = $checkbox.parents('.-item-vinyl').first();
-        var vinyl_id = $vinyl.data('vinyl-id');
-        var artists_str = $vinyl.data('vinyl-artists');
 
-        // Add or remove vinyl from selected list
-        if ($checkbox.prop('checked') === true) {
-          if (typeof user_vinyls_selected[artists_str] == 'undefined') {
-            user_vinyls_selected[artists_str] = {
-              artists : artists_str,
-              tracks  : {}
-            };
-          }
-
-          // Push new track
-          user_vinyls_selected[artists_str].tracks[vinyl_id] = {
-            rpm: $vinyl.data('vinyl-rpm'),
-            face_A: $vinyl.data('vinyl-track-a'),
-            face_B: $vinyl.data('vinyl-track-b'),
-            quantity_with_cover: $vinyl.find('.-vinyl-qty-with-cover').data('qty-value')
-          };
-          user_total_selected++;
-        } else {
-          delete user_vinyls_selected[artists_str].tracks[vinyl_id];
-          user_total_selected--;
-        }
-
-        // Update some texts in the selected vinyls toolbox
-        $tb_amount.html(user_total_selected);
-        $tb_text.html(user_total_selected > 1 ? $tb_text.data('js-text-plural') : $tb_text.data('js-text-singular'));
-
-        // Sort vinyls selected
-        user_vinyls_selected = self.sortObject(user_vinyls_selected);
-
-        // Update buttons in toolbox
-        if (user_total_selected > 0) {
-          $tb_buttons.removeClass('btn-secondary').addClass('btn-primary').prop('disabled', false);
-        } else {
-          $tb_buttons.removeClass('btn-primary').addClass('btn-secondary').prop('disabled', true);
-        }
-      });
-      // Click on toolbox action buttons (Copy or Booking)
-      $tb_buttons.on('click', function() {
-        var $btn = $(this);
-
-        // Copy or Book vinyls selected
-        if ($btn.attr('name') == 'copy') {
-          var $target = self.$body.find($btn.data('clipboard-target'));
-          var text_to_copy = '';
-
-          // Reset target
-          $target.html('');
-
-          var i_artist = 0;
-          var nb_artists = Object.keys(user_vinyls_selected).length;
-          // Loop on each artist to create text to copy
-          for (const artist_name in user_vinyls_selected) {
-            var last = (i_artist === (nb_artists - 1));
-            var vinyls_selected = user_vinyls_selected[artist_name];
-            var tracks = vinyls_selected.tracks;
-            var nb_tracks = Object.keys(tracks).length;
-
-            if (nb_tracks > 0) {
-              // Add artist name
-              text_to_copy += vinyls_selected.artists;
-
-              // Add tracks
-              for (const vinyl_id in tracks) {
-                // Add vinyl track faces in desc
-                if (tracks.hasOwnProperty(vinyl_id)) {
-                  var vinyl = tracks[vinyl_id];
-                  text_to_copy += ((nb_tracks > 1) ? '<br>': ' ') + '- ' +
-                    vinyl.face_A + ' / ' + vinyl.face_B + (vinyl.quantity_with_cover < 1 ? ' (sans pochette)': '');
-                }
-              }
-
-              // Add breakline after each artist
-              if (last == false)
-                text_to_copy += '<br>';
-            }
-            i_artist++;
-          }
-
-          // Update text to copy in $target
-          if (text_to_copy.length > 0)
-            $target.html($('<div>'+text_to_copy+'</div>'));
-        } else {
-          var i_artist = 0;
-          var nb_artists = Object.keys(user_vinyls_selected).length;
-          var total_selected = 0;
-          var booking_title = '';
-          var is_rpm_consistent = true;
-          var last_rpm = null;
-
-          // Reset vinyls table
-          self.$booking_vinyls.find('tbody').empty();
-
-          // Loop on each artist to create text to copy
-          for (const artist_name in user_vinyls_selected) {
-            var last = (i_artist === (nb_artists - 1));
-            var vinyls_selected = user_vinyls_selected[artist_name];
-            var tracks = vinyls_selected.tracks;
-            var nb_tracks = Object.keys(tracks).length;
-
-            // Add vinyls to table in booking form
-            if (nb_tracks > 0) {
-              for (const vinyl_id in tracks) {
-                if (tracks.hasOwnProperty(vinyl_id)) {
-                  var vinyl = tracks[vinyl_id];
-                  var $row = self.$booking_vinyl_row.clone();
-                  var $tracks = $row.find('.col-track');
-                  var $input_qty = $row.find('.advert-vinyl-qty');
-                  var input_qty = $input_qty.prop('outerHTML');
-
-                  // Check rpm consistency to add it to title or not
-                  if (last_rpm !== null && last_rpm !== vinyl.rpm) {
-                    is_rpm_consistent = false;
-                  }
-
-                  // Update vinyl data in table row
-                  $row.attr('data-vinyl-id', vinyl_id);
-                  $row.find('.col-rpm').html(vinyl.rpm);
-                  $tracks.filter('[data-track-face="A"]').find('.-text').html(vinyl.face_A);
-                  $tracks.filter('[data-track-face="B"]').find('.-text').html(vinyl.face_B);
-                  $row.find('.col-artist').html(artist_name);
-
-                  // Remove input quantity pattern & replace it by the right one
-                  $input_qty.remove();
-                  $row.find('.col-id').append($(input_qty.replaceAll('#ID#', vinyl_id)));
-
-                  // Append new vinyl row to booking form table
-                  self.$booking_vinyls.find('tbody').append($row);
-
-                  last_rpm = vinyl.rpm;
-                  ++total_selected;
-                }
-              }
-            }
-            i_artist++;
-          }
-
-          // Add total vinyls selected & update min price
-          self.$booking_total_selected.html(total_selected);
-          self.$booking_input_price.attr('min', total_selected); // .val(total_selected);
-
-          // Create booking title ...
-          if (booking_title == '') {
-            booking_title = ((nb_artists < 2) ? 'Vinyle ' : 'Lot de ' + total_selected + ' vinyles') + ((is_rpm_consistent) ? ' - ' + last_rpm + 'T' : '');
-            // & push artist name if only 1 vinyl selected
-            if (nb_artists < 2)
-              booking_title += (' - ' + artist_name);
-          }
-          // ... then add it to hidden input
-          console.log(is_rpm_consistent, booking_title);
-          self.$booking_input_title.val(booking_title);
-        }
-      });
-
+      //
+      // Toolbox: Vinyls selection managment
+      toolbox.launch(self.$body, self.$vinyls);
 
       //
       // Adverts

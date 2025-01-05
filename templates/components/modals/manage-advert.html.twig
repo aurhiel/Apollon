@@ -46,8 +46,10 @@
                       {% if vinyl.quantityAvailable > 0 %}
                         {# Get vinyls data #}
                         {% set vinyl_qty = 0 %}
+                        {% set vinyl_sample = null %}
                         {% if is_advert_edit == true and advert_vinyls is not empty and advert_vinyls[vinyl.id] is defined %}
                           {% set vinyl_qty = advert_vinyls[vinyl.id].quantity %}
+                          {% set vinyl_sample = advert_vinyls[vinyl.id].sample %}
                         {% endif %}
                         <li class="list-group-item -item-vinyl{% if vinyl_qty > 0 %} -selected{% endif %}" data-vinyl-id="{{ vinyl.id }}"
                           data-vinyl-rpm="{{ vinyl.rpm }}" data-vinyl-track-a="{{ vinyl.trackFaceA }}" data-vinyl-track-b="{{ vinyl.trackFaceB }}" data-vinyl-artists="{{ vinyl.artistsAsString }}">
@@ -68,9 +70,13 @@
                                 <span class="btn-qty bi-dash-square{% if vinyl_qty <= 0 %} disabled{% endif %}" data-qty-type="-1"></span>
                                 <span class="qty-amount">{{ vinyl_qty }}</span>
                                 <span class="btn-qty bi-plus-square{% if vinyl_qty >= vinyl.quantityAvailable %} disabled{% endif %}" data-qty-type="+1"></span>
-                                <input class="advert-vinyl-qty" type="hidden" name="advert_vinyl_qty[{{ vinyl.id }}][]"
-                                  id="advert_vinyl_{{ vinyl.id }}_qty" value="{{ vinyl_qty }}">
+                                <input class="advert-vinyl-qty" type="hidden" name="advert_vinyl_selected[{{ vinyl.id }}][qty]"
+                                  id="advert_vinyl_qty_{{ vinyl.id }}" value="{{ vinyl_qty }}">
                               </span>
+                              {% if vinyl_sample is not empty %}
+                                <input type="hidden" name="advert_vinyl_selected[{{ vinyl.id }}][sample]"
+                                  id="advert_vinyl_sample_{{ vinyl_sample.id }}" value="{{ vinyl_sample.id }}">
+                              {% endif %}
                             </div>
                           </div>
                         </li>

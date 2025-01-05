@@ -52,7 +52,7 @@ class Advert
     /**
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private $is_sold;
+    private $isSold = false;
 
     public function __construct()
     {
@@ -175,12 +175,12 @@ class Advert
 
     public function getIsSold(): ?bool
     {
-        return $this->is_sold;
+        return $this->isSold;
     }
 
-    public function setIsSold(?bool $is_sold): self
+    public function setIsSold(?bool $isSold): self
     {
-        $this->is_sold = $is_sold;
+        $this->isSold = $isSold;
 
         return $this;
     }
@@ -207,8 +207,8 @@ class Advert
             }
 
             $vinylsByArtists[$artistsNames][] = sprintf(
-                '%s / %s', 
-                $vinyl->getTrackFaceA(), 
+                '%s / %s',
+                $vinyl->getTrackFaceA(),
                 $vinyl->getTrackFaceB()
             );
         }

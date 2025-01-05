@@ -8,11 +8,11 @@
       <div class="card position-relative">
         <div class="card-body p-2">
           <span class="icon-illustration bi-disc"></span>
-          <label class="card-title d-block h5 text-truncate mb-0" for="vinyl-{{ vinyl.id }}-selected">
+          <label class="card-title d-block h5 text-truncate mb-1" for="vinyl-{{ vinyl.id }}-selected">
             {{ vinyl.artistsAsString }}
           </label>
-          <small class="card-subtitle d-block mb-1 text-body-secondary fw-bold">
-            {{ vinyl.rpm }} tours
+          <small class="card-subtitle d-block text-body-secondary fw-bold">
+            {{ vinyl.rpm }}t.
           </small>
           <div class="card-text small">
             <div class="text-truncate"><b>Face A:</b> <span data-apo-toggle="play-track" data-track-face="A">{{ vinyl.trackFaceA }}</span></div>
@@ -41,7 +41,7 @@
             </div>
           </div>
         {% else %}
-          <div class="row align-items-center">
+          <div class="row align-items-center{% if vinyl.samples is not empty %} -fake-link{% endif %}"{% if vinyl.samples is not empty %} data-bs-toggle="modal" data-bs-target="#modal-vinyl-samples" data-vinyl-id="{{ vinyl.id }}"{% endif %}>
             <div class="col text-truncate">
               <b>{{ vinyl.quantityAvailable }}</b> exemplaire{% if vinyl.quantityAvailable > 1 %}s{% endif %}
               {% if vinyl.quantityAvailableWithCover > 0 %}
@@ -52,11 +52,12 @@
                 {% endif %}
               {% endif %}
             </div>
-            {% if vinyl.samples is not empty %}
+            {% set vinyl_samples = vinyl.samples|filter(sample => sample.isSold == false or is_granted('ROLE_VIEWER')) %}
+            {% if vinyl_samples is not empty %}
               <div class="col-auto">
-                <span class="bi-info-circle-fill text-primary ms-2 stretched-link" data-bs-toggle="modal" data-bs-target="#modal-vinyl-samples" data-vinyl-id="{{ vinyl.id }}"></span>
+                <span class="bi-info-circle-fill text-primary ms-2"></span>
                 <div class="d-none modal-samples-content">
-                  {% include 'components/lists/samples-table.html.twig' with { samples: vinyl.samples } %}
+                  {% include 'components/lists/samples-table.html.twig' with { samples: vinyl_samples } %}
                 </div>
               </div>
             {% endif %}
