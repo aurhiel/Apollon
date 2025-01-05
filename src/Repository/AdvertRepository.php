@@ -19,10 +19,9 @@ class AdvertRepository extends ServiceEntityRepository
         parent::__construct($registry, Advert::class);
     }
 
-    public function findAll()
+    public function findAll(bool $displayAll = false)
     {
-        return $this->createQueryBuilder('a')
-            // Join relations
+        $qb = $this->createQueryBuilder('a')
             ->leftJoin('a.images', 'images')
             ->addSelect('images')
             ->leftJoin('a.inSales', 'in_sales')
@@ -32,8 +31,14 @@ class AdvertRepository extends ServiceEntityRepository
             ->leftJoin('vinyl.artists', 'artists')
             ->addSelect('artists')
             ->orderBy('a.id', 'ASC')
-            // Get query & result
-            ->getQuery()
+        ;
+
+        if (false === $displayAll) {
+            $qb->where('a.is_sold IS NULL OR a.is_sold = false')
+                ->andWhere('a.name IS NULL');
+        }
+
+        return $qb->getQuery()
             ->getResult()
         ;
     }

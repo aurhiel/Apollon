@@ -207,8 +207,8 @@ class Advert
             }
 
             $vinylsByArtists[$artistsNames][] = sprintf(
-                '%s / %s', 
-                $vinyl->getTrackFaceA(), 
+                '%s / %s',
+                $vinyl->getTrackFaceA(),
                 $vinyl->getTrackFaceB()
             );
         }

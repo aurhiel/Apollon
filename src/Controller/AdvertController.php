@@ -65,7 +65,7 @@ class AdvertController extends AbstractController
         $isEdit = !is_null($advertEdit);
         $advert = ($isEdit === true) ? $advertEdit : new Advert();
 
-        // Only admin user can add vinyls & artists
+        // Only admin user can manage adverts
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
             // 1) Build advert forms
             $formAdvert = $this->createForm(AdvertType::class, $advert);
@@ -201,7 +201,7 @@ class AdvertController extends AbstractController
             ],
             'user'              => $user,
             'form_advert'       => isset($formAdvert) ? $formAdvert->createView() : null,
-            'adverts'           => $this->advertRepository->findAll(),
+            'adverts'           => $this->advertRepository->findAll($authChecker->isGranted('ROLE_VIEWER')),
             'nb_adverts_sold'   => $this->advertRepository->countAllSold(),
             'is_advert_edit'    => $isEdit,
             'advert_to_edit'    => $advert,
@@ -356,7 +356,7 @@ class AdvertController extends AbstractController
         } else {
             /**
              * Set message in flashbag on direct access & then redirect
-             *  
+             *
              * @var Session $session
              */
             $session = $request->getSession();
@@ -419,10 +419,10 @@ class AdvertController extends AbstractController
                         ->from(new Address($this->getParameter('app.admin.email'), $this->getParameter('app.admin.name')))
                         ->to(new Address($this->getParameter('app.contact.email'), $this->getParameter('app.contact.name')))
                         ->subject('Nouvelle réservation de vinyle !')
-    
+
                         ->htmlTemplate('emails/new-booking.html.twig')
                         ->textTemplate('emails/new-booking.text.twig')
-    
+
                         ->context([
                             'booking' => [
                                 'customer_name' => $booking['name'],
@@ -441,9 +441,9 @@ class AdvertController extends AbstractController
                         echo $email->getHtmlBody();
                         exit;
                     }
-    
+
                     $this->mailer->send($email);
-                    
+
                     $return['message_status'] = 'Réservation effectuée avec succès, un email a été envoyé, vous serez contacté au plus vite !';
                 } catch (\Exception $e) {
                 }

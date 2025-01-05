@@ -156,7 +156,7 @@ var clipboard = {
       }
     });
   }
-}
+};
 
 var app = {
   //
@@ -164,7 +164,6 @@ var app = {
   $body       : null,
   $html_body  : null,
   $window     : null,
-
 
   //
   // Functions
@@ -631,6 +630,7 @@ var app = {
               if (last == false)
                 text_to_copy += '<br>';
             }
+
             i_artist++;
           }
 
@@ -638,19 +638,18 @@ var app = {
           if (text_to_copy.length > 0)
             $target.html($('<div>'+text_to_copy+'</div>'));
         } else {
-          var i_artist = 0;
-          var nb_artists = Object.keys(user_vinyls_selected).length;
+          var nb_artists = 0;
           var total_selected = 0;
           var booking_title = '';
           var is_rpm_consistent = true;
           var last_rpm = null;
+          var last_vinyls_selected = null;
 
           // Reset vinyls table
           self.$booking_vinyls.find('tbody').empty();
 
           // Loop on each artist to create text to copy
           for (const artist_name in user_vinyls_selected) {
-            var last = (i_artist === (nb_artists - 1));
             var vinyls_selected = user_vinyls_selected[artist_name];
             var tracks = vinyls_selected.tracks;
             var nb_tracks = Object.keys(tracks).length;
@@ -688,8 +687,10 @@ var app = {
                   ++total_selected;
                 }
               }
+
+              last_vinyls_selected = vinyls_selected;
+              ++nb_artists;
             }
-            i_artist++;
           }
 
           // Add total vinyls selected & update min price
@@ -698,13 +699,15 @@ var app = {
 
           // Create booking title ...
           if (booking_title == '') {
-            booking_title = ((nb_artists < 2) ? 'Vinyle ' : 'Lot de ' + total_selected + ' vinyles') + ((is_rpm_consistent) ? ' - ' + last_rpm + 'T' : '');
+            booking_title = ((total_selected > 1) ? 'Lot de ' + total_selected + ' vinyles' : 'Vinyle')
+              + (is_rpm_consistent ? ' - ' + last_rpm + 'T' : '');
+
             // & push artist name if only 1 vinyl selected
             if (nb_artists < 2)
-              booking_title += (' - ' + artist_name);
+              booking_title += (' - ' + last_vinyls_selected.artists);
           }
+
           // ... then add it to hidden input
-          console.log(is_rpm_consistent, booking_title);
           self.$booking_input_title.val(booking_title);
         }
       });
