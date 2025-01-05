@@ -69,7 +69,7 @@ class AdvertController extends AbstractController
         $isEdit = !is_null($advertEdit);
         $advert = ($isEdit === true) ? $advertEdit : new Advert();
 
-        // Only admin user can add vinyls & artists
+        // Only admin user can manage adverts
         if(true === $authChecker->isGranted('ROLE_ADMIN')) {
             // 1) Build advert forms
             $formAdvert = $this->createForm(AdvertType::class, $advert);

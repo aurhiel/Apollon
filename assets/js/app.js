@@ -156,7 +156,7 @@ var clipboard = {
       }
     });
   }
-}
+};
 
 var toolbox = {
   user_total_selected: 0,
@@ -262,14 +262,14 @@ var toolbox = {
   },
   bookSelection: function() {
     var self = this;
-    var i_artist = 0;
-    var nb_artists = Object.keys(this.user_vinyls_selected).length;
+    var nb_artists = 0;
     var total_selected = 0;
     var total_with_price = 0;
     var min_price = 0;
     var booking_title = '';
     var is_rpm_consistent = true;
     var last_rpm = null;
+    var last_vinyls_selected = null;
 
     // Reset vinyls table
     this.$booking_vinyls.find('tbody').empty();
@@ -323,8 +323,10 @@ var toolbox = {
             ++total_selected;
           }
         }
+
+        last_vinyls_selected = vinyls_selected;
+        ++nb_artists;
       }
-      i_artist++;
     }
 
     // Add total vinyls selected & update price field
@@ -336,10 +338,12 @@ var toolbox = {
 
     // Create booking title ...
     if (booking_title == '') {
-      booking_title = ((nb_artists < 2) ? 'Vinyle ' : 'Lot de ' + total_selected + ' vinyles') + ((is_rpm_consistent) ? ' - ' + last_rpm + 'T' : '');
-      // & push artist name if only 1 vinyl selected
+      booking_title = ((total_selected > 1) ? 'Lot de ' + total_selected + ' vinyles' : 'Vinyle')
+        + (is_rpm_consistent ? ' - ' + last_rpm + 'T' : '');
+
+      // & push artist name if the same one was selected
       if (nb_artists < 2)
-        booking_title += (' - ' + artist_name);
+        booking_title += (' - ' + last_vinyls_selected.artists);
     }
     // ... then add it to hidden input
     this.$booking_input_title.val(booking_title);
